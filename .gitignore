@@ -9,6 +9,14 @@ tsconfig.base.tsbuildinfo
 # dependencies
 node_modules
 
+# Next.js and Turborepo
+.next/
+.turbo/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
 # IDEs and editors
 /.idea
 .project

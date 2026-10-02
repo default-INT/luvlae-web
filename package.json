@@ -1,0 +1,18 @@
+{
+  "name": "luvlae-web",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "turbo dev --filter=@luvlae/web",
+    "build": "turbo build",
+    "start": "turbo start --filter=@luvlae/web",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "turbo": "2.11.6"
+  }
+}

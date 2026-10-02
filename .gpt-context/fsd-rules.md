@@ -20,6 +20,7 @@ apps/web/
 - `_app` holds application-wide wiring. `_pages` owns a page's composition and page-local code. A block used on only one page may remain in that page slice.
 - Add `widgets` for large independent or reused page sections; add `features` for meaningful interactions; add `entities` for business concepts with useful shared models or UI. Do not create one slice for every component, section, button, or data type.
 - `shared` has no product-specific business rules. Organize `shared/lib` by a narrow purpose, not as a general `utils` dump. Keep product evidence and claim rules in the relevant domain or page code, under the requirements in `seo-requirements.md`.
+- Keep locale codes and translation contracts in `shared/config/i18n`; put YAML message sources under `shared/config/i18n/messages/` and expose server-only loading from `shared/lib/i18n`. Route locale resolution and Next-specific rewrites stay in `app/`/`proxy.ts`.
 - Segments such as `ui`, `model`, `api`, `lib`, and `config` are created inside a slice only when needed. Route Handlers may delegate to `_app/api-routes`; do not force a growing backend into frontend FSD layers.
 
 ## Component structure and exports
@@ -42,6 +43,21 @@ MyComponent/
 
 - Define one React component per `.tsx` file. The component directory name, component name, and implementation filename must match exactly in UpperCamelCase: `MyComponent/MyComponent.tsx`. Apply the same rule to nested UI components: `SomeUIComp/SomeUIComp.tsx`. Supporting non-component functions can share a file when they form one focused utility.
 - Keep each component inside its own same-named folder and expose it to consumers through that folder's `index.ts`. The root component's `index.ts` re-exports the root component; nested UI components have their own `index.ts` as shown.
+- If a component needs props, declare a `Props` interface next to the component. If consumers need the props type, name it `<ComponentName>Props` (for example, `HomePageProps`) and re-export it from the component's `index.ts`; also re-export it from any higher-level slice public API that exposes the component.
+- Receive component props as one `props` argument and destructure inside the function body, rather than in the parameter list. This keeps the component signature compact:
+
+  ```tsx
+  interface Props {
+    title: string;
+  }
+
+  function MyComponent(props: Props) {
+    const { title } = props;
+
+    return <h1>{title}</h1>;
+  }
+  ```
+
 - Use SCSS Modules for component styles. Name each component's SCSS module exactly `styles.module.scss`, colocated in that component's folder. Use CSS custom properties for shared design tokens; global reset/token styles belong in the app-level global stylesheet.
 - Keep `index.ts` files for explicit re-exports only. Do not put component implementations in barrel files.
 - Prefer named exports for components and other modules. Use a default export when a framework or lazy-loading integration specifically benefits from it; keep the slice's named public API where practical.

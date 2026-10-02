@@ -22,6 +22,7 @@ These conventions are distilled from the user's example at `ai-slots-app-git/esl
 - Prefer object shorthand, object spread, template strings, and radix-free `parseInt` when applicable.
 - Require a final `default` branch in switches and put it last. Require curly braces for multiline control-flow bodies.
 - Use an appropriate TypeScript-aware unused-variable rule in the real TS config. The reference disables core `no-unused-vars`; do not interpret that as allowing arbitrary unused code.
+- For component props, use an `interface Props` local to the component, or export `interface <ComponentName>Props` when consumers need the type. Destructure from a `props` argument inside the component body, not in the parameter list. Re-export a public props interface from the component's `index.ts`.
 
 ## Imports and workspace boundaries
 

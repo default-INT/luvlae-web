@@ -1,0 +1,36 @@
+.page {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: 2rem;
+}
+
+.content {
+  width: min(100%, 48rem);
+  padding: clamp(2rem, 7vw, 5rem);
+  border: 1px solid rgb(0 26 64 / 8%);
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 26 64 / 5%);
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  color: var(--color-blue);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.content h1 {
+  margin: 0;
+  color: var(--color-navy);
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.description {
+  margin: 1rem 0 0;
+  color: var(--color-text);
+  line-height: 1.6;
+}
