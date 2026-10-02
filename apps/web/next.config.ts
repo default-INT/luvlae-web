@@ -1,9 +1,5 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
-  outputFileTracingIncludes: {
-    '/*': ['./src/shared/config/i18n/messages/**/*.yaml'],
-  },
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

@@ -161,6 +161,9 @@ const eslintConfig = defineConfig([
   },
   globalIgnores([
     '**/.next/**',
+    '**/.cloudflare/**',
+    '**/.vinext/**',
+    '**/dist/**',
     '**/out/**',
     '**/build/**',
     '**/next-env.d.ts',

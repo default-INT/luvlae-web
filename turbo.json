@@ -5,6 +5,10 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
+    "build:vinext": {
+      "dependsOn": ["^build:vinext"],
+      "outputs": [".cloudflare/**", "dist/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -18,6 +22,14 @@
     "start": {
       "cache": false,
       "persistent": true
+    },
+    "start:vinext": {
+      "dependsOn": ["build:vinext"],
+      "cache": false,
+      "persistent": true
+    },
+    "deploy:vinext": {
+      "cache": false
     }
   }
 }

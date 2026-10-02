@@ -1,12 +1,9 @@
 import 'server-only';
 
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import { cache } from 'react';
-import { parse } from 'yaml';
 
 import { defaultLocale, dictionaryShape, type Dictionary, type Locale } from '@/shared/config/i18n';
+import dictionarySources from '@/shared/config/i18n/dictionary-sources.json';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -38,16 +35,8 @@ function assertMatchingShape(reference: unknown, translation: unknown, path = 'd
 }
 
 const loadDictionary = cache(async (locale: Locale): Promise<Dictionary> => {
-  const messagesDirectory = join(process.cwd(), 'src/shared/config/i18n/messages');
-  const dictionaryPath = join(messagesDirectory, `${locale}.yaml`);
-  const dictionaryFile = await readFile(dictionaryPath, 'utf8');
-  const dictionary = parse(dictionaryFile) as unknown;
-
-  const baseDictionaryFile = locale === defaultLocale
-    ? dictionaryFile
-    : await readFile(join(messagesDirectory, `${defaultLocale}.yaml`), 'utf8');
-
-  const baseDictionary = parse(baseDictionaryFile) as unknown;
+  const dictionary = dictionarySources[locale] as unknown;
+  const baseDictionary = dictionarySources[defaultLocale] as unknown;
 
   assertMatchingShape(dictionaryShape, baseDictionary);
   assertMatchingShape(baseDictionary, dictionary);

@@ -6,21 +6,14 @@ export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const firstSegment = pathname.split('/')[1];
 
-  if (locales.some(locale => locale === firstSegment)) {
-    if (firstSegment === defaultLocale) {
-      const url = request.nextUrl.clone();
-      url.pathname = pathname.slice(`/${defaultLocale}`.length) || '/';
+  if (locales.some(locale => locale === firstSegment) && firstSegment === defaultLocale) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.slice(`/${defaultLocale}`.length) || '/';
 
-      return NextResponse.redirect(url, 308);
-    }
-
-    return NextResponse.next();
+    return NextResponse.redirect(url, 308);
   }
 
-  const url = request.nextUrl.clone();
-  url.pathname = `/${defaultLocale}${pathname === '/' ? '' : pathname}`;
-
-  return NextResponse.rewrite(url);
+  return NextResponse.next();
 }
 
 export const config = {

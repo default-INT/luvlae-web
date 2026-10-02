@@ -1,10 +1,9 @@
-import '@/shared/styles/globals.css';
-
 import { notFound } from 'next/navigation';
 
-import { isLocale, locales } from '@/shared/config/i18n';
+import { defaultLocale, isLocale, locales } from '@/shared/config/i18n';
 
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://luvlae.com'),
@@ -13,14 +12,19 @@ export const metadata: Metadata = {
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return locales.map(lang => ({ lang }));
+  return locales.filter(lang => lang !== defaultLocale).map(lang => ({ lang }));
 }
 
-export default async function RootLayout(props: Readonly<LayoutProps<'/[lang]'>>) {
+interface Props {
+  children: ReactNode;
+  params: Promise<{ lang: string }>;
+}
+
+export default async function LocalizedRootLayout(props: Readonly<Props>) {
   const { children, params } = props;
   const { lang } = await params;
 
-  if (!isLocale(lang)) {
+  if (!isLocale(lang) || lang === defaultLocale) {
     notFound();
   }
 

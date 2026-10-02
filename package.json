@@ -3,14 +3,17 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "dev": "turbo dev --filter=@luvlae/web",
     "build": "turbo build",
     "start": "turbo start --filter=@luvlae/web",
     "lint": "turbo lint",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "build:cloudflare": "turbo run build:vinext --filter=@luvlae/web",
+    "preview:cloudflare": "turbo run start:vinext --filter=@luvlae/web",
+    "deploy:cloudflare": "turbo run deploy:vinext --filter=@luvlae/web"
   },
   "devDependencies": {
     "turbo": "2.11.6"
