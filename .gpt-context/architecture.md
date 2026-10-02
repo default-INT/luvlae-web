@@ -2,7 +2,7 @@
 
 ## Status and agreed requirements
 
-The initial monorepo and Next.js app were created on 2026-10-02. Cloudflare Workers integration is configured and verified locally, and a GitHub Actions workflow is implemented. Production deployment has not yet run; repository secrets and a custom domain are not configured. No product pages, backend, or database are implemented yet. The user selected these requirements:
+The initial monorepo and Next.js app were created on 2026-10-02. Cloudflare Workers integration is configured and verified locally, and a GitHub Actions workflow is implemented. The Cloudflare GitHub Actions secrets have been added, but production deployment has not yet succeeded; a custom domain is not configured. No product pages, backend, or database are implemented yet. The user selected these requirements:
 
 - Next.js, using the latest suitable stable release **at implementation time**, App Router, and TypeScript.
 - Static generation (SSG) and server rendering (SSR), chosen per route.
@@ -22,7 +22,7 @@ Initial pinned toolchain: Next.js and `eslint-config-next` 16.3.8, React 19.2.8,
 - The app keeps the standard Next.js `dev`, `build`, and `start` commands. Cloudflare commands are `pnpm build:cloudflare`, `pnpm preview:cloudflare`, and `pnpm deploy:cloudflare` from the repository root. Cloudflare deploy requires `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; these credentials belong in the local environment or GitHub Secrets, never in tracked files.
 - Public routes opt into build-time prerendering and Cloudflare Static Assets. Routes without static generation can run in the Worker at request time. The root English homepage is statically served at `/`; future non-default locales live under `app/(localized)/[lang]`. `app/(default)` provides unprefixed English routes, and Proxy redirects explicit `/en/...` URLs to their unprefixed canonical paths.
 - YAML files in `src/shared/config/i18n/messages/` remain the translation source. `scripts/generate-dictionaries.mjs` parses them into the committed `src/shared/config/i18n/dictionary-sources.json` bundle input before Next.js and vinext development, builds, and type checks. This avoids runtime filesystem reads in Workers while retaining YAML authoring.
-- `apps/web/cloudflare.config.ts` currently names the Worker `luvlae-web`; `.github/workflows/cloudflare-workers.yml` runs lint and type checks, builds on pull requests, and deploys pushes to `main`. Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub Actions secrets before the first deployment. A custom domain and persistent ISR/data cache are not configured yet. The initial Static Assets cache is read-only and updates on deployment.
+- `apps/web/cloudflare.config.ts` currently names the Worker `luvlae-web`; `.github/workflows/cloudflare-workers.yml` runs lint and type checks, builds on pull requests, and deploys pushes to `main`. The required `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` GitHub Actions secrets are configured. `turbo.json` passes them through only for the uncached deploy task, since Turborepo's strict environment mode otherwise filters them out. A custom domain and persistent ISR/data cache are not configured yet. The initial Static Assets cache is read-only and updates on deployment.
 
 ## Planned shape
 
