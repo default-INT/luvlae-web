@@ -51,11 +51,11 @@ MyComponent/
     title: string;
   }
 
-  function MyComponent(props: Props) {
+  export const MyComponent = (props: Props) => {
     const { title } = props;
 
     return <h1>{title}</h1>;
-  }
+  };
   ```
 
 - Use SCSS Modules for component styles. Name each component's SCSS module exactly `styles.module.scss`, colocated in that component's folder. Use CSS custom properties for shared design tokens; global reset/token styles belong in the app-level global stylesheet.
@@ -99,7 +99,7 @@ The Figma content is a visual reference, not an independent source of product fa
 4. Is the public API narrow, with no deep imports by consumers?
 5. Does any product content follow the evidence and verification rules in `seo-requirements.md` and the product note?
 6. Does each React component have its own file and a folder-level `index.ts` export?
-7. Are component exports named by default, and do TypeScript/TSX strings use single quotes with semicolons?
+7. Are components and utilities declared with `const` arrow functions where practical, component exports named by default, and TypeScript/TSX strings written with single quotes and semicolons?
 8. Do the component folder and `.tsx` implementation filename exactly match the component name, and is its SCSS file named `styles.module.scss`?
 
 ## References

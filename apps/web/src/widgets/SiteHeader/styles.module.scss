@@ -1,0 +1,151 @@
+.header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  width: 100%;
+  background: rgb(249 249 255 / 88%);
+  box-shadow: 0 1px 8px rgb(0 0 0 / 4%);
+  backdrop-filter: blur(16px);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  width: min(100% - 64px, var(--content-width));
+  height: 80px;
+  margin: auto;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-navy-strong);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+}
+
+.brandDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #90d1ff;
+}
+
+.desktopNav,
+.actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.8rem, 2vw, 1.5rem);
+}
+
+.desktopNav {
+  margin-right: auto;
+
+  a {
+    color: var(--color-text);
+    font-size: 0.87rem;
+    font-weight: 650;
+    text-decoration: none;
+    transition: color 200ms ease;
+
+    &:hover {
+      color: var(--color-blue);
+    }
+  }
+}
+
+.mobileMenu {
+  display: none;
+}
+
+@media (max-width: 1120px) {
+  .desktopNav {
+    gap: 0.75rem;
+
+    a {
+      font-size: 0.76rem;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .inner {
+    width: min(100% - 40px, var(--content-width));
+    height: 70px;
+  }
+
+  .desktopNav {
+    display: none;
+  }
+
+  .mobileMenu {
+    position: relative;
+    display: block;
+
+    summary {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      width: 38px;
+      height: 38px;
+      padding: 10px;
+      border-radius: 50%;
+      background: var(--color-navy);
+      cursor: pointer;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary span {
+      height: 2px;
+      border-radius: 2px;
+      background: white;
+    }
+
+    nav {
+      position: absolute;
+      top: calc(100% + 20px);
+      right: 0;
+      display: grid;
+      gap: 0.2rem;
+      min-width: 230px;
+      padding: 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: 14px;
+      background: white;
+      box-shadow: var(--shadow-card);
+    }
+
+    nav a {
+      padding: 0.55rem 0.7rem;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      text-decoration: none;
+
+      &:hover {
+        background: var(--color-surface-muted);
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .actions > a {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktopNav a {
+    transition: none;
+  }
+}

@@ -1,13 +1,114 @@
 {
   "en": {
     "home": {
-      "eyebrow": "LUVLAE",
-      "title": "Website foundation",
-      "description": "The Next.js application is ready for the Luvlae design."
+      "eyebrow": "An everyday wellness ritual",
+      "title": "LUVLAE Berberine Patches",
+      "description": "A pill-free format designed to fit into an everyday routine. Explore the product, its ingredients, directions, safety considerations, and the evidence behind berberine patches.",
+      "heroButton": "Explore the patches",
+      "heroNote": "Product details and purchase options are available through Amazon.",
+      "badgeOne": "60 patches per box",
+      "badgeTwo": "Pill-free format",
+      "badgeThree": "Made for daily routines",
+      "benefits": {
+        "eyebrow": "A simpler format",
+        "title": "Why choose a patch format?",
+        "description": "A patch offers a different way to add berberine to a wellness routine. What matters most is understanding the product and following its current label.",
+        "one": {
+          "eyebrow": "01 / Routine",
+          "title": "Pill-free by design",
+          "description": "A topical format for people who prefer not to add another capsule to their day."
+        },
+        "two": {
+          "eyebrow": "02 / Portability",
+          "title": "Ready when you are",
+          "description": "Individual patches are easy to keep with your daily essentials."
+        },
+        "three": {
+          "eyebrow": "03 / Comfort",
+          "title": "A flexible format",
+          "description": "The seller describes a flexible, breathable patch intended for comfortable wear."
+        },
+        "four": {
+          "eyebrow": "04 / Clarity",
+          "title": "Know what you use",
+          "description": "Check the current package for application, ingredients, and important precautions."
+        }
+      },
+      "product": {
+        "eyebrow": "Thoughtful daily design",
+        "title": "Designed for comfort and consistency",
+        "description": "The captured listing advertises a 60-count box. The seller presents the patch as a way to complement everyday habits; check the current package for directions and warnings.",
+        "metricOne": "patches",
+        "metricTwo": "patch format",
+        "metricThree": "label first",
+        "pointOne": "A pill-free product format",
+        "pointTwo": "A 60-count package",
+        "pointThree": "Current directions and warnings should be checked on the label",
+        "link": "View product details"
+      },
+      "resources": {
+        "eyebrow": "Explore the foundation",
+        "title": "Learn about Luvlae before you decide",
+        "description": "Useful details deserve their own space. Explore ingredients, use, safety, and what research can and cannot tell us.",
+        "link": "Explore the guide",
+        "one": {
+          "eyebrow": "01 / Product",
+          "title": "Ingredients",
+          "description": "Learn what is confirmed and which formula details still need verification against the current label."
+        },
+        "two": {
+          "eyebrow": "02 / Routine",
+          "title": "How to use",
+          "description": "Find practical guidance for reading the package directions and using a topical patch thoughtfully."
+        },
+        "three": {
+          "eyebrow": "03 / Wellbeing",
+          "title": "Safety",
+          "description": "Review skin-use considerations and questions to discuss with a healthcare professional."
+        },
+        "four": {
+          "eyebrow": "04 / Evidence",
+          "title": "Science",
+          "description": "See how oral berberine research differs from evidence for transdermal products."
+        }
+      },
+      "lifestyle": {
+        "eyebrow": "Your routine, your rhythm",
+        "title": "A small step that fits into the day",
+        "description": "Whether your day is busy or unhurried, a patch is a simple format to consider alongside balanced habits. Use the product only as directed on its current package.",
+        "highlightOneTitle": "Everyday flexibility",
+        "highlightOneBody": "A low-fuss format to keep with your daily essentials.",
+        "highlightTwoTitle": "Clear next steps",
+        "highlightTwoBody": "Read the label before use and pay attention to how your skin responds.",
+        "note": "Lifestyle scenes are illustrative and do not establish placement or wear duration. Follow the current package directions.",
+        "link": "Read how to use"
+      },
+      "trust": {
+        "eyebrow": "Transparency matters",
+        "title": "A clearer picture of the product",
+        "description": "We separate product facts, user experience, and research so you can understand what is known and what still needs verification.",
+        "statementTitle": "Evidence should match the product you use.",
+        "statementBody": "Studies of oral berberine do not prove the same absorption or outcomes for a topical patch. Finished-product studies would be needed for product-specific claims.",
+        "statementLink": "Explore the evidence",
+        "oneTitle": "Product facts",
+        "oneBody": "The 60-count pack and patch format are shown in the captured listing; current label details should be checked before use.",
+        "twoTitle": "Research context",
+        "twoBody": "Oral, preclinical transdermal, and finished-product evidence are different categories and should not be treated as interchangeable.",
+        "threeTitle": "Personal decisions",
+        "threeBody": "Skin sensitivity, medications, pregnancy, and individual health circumstances can matter. Ask a clinician when appropriate."
+      },
+      "cta": {
+        "eyebrow": "Explore Luvlae",
+        "title": "Ready to make a more informed choice?",
+        "description": "Review the product information here, then visit the Luvlae listing on Amazon for current purchase details.",
+        "amazonButton": "Shop on Amazon",
+        "productButton": "Read product details",
+        "note": "Amazon handles checkout, fulfillment, and returns for purchases made there."
+      }
     },
     "metadata": {
-      "title": "Luvlae",
-      "description": "Luvlae website foundation."
+      "title": "Luvlae Berberine Patches | Pill-Free Daily Wellness Format",
+      "description": "Explore Luvlae Berberine Patches, a 60-count pill-free format, with clear information about ingredients, directions, safety, and the evidence."
     }
   }
 }

@@ -1,14 +1,6 @@
-export const dictionaryShape = {
-  home: {
-    eyebrow: '',
-    title: '',
-    description: '',
-  },
-  metadata: {
-    title: '',
-    description: '',
-  },
-} as const;
+import dictionarySources from './dictionary-sources.json';
+
+export const dictionaryShape = dictionarySources.en;
 
 type WidenStrings<T> = T extends string
   ? string

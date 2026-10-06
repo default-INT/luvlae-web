@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
 import { defaultLocale, isLocale, locales } from '@/shared/config/i18n';
+import { manrope } from '@/shared/styles/fonts';
 
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
@@ -29,7 +30,7 @@ export default async function LocalizedRootLayout(props: Readonly<Props>) {
   }
 
   return (
-    <html lang={lang}>
+    <html lang={lang} className={manrope.variable}>
       <body>{children}</body>
     </html>
   );

@@ -1,0 +1,83 @@
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  width: fit-content;
+  min-height: 44px;
+  padding: 0.7rem 1.35rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 750;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: transform 240ms ease, background-color 240ms ease, box-shadow 240ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.arrow {
+  display: inline-block;
+  font-size: 1.15em;
+  line-height: 0.8;
+  transition: transform 240ms ease;
+
+  .link:hover & {
+    transform: translate(2px, -2px);
+  }
+}
+
+.dark {
+  background: var(--color-navy-strong);
+  box-shadow: 0 7px 17px rgb(8 47 99 / 18%);
+  color: white;
+
+  &:hover {
+    background: #14648d;
+    box-shadow: 0 10px 22px rgb(8 47 99 / 22%);
+  }
+}
+
+.light {
+  background: white;
+  color: var(--color-navy-strong);
+
+  &:hover {
+    background: #e9f5ff;
+  }
+}
+
+.outline {
+  border-color: #bfcad9;
+  background: transparent;
+  color: var(--color-navy-strong);
+
+  &:hover {
+    background: white;
+  }
+}
+
+.text {
+  min-height: auto;
+  padding: 0;
+  color: var(--color-blue);
+
+  &:hover {
+    color: var(--color-navy-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link,
+  .arrow {
+    transition: none;
+  }
+
+  .link:hover,
+  .link:hover .arrow {
+    transform: none;
+  }
+}

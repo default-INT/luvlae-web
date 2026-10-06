@@ -17,6 +17,7 @@ These conventions are distilled from the user's example at `ai-slots-app-git/esl
 ## JavaScript and TypeScript
 
 - Do not use `var`; prefer `const` when a binding is not reassigned.
+- Prefer `const` arrow functions for utilities and React components. Use named exports for public functions, for example, `export const myUtil = () => { ... };` and `export const MyComponent = (props: Props) => { ... };`. Use another declaration form when a framework contract or a concrete technical need requires it.
 - Use strict equality except in the limited cases allowed by the sample's `eqeqeq: smart` rule.
 - Avoid nested ternaries, useless concatenation/returns, `new` for side effects, and reassignment of function parameters.
 - Prefer object shorthand, object spread, template strings, and radix-free `parseInt` when applicable.
@@ -44,7 +45,7 @@ These conventions are distilled from the user's example at `ai-slots-app-git/esl
 
 - Use the ESLint flat-config format from the reference only if compatible with the Next.js release selected at project setup. Confirm current Next.js ESLint guidance and plugin compatibility then.
 - The reference's Nx preset names, Nx tags, Vite/Vitest generated-file ignores, and `apps/*/tsconfig.app.json` resolver globs are specific to that other repository. Adapt ignores and TypeScript project paths to this repository's actual structure.
-- Several sample rules are explicitly disabled, including JSX prop spreading, function component declaration style, React-in-JSX-scope, and PropTypes. Treat these as reasonable preferences only where they fit the selected React/Next stack; don't copy its entire rule object mechanically.
+- Several sample rules are explicitly disabled, including JSX prop spreading, React-in-JSX-scope, and PropTypes. The user's arrow-function preference above takes precedence over the sample's disabled function component declaration style rule. Don't copy its entire rule object mechanically.
 
 ## Source
 

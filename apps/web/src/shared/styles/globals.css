@@ -7,14 +7,21 @@
   --color-blue: #14648d;
   --color-blue-soft: #c8e6ff;
   --color-text: #43474f;
-  --color-border: #c4c6d1;
-  --font-sans: Arial, Helvetica, sans-serif;
+  --color-border: #d8dce9;
+  --font-sans: var(--font-manrope), Arial, sans-serif;
+  --content-width: 1376px;
+  --radius-card: 16px;
+  --shadow-card: 0 10px 38px rgb(0 26 64 / 5%);
 }
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 html,
@@ -33,4 +40,24 @@ body {
 
 a {
   color: inherit;
+}
+
+img {
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--color-blue-soft);
+  color: var(--color-navy);
+}
+
+:focus-visible {
+  outline: 3px solid #48a8e8;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

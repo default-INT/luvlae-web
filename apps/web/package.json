@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "node scripts/generate-dictionaries.mjs && next dev",
-    "build": "node scripts/generate-dictionaries.mjs && next build",
+    "build": "node scripts/generate-dictionaries.mjs && next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && node scripts/generate-dictionaries.mjs && tsc --noEmit",

@@ -1,5 +1,7 @@
 import '@/shared/styles/globals.css';
 
+import { manrope } from '@/shared/styles/fonts';
+
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
@@ -15,7 +17,7 @@ export default function DefaultRootLayout(props: Readonly<Props>) {
   const { children } = props;
 
   return (
-    <html lang='en'>
+    <html lang='en' className={manrope.variable}>
       <body>{children}</body>
     </html>
   );

@@ -124,6 +124,13 @@ Track indexable/ indexed target URLs, non-brand impressions and clicks, page-lev
 
 The SEO strategy PDF reports current-site ingredient amounts (berberine 70 mg, green tea 15 mg, Panax ginseng 15 mg, ginger 10 mg, L-carnitine 30 mg) and 6–8 hour wear directions. An earlier Amazon listing PDF in `.gpt-context/products/luvlae-berberine-patches.md` names L-glutamine and Garcinia Cambogia in the product title and says replace every 24 hours. Listing image files also show additional formula details. These sources conflict and may represent different listing versions/variants. **Do not merge these into a single product specification or publish exact ingredients, amounts, placement, or wear time until the current product label is confirmed.**
 
+## Initial site implementation (2026-10-06)
+
+- The homepage and product route are statically generated and indexable. The homepage links to separate product, ingredients, how-to, safety, science, FAQ, and about routes.
+- Preliminary information routes are `noindex, follow` and omitted from `sitemap.xml` until current label details, original sources, and qualified review can support full standalone content. Their current copy explicitly identifies unknowns. See `apps/web/src/_pages/information/model/pages.ts`.
+- No on-site price, availability, review rating, Offer, or AggregateRating markup has been added. Amazon is linked as an external purchase destination.
+- Homepage copy avoids the Figma mockup's unverified pharmacokinetic, absorption, and timed-release claims; see `apps/web/src/shared/config/i18n/messages/en.yaml`.
+
 ## Source
 
 - User-provided PDF: `luvlae_seo_strategy_ru_v2_competitor_benchmark.pdf`, 19 pages, dated 2026-09-29.

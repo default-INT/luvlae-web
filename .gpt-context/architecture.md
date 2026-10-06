@@ -2,7 +2,7 @@
 
 ## Status and agreed requirements
 
-The initial monorepo and Next.js app were created on 2026-10-02. Cloudflare Workers integration is configured and verified locally, and a GitHub Actions workflow is implemented. The Cloudflare GitHub Actions secrets have been added, but production deployment has not yet succeeded; a custom domain is not configured. No product pages, backend, or database are implemented yet. The user selected these requirements:
+The initial monorepo and Next.js app were created on 2026-10-02. Cloudflare Workers integration is configured and verified locally, and a GitHub Actions workflow is implemented. The account dashboard shows a configured `workers.dev` subdomain, but production deployment has not yet succeeded; verify that the GitHub `CLOUDFLARE_ACCOUNT_ID` secret points to this same account. A custom domain is not configured. The homepage and initial product/information routes are implemented; no backend or database exists. The user selected these requirements:
 
 - Next.js, using the latest suitable stable release **at implementation time**, App Router, and TypeScript.
 - Static generation (SSG) and server rendering (SSR), chosen per route.
@@ -33,7 +33,7 @@ Keep the Next.js `apps/web/app/` directory focused on route entry points, layout
 ## Development commands
 
 - `pnpm dev` — run the Next.js development server through Turborepo.
-- `pnpm build` — production build through Turborepo (Next.js default Turbopack builder).
+- `pnpm build` — production build through Turborepo (Next.js Webpack builder). The default Turbopack build stalled locally during the 2026-10-06 implementation; the Webpack build completed successfully.
 - `pnpm lint` — ESLint for the workspace app.
 - `pnpm typecheck` — generate current Next.js route types and run the TypeScript check for the workspace app.
 - `pnpm start` — start the built app through Turborepo.
@@ -49,6 +49,8 @@ The app uses Next.js App Router, TypeScript, Sass, CSS Modules, and an ESLint fl
 - Use request-time rendering for future user-specific checkout, order, and admin views. Do not enable `output: 'export'` for an application expected to use SSR, Route Handlers, and payment callbacks.
 - Keep Server Components by default. Introduce Client Components only around interactions or browser-only APIs. Keep secrets, privileged data access, and provider credentials on the server.
 - Keep product facts separate from page presentation so a future CMS or admin workflow can replace the data source. The exact initial content format is undecided.
+
+The initial Figma-based homepage lives in `src/_pages/home/`, with reusable navigation, footer, links, and reveal motion in `src/widgets/` and `src/shared/ui/`. Product and lifestyle images live in `public/images/` with descriptive filenames; reusable SVG icons live in `public/images/icons/`. The Manrope font is self-hosted in `public/fonts/`. English homepage copy is authored in `src/shared/config/i18n/messages/en.yaml`. The initial product and educational routes use `src/_pages/information/model/pages.ts` and explicit static entry points in `app/(default)/`. The product route is indexable; the other preliminary information routes are marked `noindex` until current label and evidence details are verified. `app/sitemap.ts` lists only indexable routes. Motion uses CSS and a small IntersectionObserver wrapper, with reduced-motion support. The Figma file supplied a desktop homepage; exact mobile frames were not verified, so responsive layouts are implementation decisions.
 
 The current conversion is an outbound Amazon click. The URL map, content evidence rules, metadata, structured data, indexing, and analytics requirements are in [seo-requirements.md](seo-requirements.md). In particular, do not publish a consolidated ingredient list or wear time until the conflicting source records are resolved; see [the product note](products/luvlae-berberine-patches.md). Do not model Amazon price, availability, or reviews as on-site purchase data.
 
@@ -72,7 +74,7 @@ If on-site payment is approved, begin with server-side operations and Route Hand
 - Exact shared tooling packages as packages are introduced.
 - Custom domain and persistent ISR/data cache, if needed.
 - Content authoring workflow and whether a CMS is needed.
-- Responsive breakpoints and mobile layouts from the Figma design, plus final design-token extraction. The initial visual/CSS recommendation is in [fsd-rules.md](fsd-rules.md).
+- Exact mobile layouts from the Figma design and final design-token extraction. Current responsive breakpoints are implementation decisions in the component SCSS Modules.
 - Scope, market, provider, data model, and operational requirements for on-site checkout.
 - Admin users, roles, and whether the admin lives in `apps/web` or a separate app.
 
