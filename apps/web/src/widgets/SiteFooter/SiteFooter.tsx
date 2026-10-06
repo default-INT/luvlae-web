@@ -1,68 +1,84 @@
 import Link from 'next/link';
 
 import { product } from '@/entities/product';
+import { interpolate } from '@/shared/lib/i18n';
 
 import styles from './styles.module.scss';
 
-const groups = [
-  {
-    title: 'Product',
-    links: [
-      { label: 'Berberine Patches', href: '/products/berberine-patches/' },
-      { label: 'Ingredients', href: '/ingredients/' },
-      { label: 'How to Use', href: '/how-to-use-berberine-patches/' },
-    ],
-  },
-  {
-    title: 'Education & Trust',
-    links: [
-      { label: 'Science & Evidence', href: '/science/berberine-patches/' },
-      { label: 'Safety', href: '/berberine-patch-safety/' },
-      { label: 'Frequently Asked Questions', href: '/faq/' },
-    ],
-  },
-  {
-    title: 'Explore',
-    links: [
-      { label: 'About Luvlae', href: '/about/' },
-      { label: 'Shop on Amazon', href: product.amazonUrl, external: true },
-    ],
-  },
-] as const;
+import type { Dictionary } from '@/shared/config/i18n';
 
-export const SiteFooter = () => (
-  <footer className={styles.footer}>
-    <div className={styles.inner}>
-      <div className={styles.grid}>
-        <div className={styles.brandBlock}>
-          <Link href='/' className={styles.brand}>LUVLAE<span aria-hidden='true'>.</span></Link>
-          <p>Simple routines, thoughtfully considered. Explore the patch format and the information that helps you decide.</p>
-          <p className={styles.asin}>Amazon ASIN: {product.asin}</p>
-        </div>
-        {groups.map(group => (
-          <div className={styles.group} key={group.title}>
-            <h2>{group.title}</h2>
-            <ul>
-              {group.links.map(link => (
-                <li key={link.label}>
-                  {'external' in link ? (
-                    <a href={link.href} target='_blank' rel='noopener noreferrer sponsored'>{link.label}</a>
-                  ) : <Link href={link.href}>{link.label}</Link>}
-                </li>
-              ))}
-            </ul>
+export interface SiteFooterProps {
+  dictionary: Dictionary;
+}
+
+export const SiteFooter = (props: SiteFooterProps) => {
+  const { dictionary } = props;
+  const { siteFooter } = dictionary;
+
+  const groups = [
+    {
+      title: siteFooter.productGroup,
+      links: [
+        { label: siteFooter.product, href: '/products/berberine-patches' },
+        { label: siteFooter.ingredients, href: '/ingredients' },
+        { label: siteFooter.howToUse, href: '/how-to-use-berberine-patches' },
+      ],
+    },
+    {
+      title: siteFooter.educationGroup,
+      links: [
+        { label: siteFooter.science, href: '/science/berberine-patches' },
+        { label: siteFooter.safety, href: '/berberine-patch-safety' },
+        { label: siteFooter.faq, href: '/faq' },
+      ],
+    },
+    {
+      title: siteFooter.exploreGroup,
+      links: [
+        { label: siteFooter.about, href: '/about' },
+        { label: siteFooter.shopOnAmazon, href: product.amazonUrl, external: true },
+      ],
+    },
+  ];
+
+  return (
+    <footer className={styles.footer}>
+      <div className={styles.inner}>
+        <div className={styles.grid}>
+          <div className={styles.brandBlock}>
+            <Link href='/' className={styles.brand}>LUVLAE<span aria-hidden='true'>.</span></Link>
+            <p>{interpolate(siteFooter.brandDescription, { productName: siteFooter.product })}</p>
+            <p className={styles.asin}>{interpolate(siteFooter.asin, { asin: product.asin })}</p>
           </div>
-        ))}
+          {groups.map(group => (
+            <div className={styles.group} key={group.title}>
+              <h2>{group.title}</h2>
+              <ul>
+                {group.links.map(link => (
+                  <li key={link.label}>
+                    {'external' in link ? (
+                      <a
+                        href={link.href}
+                        target='_blank'
+                        rel='noopener noreferrer sponsored'
+                        data-analytics-event='amazon_outbound_click'
+                        data-analytics-location='footer'
+                      >
+                        {link.label}
+                      </a>
+                    ) : <Link href={link.href}>{link.label}</Link>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className={styles.notice}>{siteFooter.educationalNotice}</div>
+        <div className={styles.bottom}>
+          <span>{interpolate(siteFooter.copyright, { year: new Date().getFullYear() })}</span>
+          <span>{siteFooter.tagline}</span>
+        </div>
       </div>
-      <div className={styles.notice}>
-        Information on this site is educational and does not replace advice from a healthcare professional.
-        Follow the directions and warnings on the current product package. Amazon handles purchases,
-        shipping, and returns for orders placed there.
-      </div>
-      <div className={styles.bottom}>
-        <span>© {new Date().getFullYear()} Luvlae. All rights reserved.</span>
-        <span>Made for a more informed everyday routine.</span>
-      </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};

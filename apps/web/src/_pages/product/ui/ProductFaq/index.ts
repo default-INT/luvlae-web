@@ -1,0 +1,1 @@
+export { ProductFaq } from './ProductFaq';

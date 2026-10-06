@@ -5,33 +5,51 @@ import { ActionLink } from '@/shared/ui/ActionLink';
 
 import styles from './styles.module.scss';
 
-const navigation = [
-  { label: 'The Patches', href: '/products/berberine-patches/' },
-  { label: 'Ingredients', href: '/ingredients/' },
-  { label: 'How to Use', href: '/how-to-use-berberine-patches/' },
-  { label: 'Safety', href: '/berberine-patch-safety/' },
-  { label: 'Science', href: '/science/berberine-patches/' },
-  { label: 'FAQ', href: '/faq/' },
-] as const;
+import type { Dictionary } from '@/shared/config/i18n';
 
-export const SiteHeader = () => (
-  <header className={styles.header}>
-    <div className={styles.inner}>
-      <Link href='/' className={styles.brand} aria-label='Luvlae home'>
-        LUVLAE<span className={styles.brandDot} aria-hidden='true'/>
-      </Link>
-      <nav className={styles.desktopNav} aria-label='Main navigation'>
-        {navigation.map(item => <Link href={item.href} key={item.href}>{item.label}</Link>)}
-      </nav>
-      <div className={styles.actions}>
-        <ActionLink href={product.amazonUrl} external>Shop on Amazon</ActionLink>
-        <details className={styles.mobileMenu}>
-          <summary aria-label='Open navigation menu'><span/><span/><span/></summary>
-          <nav aria-label='Mobile navigation'>
-            {navigation.map(item => <Link href={item.href} key={item.href}>{item.label}</Link>)}
-          </nav>
-        </details>
+export interface SiteHeaderProps {
+  dictionary: Dictionary;
+}
+
+export const SiteHeader = (props: SiteHeaderProps) => {
+  const { dictionary } = props;
+  const { siteHeader } = dictionary;
+
+  const navigation = [
+    { label: siteHeader.navigation.patches, href: '/products/berberine-patches' },
+    { label: siteHeader.navigation.ingredients, href: '/ingredients' },
+    { label: siteHeader.navigation.howToUse, href: '/how-to-use-berberine-patches' },
+    { label: siteHeader.navigation.safety, href: '/berberine-patch-safety' },
+    { label: siteHeader.navigation.science, href: '/science/berberine-patches' },
+    { label: siteHeader.navigation.faq, href: '/faq' },
+  ];
+
+  return (
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        <Link href='/' className={styles.brand} aria-label={siteHeader.homeLabel}>
+          LUVLAE<span className={styles.brandDot} aria-hidden='true'/>
+        </Link>
+        <nav className={styles.desktopNav} aria-label={siteHeader.navigationLabel}>
+          {navigation.map(item => <Link href={item.href} key={item.href}>{item.label}</Link>)}
+        </nav>
+        <div className={styles.actions}>
+          <ActionLink
+            href={product.amazonUrl}
+            external
+            analyticsEvent='amazon_outbound_click'
+            analyticsLocation='header'
+          >
+            {siteHeader.shopOnAmazon}
+          </ActionLink>
+          <details className={styles.mobileMenu}>
+            <summary aria-label={siteHeader.openMenuLabel}><span/><span/><span/></summary>
+            <nav aria-label={siteHeader.mobileNavigationLabel}>
+              {navigation.map(item => <Link href={item.href} key={item.href}>{item.label}</Link>)}
+            </nav>
+          </details>
+        </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};

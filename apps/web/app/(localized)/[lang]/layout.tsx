@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 
+import { Analytics } from '@/_app/analytics';
 import { defaultLocale, isLocale, locales } from '@/shared/config/i18n';
 import { manrope } from '@/shared/styles/fonts';
 
@@ -31,7 +32,7 @@ export default async function LocalizedRootLayout(props: Readonly<Props>) {
 
   return (
     <html lang={lang} className={manrope.variable}>
-      <body>{children}</body>
+      <body>{children}<Analytics/></body>
     </html>
   );
 }

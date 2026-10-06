@@ -13,6 +13,22 @@ import styles from './styles.module.scss';
 
 import type { Dictionary } from '@/shared/config/i18n';
 
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': 'https://luvlae.com/#organization',
+  name: 'Luvlae',
+  url: 'https://luvlae.com/',
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Luvlae',
+  url: 'https://luvlae.com/',
+  publisher: { '@id': 'https://luvlae.com/#organization' },
+};
+
 export interface HomePageProps {
   dictionary: Dictionary;
 }
@@ -31,28 +47,28 @@ export const HomePage = (props: HomePageProps) => {
   const resources = [
     {
       ...home.resources.one,
-      href: '/ingredients/',
+      href: '/ingredients',
       icon: '/images/icons/ingredients-guide-icon.svg',
       iconWidth: 22,
       iconHeight: 21,
     },
     {
       ...home.resources.two,
-      href: '/how-to-use-berberine-patches/',
+      href: '/how-to-use-berberine-patches',
       icon: '/images/icons/patch-use-guide-icon.svg',
       iconWidth: 22,
       iconHeight: 21,
     },
     {
       ...home.resources.three,
-      href: '/berberine-patch-safety/',
+      href: '/berberine-patch-safety',
       icon: '/images/icons/patch-safety-guide-icon.svg',
       iconWidth: 22,
       iconHeight: 21,
     },
     {
       ...home.resources.four,
-      href: '/science/berberine-patches/',
+      href: '/science/berberine-patches',
       icon: '/images/icons/berberine-research-guide-icon.svg',
       iconWidth: 21,
       iconHeight: 24,
@@ -61,35 +77,36 @@ export const HomePage = (props: HomePageProps) => {
 
   return (
     <>
-      <SiteHeader/>
+      <SiteHeader dictionary={dictionary}/>
       <main>
         <section className={styles.hero}>
           <div className={styles.container}>
-            <div className={styles.heroTop}>
+            <div className={styles.heroLayout}>
               <div className={styles.heroCopy}>
                 <p className={styles.eyebrow}>{home.eyebrow}</p>
                 <h1>{home.title}</h1>
                 <p className={styles.heroDescription}>{home.description}</p>
+                <div className={styles.heroAction}>
+                  <ActionLink href='/products/berberine-patches'>{home.heroButton}</ActionLink>
+                  <p>{home.heroNote}</p>
+                </div>
               </div>
-              <div className={styles.heroAction}>
-                <ActionLink href='/products/berberine-patches/'>{home.heroButton}</ActionLink>
-                <p>{home.heroNote}</p>
+              <div className={styles.heroVisual}>
+                <div className={styles.heroImage}>
+                  <Image
+                    src='/images/luvlae-berberine-patches-box-and-patch-sheet.png'
+                    alt='Luvlae Berberine Patches package and individual patches'
+                    width={2500}
+                    height={2500}
+                    priority
+                  />
+                </div>
+                <div className={styles.heroImageBadges}>
+                  <span>{home.badgeOne}</span>
+                  <span>{home.badgeTwo}</span>
+                  <span>{home.badgeThree}</span>
+                </div>
               </div>
-            </div>
-            <div className={styles.heroImage}>
-              <Image
-                src='/images/woman-holding-luvlae-berberine-patches.jpg'
-                alt='Woman outdoors holding a box of Luvlae Berberine Patches'
-                width={1376}
-                height={750}
-                priority
-              />
-              <div className={styles.heroImageBadges}>
-                <span>{home.badgeOne}</span>
-                <span>{home.badgeTwo}</span>
-                <span>{home.badgeThree}</span>
-              </div>
-              <span className={styles.heroImageLabel}>LUVLAE / EVERYDAY WELLNESS</span>
             </div>
           </div>
         </section>
@@ -118,8 +135,8 @@ export const HomePage = (props: HomePageProps) => {
             <div className={styles.splitLayout}>
               <Reveal className={styles.productImage}>
                 <Image
-                  src='/images/open-luvlae-berberine-patches-box.jpg'
-                  alt='Open Luvlae Berberine Patches box showing individual patches and package inserts'
+                  src='/images/luvlae-berberine-patches-open-box-and-patch-sheets.png'
+                  alt='Illustrative open Luvlae Berberine Patches box showing individual patches and inserts'
                   width={512}
                   height={279}
                 />
@@ -138,7 +155,7 @@ export const HomePage = (props: HomePageProps) => {
                   <li><span aria-hidden='true'>✓</span>{home.product.pointTwo}</li>
                   <li><span aria-hidden='true'>✓</span>{home.product.pointThree}</li>
                 </ul>
-                <ActionLink href='/products/berberine-patches/' variant='text'>{home.product.link}</ActionLink>
+                <ActionLink href='/products/berberine-patches' variant='text'>{home.product.link}</ActionLink>
               </Reveal>
             </div>
           </div>
@@ -169,7 +186,7 @@ export const HomePage = (props: HomePageProps) => {
             <div className={styles.splitLayout}>
               <Reveal className={styles.lifestyleImage}>
                 <Image
-                  src='/images/berberine-patch-everyday-use-scenes.png'
+                  src='/images/luvlae-berberine-patches-everyday-use-scenes.png'
                   alt='Illustrations of people wearing a patch at work, at home, during exercise, and while resting'
                   width={512}
                   height={512}
@@ -184,7 +201,7 @@ export const HomePage = (props: HomePageProps) => {
                   <div><strong>{home.lifestyle.highlightTwoTitle}</strong><span>{home.lifestyle.highlightTwoBody}</span></div>
                 </div>
                 <p className={styles.imageNote}>{home.lifestyle.note}</p>
-                <ActionLink href='/how-to-use-berberine-patches/' variant='text'>{home.lifestyle.link}</ActionLink>
+                <ActionLink href='/how-to-use-berberine-patches' variant='text'>{home.lifestyle.link}</ActionLink>
               </Reveal>
             </div>
           </div>
@@ -204,7 +221,7 @@ export const HomePage = (props: HomePageProps) => {
                 <span className={styles.statementMark}>“</span>
                 <h3>{home.trust.statementTitle}</h3>
                 <p>{home.trust.statementBody}</p>
-                <ActionLink href='/science/berberine-patches/' variant='text'>{home.trust.statementLink}</ActionLink>
+                <ActionLink href='/science/berberine-patches' variant='text'>{home.trust.statementLink}</ActionLink>
               </Reveal>
               <Reveal className={styles.trustList}>
                 <div><span>01</span><div><h3>{home.trust.oneTitle}</h3><p>{home.trust.oneBody}</p></div></div>
@@ -222,15 +239,25 @@ export const HomePage = (props: HomePageProps) => {
               <h2>{home.cta.title}</h2>
               <p>{home.cta.description}</p>
               <div className={styles.ctaActions}>
-                <ActionLink href={product.amazonUrl} external variant='light'>{home.cta.amazonButton}</ActionLink>
-                <ActionLink href='/products/berberine-patches/' variant='outline'>{home.cta.productButton}</ActionLink>
+                <ActionLink
+                  href={product.amazonUrl}
+                  external
+                  variant='light'
+                  analyticsEvent='amazon_outbound_click'
+                  analyticsLocation='home_cta'
+                >
+                  {home.cta.amazonButton}
+                </ActionLink>
+                <ActionLink href='/products/berberine-patches' variant='outline'>{home.cta.productButton}</ActionLink>
               </div>
               <small>{home.cta.note}</small>
             </Reveal>
           </div>
         </section>
       </main>
-      <SiteFooter/>
+      <SiteFooter dictionary={dictionary}/>
+      <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}/>
+      <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}/>
     </>
   );
 };

@@ -1,5 +1,6 @@
 import '@/shared/styles/globals.css';
 
+import { Analytics } from '@/_app/analytics';
 import { manrope } from '@/shared/styles/fonts';
 
 import type { Metadata } from 'next';
@@ -18,7 +19,7 @@ export default function DefaultRootLayout(props: Readonly<Props>) {
 
   return (
     <html lang='en' className={manrope.variable}>
-      <body>{children}</body>
+      <body>{children}<Analytics/></body>
     </html>
   );
 }

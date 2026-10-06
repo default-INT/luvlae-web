@@ -60,6 +60,17 @@ Recheck the live listing before using any price, promotion, availability, sales,
 - Composition amounts, patch size, wear/adhesion duration beyond the seller's 24-hour directions, intended application site, allergens, and manufacturer contact details are unknown from this capture.
 - Separate seller copy and customer feedback from independently verified facts. Treat health and weight-loss efficacy as unverified.
 
+## Additional listing referenced for the product-page design (2026-10-06)
+
+- The user also supplied <https://www.amazon.com/dp/B0HBQWZCD3>. Its accessible page identifies a Luvlae 60-count berberine patch set and names green tea, L-glutamine, and resveratrol in the title. Its summary bullets additionally name Garcinia Cambogia. This is a different ASIN from the site's existing purchase link, `B0H6FQFJL8`; their relationship or variant status is unknown.
+- The same `B0HBQWZCD3` page gives conflicting wear directions: a bullet says up to eight hours, while the description says replace every 24 hours. It does not resolve the current-label discrepancy. Do not merge its ingredients or directions into the `B0H6FQFJL8` specification without checking the physical package and intended offer.
+- The existing site purchase destination remains `B0H6FQFJL8` pending confirmation of which ASIN the site should promote. Do not present the newer listing as the current offer for that ASIN.
+
+## User-supplied ingredient graphic (2026-10-06)
+
+- The supplied `List-05.png` graphic reads “PER ONE PATCH” and lists: berberine 70 mg; fenugreek seed extract 25 mg; chromium 200 mcg; Panax ginseng extract 15 mg; green tea extract 15 mg; cinnamon bark extract 30 mg; ginger root extract 10 mg; L-carnitine 30 mg; vitamin B12 500 mcg; magnesium 45 mg; vitamin C (as ascorbic acid) 40 mg.
+- This is an ingredient graphic, not a photographed complete package label. Its connection to the currently promoted ASIN `B0H6FQFJL8` is unconfirmed. `apps/web/public/images/luvlae-ingredients-per-patch.webp` is the optimized copy; `apps/web/src/_pages/ingredients/` shows it with an exact transcription attributed to the graphic. The route remains `noindex` pending current-package confirmation.
+
 ## Source
 
 - User-provided Amazon listing PDF: `Amazon.com: Luvlae Berberine Patches for Women & Men with L-Glutamine, Garcinia Cambogia, 60 Days Supply : Health & Household.pdf` (5 pages, captured 2026-09-30 at 13:15).

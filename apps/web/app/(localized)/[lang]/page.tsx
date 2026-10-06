@@ -30,6 +30,20 @@ export async function generateMetadata({ params }: HomeRouteProps): Promise<Meta
     alternates: {
       canonical: `/${lang}`,
     },
+    openGraph: {
+      title: dictionary.metadata.title,
+      description: dictionary.metadata.description,
+      url: `/${lang}`,
+      siteName: 'Luvlae',
+      type: 'website',
+      images: [{
+        url: '/images/luvlae-berberine-patches-woman-holding-box.jpg',
+        width: 512,
+        height: 279,
+        alt: 'Illustrative image of a woman holding Luvlae Berberine Patches',
+      }],
+    },
+    twitter: { card: 'summary_large_image' },
   };
 }
 

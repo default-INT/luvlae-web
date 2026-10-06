@@ -1,8 +1,12 @@
 /* eslint-disable max-len -- Editorial page copy is kept as complete sentences for easier review. */
-
 export interface InformationSection {
   title: string;
   paragraphs: string[];
+}
+
+export interface InformationSource {
+  label: string;
+  href: string;
 }
 
 export interface InformationPageContent {
@@ -13,179 +17,146 @@ export interface InformationPageContent {
   lead: string;
   sections: InformationSection[];
   noindex?: boolean;
-  image?: boolean;
+  sources?: InformationSource[];
+  verificationNote?: string;
 }
 
 export const informationPages: Record<string, InformationPageContent> = {
-  'products/berberine-patches': {
-    path: '/products/berberine-patches',
-    eyebrow: 'The product',
-    title: 'Luvlae Berberine Patches',
-    description: 'Explore the Luvlae 60-count berberine patch format, what is known about the product, and what to check before use.',
-    lead: 'Luvlae Berberine Patches are offered in a 60-count box. They provide a pill-free format for people exploring a daily wellness routine. Purchase and fulfillment take place on Amazon.',
-    image: true,
-    sections: [
-      {
-        title: 'What is confirmed',
-        paragraphs: [
-          'The captured Amazon listing identifies the product as Luvlae Berberine Patches and advertises 60 patches. It names berberine in the product title.',
-          'Formula details and wear directions differ between available source records. Check the current package label before use; this site does not present an unverified ingredient panel or wear time.',
-        ],
-      },
-      {
-        title: 'A note on benefits and evidence',
-        paragraphs: [
-          'Luvlae presents the patch as a product intended to complement everyday habits. Research on oral berberine cannot establish absorption or outcomes for this finished topical patch.',
-          'No Luvlae-specific human clinical study was supplied in the project sources. Learn more on the Science page before interpreting general berberine research as evidence for this product.',
-        ],
-      },
-      {
-        title: 'Before you buy',
-        paragraphs: [
-          'Review the current ingredient label, directions, warnings, price, availability, and return terms on Amazon. Those marketplace details may change.',
-        ],
-      },
-    ],
-  },
-  ingredients: {
-    path: '/ingredients',
-    eyebrow: 'Product details',
-    title: 'Berberine Patch Ingredients',
-    description: 'What is currently known about Luvlae Berberine Patches ingredients and why the complete formula is awaiting label verification.',
-    lead: 'The available records conflict on the full formula. We are holding back an ingredient panel and amounts until they can be checked against the current package label.',
-    noindex: true,
-    sections: [
-      {
-        title: 'What the available listing says',
-        paragraphs: [
-          'The captured Amazon title names berberine, L-glutamine, and Garcinia Cambogia. A separate SEO strategy cites a different group of ingredients and amounts from a prior site snapshot.',
-          'These records may represent different product versions or variants. Combining them would create an unreliable specification, so we do not do that here.',
-        ],
-      },
-      {
-        title: 'How to verify your box',
-        paragraphs: [
-          'Read the ingredient and warning panels on the package you receive. If you have sensitivities or take medication, discuss the exact label with a healthcare professional before use.',
-        ],
-      },
-    ],
-  },
   'how-to-use-berberine-patches': {
     path: '/how-to-use-berberine-patches',
-    eyebrow: 'Daily routine',
+    eyebrow: 'Using your patch',
     title: 'How to Use Berberine Patches',
-    description: 'A practical guide to checking the current Luvlae patch directions, skin care, and questions about placement and wear time.',
-    lead: 'Start with the directions on the current package. Source records available to this project disagree about wear time, so no universal schedule is stated here.',
+    description: 'A practical checklist for reading Luvlae patch directions, applying to intact skin, and checking placement and wear time.',
+    lead: 'Follow the directions on the box you have. Older sources give different wear times, so this page does not set a schedule or placement for your patch.',
     noindex: true,
     sections: [
       {
-        title: 'Before application',
+        title: 'Before applying a patch',
         paragraphs: [
-          'Read the current package directions and warnings in full. The captured seller instructions say to apply a patch to clean, dry skin, but confirm the current label before use.',
-          'Do not apply to irritated or broken skin. If the adhesive causes discomfort, remove the patch and seek appropriate guidance.',
+          'Read the full ingredient, warning, and direction panels. Check where the label says to place the patch and how long it says to wear it. Do not use an older webpage or an illustration as a substitute for those directions.',
+          'The captured seller directions say to apply a patch to clean, dry skin. Avoid broken or irritated skin, and follow any more specific instructions on your current package.',
         ],
       },
       {
-        title: 'Placement and wear time',
+        title: 'While wearing and removing it',
         paragraphs: [
-          'The project sources do not establish a single current placement instruction or wear duration. Follow the package in hand rather than older online descriptions or lifestyle imagery.',
+          'Use the label for timing, removal, and replacement. Check the package before showering, swimming, exercising, or using skin products near the patch; water resistance and activity guidance have not been verified for the current product.',
+          'If the adhesive is uncomfortable or your skin reacts, remove the patch and seek appropriate medical advice if needed.',
         ],
       },
     ],
+    verificationNote: 'Current placement, wear duration, and water-resistance directions need confirmation from the actual package.',
   },
   'berberine-patch-safety': {
     path: '/berberine-patch-safety',
-    eyebrow: 'Use thoughtfully',
+    eyebrow: 'Safety first',
     title: 'Berberine Patch Safety',
-    description: 'Skin-use precautions and important questions to discuss with a clinician before using Luvlae Berberine Patches.',
-    lead: 'A topical patch can still cause skin irritation or raise questions about ingredients and individual health circumstances. Use the current package warnings as your primary product guide.',
+    description: 'Review skin-use precautions, medication and pregnancy questions, and the limits of available Luvlae patch safety evidence.',
+    lead: 'Check the warnings on your current package before use. A patch may irritate skin, and research on berberine taken by mouth does not establish the safety profile of this finished topical product.',
     noindex: true,
     sections: [
       {
         title: 'Skin and adhesive',
         paragraphs: [
-          'Avoid applying a patch to broken or irritated skin. Stop use if you notice a troublesome reaction and seek medical advice when needed.',
+          'Apply only as the current label directs and avoid broken or irritated skin. Remove the patch if it causes a troublesome reaction. Ask a healthcare professional for advice if symptoms persist or concern you.',
+          'The adhesive composition and finished-product skin testing have not been confirmed here. Check the package if you have a known adhesive or ingredient sensitivity.',
         ],
       },
       {
-        title: 'Medications and health circumstances',
+        title: 'Medication, pregnancy, and breastfeeding',
         paragraphs: [
-          'If you are pregnant or nursing, take prescription medication, or manage a health condition, speak with a qualified healthcare professional about the exact current formula before use.',
-          'This page is general information and has not been medically reviewed. It is not a substitute for individualized medical advice.',
+          'NCCIH notes medicine interactions and pregnancy or breastfeeding concerns for berberine, primarily in the context of products taken by mouth. That evidence does not tell us the exposure from this patch. If any of these situations apply, discuss the exact current label with a qualified clinician before use.',
+        ],
+      },
+      {
+        title: 'What remains unknown',
+        paragraphs: [
+          'We have not verified a finished-product human safety study or the current complete ingredient panel. General information cannot replace individual medical advice or the warnings supplied with your box.',
         ],
       },
     ],
+    sources: [
+      { label: 'NCCIH: Berberine and Weight Loss — safety and interactions', href: 'https://www.nccih.nih.gov/health/berberine-and-weight-loss-what-you-need-to-know' },
+    ],
+    verificationNote: 'This page has not received a qualified medical review. Product-specific safety and label details remain unverified.',
   },
   'science/berberine-patches': {
     path: '/science/berberine-patches',
-    eyebrow: 'Evidence explained',
+    eyebrow: 'Evidence by route',
     title: 'What Research Says About Berberine Patches',
-    description: 'Understand the difference between oral berberine studies, preclinical transdermal research, and evidence for a finished consumer patch.',
-    lead: 'The route of administration and finished formulation matter. Evidence for oral berberine cannot be treated as proof of the same absorption or outcomes from a topical patch.',
+    description: 'Compare research on oral berberine, experimental topical formulations, and the evidence available for the finished Luvlae patch.',
+    lead: 'Human studies of oral berberine, animal studies of experimental topical formulations, and tests of a finished consumer patch answer different questions. None should be presented as proof for another route or product.',
     noindex: true,
     sections: [
       {
-        title: 'Human research on oral berberine',
+        title: 'Human evidence: berberine taken by mouth',
         paragraphs: [
-          'Many discussions of berberine refer to capsules or other oral products. Those studies involve a different route and formulation from a topical patch.',
+          'NCCIH summarizes studies of oral berberine and weight-related outcomes as inconclusive. Study formulations and doses varied, and many studies had limitations. These findings cannot establish absorption, appetite effects, or weight outcomes for a Luvlae patch.',
         ],
       },
       {
-        title: 'Transdermal research',
+        title: 'Preclinical evidence: experimental topical formulations',
         paragraphs: [
-          'Early transdermal work may explore delivery concepts in laboratory or preclinical settings. Animal or laboratory findings do not establish human efficacy or bioavailability for a consumer patch.',
+          'A 2018 study compared oral berberine with specialized topical berberine and dihydroberberine formulations in rats. Its acute experiment used 19 male rats across three groups and measured berberine exposure in blood over eight hours. The researchers also studied repeated administration. These were experimental formulations, not Luvlae adhesive patches, and the study did not test human appetite or weight outcomes.',
+          'The authors reported a patent interest in their topical formulation. The animal results cannot establish absorption, efficacy, or safety for a different consumer patch.',
         ],
       },
       {
-        title: 'Finished-product evidence',
+        title: 'Finished Luvlae patch evidence',
         paragraphs: [
-          'No Luvlae-specific human clinical study, release study, or permeation study was supplied in the project sources. Product-specific claims about absorption, duration, or outcomes would require relevant evidence.',
+          'No human clinical study, release test, or skin-permeation test for the finished Luvlae patch has been supplied. We therefore make no product-specific claim about absorption, dose delivered, duration of delivery, or health outcomes.',
         ],
       },
     ],
+    sources: [
+      { label: 'NCCIH: Berberine and Weight Loss — overview of oral research', href: 'https://www.nccih.nih.gov/health/berberine-and-weight-loss-what-you-need-to-know' },
+      { label: 'Buchanan et al., PLOS ONE (2018) — rat pharmacokinetics of experimental topical formulations', href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5868852/' },
+    ],
+    verificationNote: 'This is an evidence summary, not a clinical review of the finished product. A named author and qualified reviewer are still needed before this page is indexed.',
   },
   faq: {
     path: '/faq',
-    eyebrow: 'Your questions',
+    eyebrow: 'Common questions',
     title: 'Frequently Asked Questions',
-    description: 'Answers to common questions about Luvlae Berberine Patches, current directions, ingredients, evidence, and Amazon purchases.',
+    description: 'Answers about the Luvlae patch count, current label directions, research limits, and buying through Amazon.',
+    lead: 'Start with the current package for product-specific directions. These answers separate what the available listing shows from details that still need label confirmation.',
     noindex: true,
-    lead: 'Here are the details we can state clearly from the available sources, plus the points that still need the current product label.',
     sections: [
       {
         title: 'How many patches are in a box?',
-        paragraphs: ['The captured Amazon listing advertises 60 patches. Confirm the current listing and package before purchase.'],
+        paragraphs: ['The available listing shows a 60-count box. Check the current Amazon listing before buying.'],
       },
       {
         title: 'How long should I wear one?',
-        paragraphs: ['Available source records conflict on wear duration. Follow the directions on your current package.'],
+        paragraphs: ['Wear-time instructions differ between older records. Follow the directions printed on the package you receive.'],
       },
       {
-        title: 'Are these the same as GLP-1 medications?',
-        paragraphs: ['No. Luvlae patches are not prescription GLP-1 medication and do not contain semaglutide.'],
+        title: 'Do oral berberine studies show that this patch works?',
+        paragraphs: ['No. Oral studies examine a different route and formulation. We have not been supplied with a human efficacy study of the finished Luvlae patch.'],
       },
       {
-        title: 'Where do I buy them?',
-        paragraphs: ['The current site links to the Luvlae product listing on Amazon. Amazon handles the purchase, fulfillment, and applicable returns.'],
+        title: 'Where do I buy it?',
+        paragraphs: ['The product link opens the Luvlae listing on Amazon, where current price, shipping, and return terms are shown.'],
       },
     ],
   },
   about: {
     path: '/about',
     eyebrow: 'About Luvlae',
-    title: 'A More Informed Everyday Routine',
-    description: 'Learn how Luvlae presents its berberine patch product and why this site separates product facts from broader research.',
-    lead: 'Luvlae offers a pill-free berberine patch format. This site is being built to make product information, directions, safety, and evidence easier to find and understand.',
+    title: 'About Luvlae',
+    description: 'Learn how Luvlae presents its berberine patches and separates product facts from ingredient research.',
+    lead: 'Luvlae offers a pill-free berberine patch format. This site is organized around the questions people need answered before choosing and using the product.',
     noindex: true,
     sections: [
       {
-        title: 'Our approach to information',
+        title: 'How we present product information',
         paragraphs: [
-          'We identify what is confirmed in available product records, what comes from seller copy, and what still requires a current label or product-specific evidence.',
-          'Purchase details live on Amazon. Check the current listing for price, availability, shipping, and return terms.',
+          'Product details should match the current package. We identify when a detail is still being checked, and we keep research about an ingredient separate from evidence for the finished patch.',
+          'Amazon hosts the product listing and handles checkout, shipping, and applicable returns for purchases made there. Current terms are available on Amazon before you order.',
         ],
       },
     ],
+    verificationNote: 'Business identity and direct support contact details still need confirmation before this page can serve as a complete company profile.',
   },
 };
 
