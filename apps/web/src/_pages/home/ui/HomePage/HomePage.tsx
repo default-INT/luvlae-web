@@ -96,9 +96,10 @@ export const HomePage = (props: HomePageProps) => {
                 <div className={styles.heroImage}>
                   <Image
                     src='/images/luvlae-berberine-woman-with-patches.webp'
-                    alt='Luvlae Berberine Patches package and individual patches'
-                    width={2500}
-                    height={2500}
+                    alt='Woman holding a Luvlae Berberine Patches box, with a patch on her upper arm'
+                    width={1280}
+                    height={853}
+                    sizes='(max-width: 800px) calc(100vw - 40px), min(55vw, 720px)'
                     priority
                   />
                 </div>
