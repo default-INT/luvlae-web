@@ -62,7 +62,6 @@
 .heroImage {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 1;
   border-radius: 18px;
   box-shadow: 0 20px 50px rgb(0 26 64 / 9%);
 
@@ -495,7 +494,7 @@
 
   .hero {
     padding-top: 40px;
-    padding-bottom: 65px;
+    padding-bottom: 0;
   }
 
   .heroImageBadges {

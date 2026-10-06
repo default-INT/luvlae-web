@@ -2,6 +2,7 @@ import Image from 'next/image';
 
 import { product } from '@/entities/product';
 import { ActionLink } from '@/shared/ui/ActionLink';
+import { LineBreakText } from '@/shared/ui/LineBreakText';
 import { Reveal } from '@/shared/ui/Reveal';
 import { SiteFooter } from '@/widgets/SiteFooter';
 import { SiteHeader } from '@/widgets/SiteHeader';
@@ -84,7 +85,7 @@ export const HomePage = (props: HomePageProps) => {
             <div className={styles.heroLayout}>
               <div className={styles.heroCopy}>
                 <p className={styles.eyebrow}>{home.eyebrow}</p>
-                <h1>{home.title}</h1>
+                <h1><LineBreakText text={home.title}/></h1>
                 <p className={styles.heroDescription}>{home.description}</p>
                 <div className={styles.heroAction}>
                   <ActionLink href='/products/berberine-patches'>{home.heroButton}</ActionLink>
@@ -94,7 +95,7 @@ export const HomePage = (props: HomePageProps) => {
               <div className={styles.heroVisual}>
                 <div className={styles.heroImage}>
                   <Image
-                    src='/images/luvlae-berberine-patches-front-box-and-patch-sheet.webp'
+                    src='/images/luvlae-berberine-woman-with-patches.webp'
                     alt='Luvlae Berberine Patches package and individual patches'
                     width={2500}
                     height={2500}
@@ -148,7 +149,7 @@ export const HomePage = (props: HomePageProps) => {
               </Reveal>
               <Reveal className={styles.productCopy}>
                 <p className={styles.eyebrow}>{home.product.eyebrow}</p>
-                <h2>{home.product.title}</h2>
+                <h2><LineBreakText text={home.product.title}/></h2>
                 <p>{home.product.description}</p>
                 <ul className={styles.featureList}>
                   <li><span aria-hidden='true'>✓</span>{home.product.pointOne}</li>
@@ -194,7 +195,7 @@ export const HomePage = (props: HomePageProps) => {
               </Reveal>
               <Reveal className={styles.lifestyleCopy}>
                 <p className={styles.eyebrow}>{home.lifestyle.eyebrow}</p>
-                <h2>{home.lifestyle.title}</h2>
+                <h2><LineBreakText text={home.lifestyle.title}/></h2>
                 <p>{home.lifestyle.description}</p>
                 <div className={styles.lifestyleHighlights}>
                   <div><strong>{home.lifestyle.highlightOneTitle}</strong><span>{home.lifestyle.highlightOneBody}</span></div>

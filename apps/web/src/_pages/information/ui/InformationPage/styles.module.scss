@@ -120,6 +120,16 @@
   }
 }
 
+.sectionLink {
+  color: var(--color-blue);
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .sidebar {
   align-self: start;
   position: sticky;

@@ -4,6 +4,7 @@ import { product } from '@/entities/product';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { ActionLink } from '@/shared/ui/ActionLink';
+import { LineBreakText } from '@/shared/ui/LineBreakText';
 import { SiteFooter } from '@/widgets/SiteFooter';
 import { SiteHeader } from '@/widgets/SiteHeader';
 
@@ -41,7 +42,7 @@ export const InformationPage = async (props: InformationPageProps) => {
           </nav>
           <div className={styles.intro}>
             <p className={styles.eyebrow}>{content.eyebrow}</p>
-            <h1>{content.title}</h1>
+            <h1>{content.headline ? <LineBreakText text={content.headline}/> : content.title}</h1>
             <p>{content.lead}</p>
           </div>
           <div className={styles.body}>
@@ -50,6 +51,11 @@ export const InformationPage = async (props: InformationPageProps) => {
                 <section key={section.title}>
                   <h2>{section.title}</h2>
                   {section.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+                  {section.link && (
+                    <p>
+                      <Link className={styles.sectionLink} href={section.link.href}>{section.link.label}</Link>
+                    </p>
+                  )}
                 </section>
               ))}
               {content.verificationNote && (

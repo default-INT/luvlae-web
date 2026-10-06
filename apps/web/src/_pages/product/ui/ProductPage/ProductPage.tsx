@@ -58,12 +58,7 @@ export const ProductPage = async () => {
     },
   ];
 
-  const questions = [
-    { question: page.faq.oneQuestion, answer: page.faq.oneAnswer },
-    { question: page.faq.twoQuestion, answer: page.faq.twoAnswer },
-    { question: page.faq.threeQuestion, answer: page.faq.threeAnswer },
-    { question: page.faq.fourQuestion, answer: page.faq.fourAnswer },
-  ];
+  const questions = Object.values(page.faq.items);
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -215,6 +210,7 @@ export const ProductPage = async () => {
             <Reveal className={styles.sectionIntro}>
               <p className={styles.eyebrow}>{page.faq.eyebrow}</p>
               <h2 id='faq-title'>{page.faq.title}</h2>
+              <p>{page.faq.description}</p>
             </Reveal>
             <ProductFaq questions={questions}/>
             <Link className={styles.inlineLink} href='/faq'>{page.faq.moreLink} ↗</Link>

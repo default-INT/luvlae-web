@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
+import { LineBreakText } from '@/shared/ui/LineBreakText';
 import { SiteFooter } from '@/widgets/SiteFooter';
 import { SiteHeader } from '@/widgets/SiteHeader';
 
@@ -38,8 +39,13 @@ export const IngredientsPage = async () => {
             <section className={styles.hero} aria-labelledby='ingredients-title'>
               <div className={styles.heroCopy}>
                 <p className={styles.eyebrow}>{page.eyebrow}</p>
-                <h1 id='ingredients-title'>{page.title}</h1>
+                <h1 id='ingredients-title'><LineBreakText text={page.headline}/></h1>
                 <p className={styles.lead}>{page.lead}</p>
+                <p className={styles.lead}>{page.detail}</p>
+                <a className={styles.exploreLink} href='#ingredient-profiles'>
+                  {page.exploreLink}
+                  <span aria-hidden='true'>↓</span>
+                </a>
               </div>
               <figure className={styles.visual}>
                 <div className={styles.imageFrame}>
@@ -57,30 +63,19 @@ export const IngredientsPage = async () => {
           </div>
         </div>
 
-        <section className={styles.composition} aria-labelledby='ingredient-list-title'>
+        <section className={styles.profiles} aria-labelledby='ingredient-profiles-title'>
           <div className={styles.container}>
-            <div className={styles.sectionHeading}>
-              <p className={styles.eyebrow}>{page.listEyebrow}</p>
-              <h2 id='ingredient-list-title'>{page.listTitle}</h2>
-              <p>{page.listDescription}</p>
+            <div className={styles.sectionHeading} id='ingredient-profiles'>
+              <h2 id='ingredient-profiles-title'>{page.profilesTitle}</h2>
+              <p>{page.profilesDescription}</p>
             </div>
-            <div className={styles.tableFrame}>
-              <table>
-                <thead>
-                  <tr>
-                    <th scope='col'>{page.ingredientColumn}</th>
-                    <th scope='col'>{page.amountColumn}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ingredients.map(ingredient => (
-                    <tr key={ingredient.name}>
-                      <th scope='row'>{ingredient.name}</th>
-                      <td>{ingredient.amount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className={styles.profileGrid}>
+              {ingredients.map(ingredient => (
+                <article key={ingredient.name}>
+                  <h3>{ingredient.name}</h3>
+                  <p>{ingredient.description}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>

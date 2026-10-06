@@ -1,49 +1,49 @@
 {
   "en": {
     "home": {
-      "eyebrow": "The 60-count patch format",
-      "title": "LUVLAE Berberine Patches",
-      "description": "A simple, pill-free way to make berberine part of your daily wellness routine.",
-      "heroButton": "Explore the patches",
-      "heroNote": "Product details and purchase options are available through Amazon.",
-      "badgeOne": "60 patches per box",
-      "badgeTwo": "Pill-free format",
-      "badgeThree": "Made for everyday routines",
+      "eyebrow": "Berberine patches by Luvlae",
+      "title": "A small patch<br>\nA simple daily ritual",
+      "description": "Meet Luvlae Berberine Patches — an easy-to-use, pill-free format for your everyday routine. One box contains 60 patches to keep your routine going.",
+      "heroButton": "Shop on Amazon",
+      "heroNote": "Discover the patches",
+      "badgeOne": "60 Patches per Box",
+      "badgeTwo": "Pill-Free Format",
+      "badgeThree": "Discreet Design",
       "benefits": {
         "eyebrow": "A different format",
-        "title": "A patch instead of a capsule",
-        "description": "The wearable format removes the need to swallow a capsule and fits easily into your everyday routine.",
+        "title": "Your daily routine, simplified",
+        "description": "Meet Luvlae Berberine Patches — a simple, pill-free addition to your daily routine. Each box contains 60 patches in a discreet format that fits around your day.",
         "one": {
           "eyebrow": "01 / Format",
-          "title": "No capsule to swallow",
+          "title": "No pills. No mixing.",
           "description": "A topical format for people who prefer a patch."
         },
         "two": {
           "eyebrow": "02 / Portability",
-          "title": "Easy to carry",
-          "description": "Individual patches fit alongside your daily essentials."
+          "title": "Discreet and convenient",
+          "description": "Wear under clothing, whether you’re at home, at work, or on the go."
         },
         "three": {
           "eyebrow": "03 / Skin",
-          "title": "Pay attention to skin contact",
-          "description": "A patch uses an adhesive. Follow the package warnings and stop use if your skin reacts."
+          "title": "60 patches in every box",
+          "description": "A convenient supply for a consistent daily routine."
         },
         "four": {
           "eyebrow": "04 / Label",
-          "title": "Read before applying",
-          "description": "Review the ingredients, directions, and warnings before applying."
+          "title": "Simple to apply",
+          "description": "Peel, place, and gently press onto clean, dry skin, following the package directions."
         }
       },
       "product": {
         "eyebrow": "The product",
-        "title": "What comes in the box",
-        "description": "Each box includes 60 easy-to-use patches for a simple daily routine.",
+        "title": "One box<br>\n60 days of routine",
+        "description": "Each box contains 60 Luvlae Berberine Patches — a two-month supply when used once daily.",
         "metricOne": "patches",
         "metricTwo": "patch format",
         "metricThree": "everyday routine",
-        "pointOne": "A pill-free product format",
-        "pointTwo": "A 60-count package",
-        "pointThree": "Clear directions and warnings included",
+        "pointOne": "60 individual patches",
+        "pointTwo": "One patch per day",
+        "pointThree": "Wear for up to 8 hours, following package directions",
         "link": "View product details"
       },
       "resources": {
@@ -73,29 +73,29 @@
         }
       },
       "lifestyle": {
-        "eyebrow": "Before you apply",
-        "title": "A simple addition to your routine",
-        "description": "Enjoy a pill-free format designed to fit seamlessly into everyday life.",
-        "highlightOneTitle": "Read all three panels",
-        "highlightOneBody": "Check ingredients, directions, and warnings together.",
-        "highlightTwoTitle": "Watch your skin",
-        "highlightTwoBody": "Use only as directed and remove the patch if it causes discomfort.",
-        "note": "Follow the directions and warnings included with your patches.",
+        "eyebrow": "Made for everyday life",
+        "title": "Your day<br>\nYour routine",
+        "description": "From quiet mornings at home to busy days on the go, Luvlae Berberine Patches fit into your daily schedule.",
+        "highlightOneTitle": "At home or on the go",
+        "highlightOneBody": "An easy addition to your routine, wherever the day takes you.",
+        "highlightTwoTitle": "Keep it discreet",
+        "highlightTwoBody": "Apply to a suitable area under clothing, following the package directions.",
+        "note": "Use only as directed. Remove the patch if irritation occurs.",
         "link": "Read how to use"
       },
       "trust": {
-        "eyebrow": "Evidence matters",
-        "title": "Research must match the format",
-        "description": "An oral study and a topical patch test answer different questions. Our research guide shows what each kind of evidence can tell us.",
-        "statementTitle": "Evidence should match the product you use.",
-        "statementBody": "Studies of oral berberine do not prove the same absorption or outcomes for a topical patch. Finished-product studies would be needed for product-specific claims.",
-        "statementLink": "Explore the evidence",
-        "oneTitle": "Product facts",
-        "oneBody": "Luvlae Berberine Patches come in a convenient 60-count format.",
-        "twoTitle": "Research context",
-        "twoBody": "Oral, preclinical transdermal, and finished-product evidence are different categories and should not be treated as interchangeable.",
-        "threeTitle": "Personal decisions",
-        "threeBody": "Skin sensitivity, medications, pregnancy, and individual health circumstances can matter. Ask a clinician when appropriate."
+        "eyebrow": "The Luvlae approach",
+        "title": "Know what you’re choosing",
+        "description": "Get to know your patches with clear ingredient information, straightforward directions, and product details you can explore before you buy.",
+        "statementTitle": "A thoughtful routine starts with clear information.",
+        "statementBody": "From what’s inside to how to apply, we keep the essentials easy to find — so you can make an informed choice.",
+        "statementLink": "Explore product details",
+        "oneTitle": "Know the ingredients",
+        "oneBody": "Explore the ingredient list for Luvlae Berberine Patches, all in one place.",
+        "twoTitle": "Understand the format",
+        "twoBody": "Get familiar with the patches, how to apply them, and the recommended wear time.",
+        "threeTitle": "Find answers",
+        "threeBody": "Visit our FAQs for practical guidance on application, storage, and everyday use."
       },
       "cta": {
         "eyebrow": "Compare the details",
@@ -111,10 +111,10 @@
       "home": "Home",
       "breadcrumbCurrent": "Berberine Patches",
       "hero": {
-        "eyebrow": "THE 60-COUNT PATCH FORMAT",
+        "eyebrow": "60 patches · 2-month supply",
         "title": "Luvlae Berberine Patches",
-        "subtitle": "A simple, pill-free format for a daily wellness routine.",
-        "description": "Discover a simple, pill-free patch format for your daily wellness routine.",
+        "subtitle": "One patch. A simple daily ritual.",
+        "description": "Bring simplicity to your everyday routine with Luvlae Berberine Patches. A discreet, pill-free format combining berberine with botanical extracts and other ingredients — easy to apply at home or on the go.",
         "badge": "60 patches per box",
         "primaryAction": "View on Amazon",
         "secondaryAction": "Explore product details",
@@ -127,12 +127,12 @@
         "galleryNote": "Explore the Luvlae Berberine Patches collection.",
         "detailOneLabel": "Format",
         "detailOneValue": "Topical patches",
-        "detailTwoLabel": "Box size",
+        "detailTwoLabel": "In the box",
         "detailTwoValue": "60 patches",
-        "detailThreeLabel": "Formula",
-        "detailThreeValue": "Berberine patch blend",
-        "detailFourLabel": "Directions",
-        "detailFourValue": "See package directions"
+        "detailThreeLabel": "Daily use",
+        "detailThreeValue": "One patch per day",
+        "detailFourLabel": "Supply",
+        "detailFourValue": "60 days when used as directed"
       },
       "verification": {
         "eyebrow": "PRODUCT DETAILS",
@@ -189,17 +189,60 @@
         "noteBody": "Explore our ingredient, safety, and science guides for helpful product information."
       },
       "faq": {
-        "eyebrow": "COMMON QUESTIONS",
-        "title": "Frequently asked questions",
-        "oneQuestion": "How many patches are in a box?",
-        "oneAnswer": "Each box includes 60 Luvlae Berberine Patches.",
-        "twoQuestion": "Which ingredients are in the patches?",
-        "twoAnswer": "Visit our Ingredients page to explore the ingredients and per-patch amounts.",
-        "threeQuestion": "How long should I wear a patch?",
-        "threeAnswer": "Follow the directions included with your patches for wear and replacement guidance.",
-        "fourQuestion": "Do oral berberine studies show that these patches work?",
-        "fourAnswer": "No. Studies of products taken by mouth do not establish absorption or outcomes for a topical patch. See the science guide for the evidence by route.",
-        "moreLink": "Read more questions"
+        "eyebrow": "FAQ",
+        "title": "Your questions, answered",
+        "description": "Everything you need to know about your daily patch routine.",
+        "moreLink": "Read more questions",
+        "items": {
+          "what": {
+            "question": "What are Luvlae Berberine Patches?",
+            "answer": "They are topical adhesive patches containing berberine and other listed ingredients, in a discreet, pill-free format."
+          },
+          "count": {
+            "question": "How many patches come in a box?",
+            "answer": "Each box contains 60 patches — a 60-day supply when used once daily."
+          },
+          "apply": {
+            "question": "How do I apply a patch?",
+            "answer": "Peel off the protective backing, apply to clean, dry, intact skin in an area recommended on the package, and gently press down the edges."
+          },
+          "wear": {
+            "question": "How long should I wear each patch?",
+            "answer": "Follow the wear time printed on your package. Remove the patch earlier if you experience irritation or discomfort."
+          },
+          "clothing": {
+            "question": "Can I wear a patch under clothing?",
+            "answer": "Yes. Choose an application area recommended on the package where clothing will not rub against or loosen the patch."
+          },
+          "water": {
+            "question": "Can I shower, swim, or exercise while wearing it?",
+            "answer": "Check the package instructions for guidance on water exposure and exercise. Do not assume the patch is waterproof."
+          },
+          "skin": {
+            "question": "What if I have sensitive skin?",
+            "answer": "Review the ingredients before use. Do not use if you have a known allergy to any ingredient or the adhesive. Stop use if redness, itching, or discomfort occurs."
+          },
+          "oral": {
+            "question": "Are patches the same as oral berberine supplements?",
+            "answer": "No. The formats differ, and studies of oral berberine do not establish absorption or benefits from Luvlae patches."
+          },
+          "medication": {
+            "question": "Can I use the patches while taking medication?",
+            "answer": "Consult a healthcare professional before use and show them the full ingredient list, especially if you take medication or have a medical condition."
+          },
+          "pregnancy": {
+            "question": "Can I use them during pregnancy or breastfeeding?",
+            "answer": "As a precaution, do not use during pregnancy or while breastfeeding."
+          },
+          "storage": {
+            "question": "How should I store the patches?",
+            "answer": "Follow the storage instructions on the package. Keep them out of reach of children and pets."
+          },
+          "buy": {
+            "question": "Where can I buy Luvlae Berberine Patches?",
+            "answer": "Visit our Amazon listing for current pricing, availability, and delivery options."
+          }
+        }
       },
       "cta": {
         "eyebrow": "NEXT STEP",
@@ -250,7 +293,6 @@
       "exploreGroup": "Explore",
       "about": "About Luvlae",
       "shopOnAmazon": "Shop on Amazon",
-      "educationalNotice": "Information on this site is educational and does not replace advice from a healthcare professional. Follow the directions and warnings included with your patches. Amazon handles purchases, shipping, and returns for orders placed there.",
       "copyright": "© {{year}} Luvlae. All rights reserved.",
       "tagline": "Simple wellness, one patch at a time."
     },
@@ -272,14 +314,14 @@
     "ingredientsPage": {
       "eyebrow": "Ingredient guide",
       "title": "Berberine Patch Ingredients",
+      "headline": "Get to know<br>\nwhat’s inside",
       "description": "Explore the 11 ingredients and per-patch amounts in Luvlae Berberine Patches.",
-      "lead": "Discover the 11 ingredients and amounts in each Luvlae Berberine Patch.",
+      "lead": "Luvlae Berberine Patches combine berberine with botanical extracts, vitamins, minerals, and L-carnitine in one easy-to-use patch.",
+      "detail": "Explore the full ingredient list and amounts per patch, then discover more about each ingredient below.",
+      "exploreLink": "Explore the ingredients",
       "imageAlt": "Luvlae ingredient graphic listing 11 ingredients and their amounts per one patch",
-      "listEyebrow": "Ingredients per patch",
-      "listTitle": "Amounts shown per patch",
-      "listDescription": "The table reproduces every ingredient and quantity printed in the image, preserving mg and mcg as shown.",
-      "ingredientColumn": "Ingredient",
-      "amountColumn": "Per patch",
+      "profilesTitle": "Meet the ingredients",
+      "profilesDescription": "Explore the 11 ingredients listed in Luvlae Berberine Patches — from botanical extracts to vitamins, minerals, and L-carnitine.",
       "relatedEyebrow": "Keep exploring",
       "relatedTitle": "See the product in context",
       "productLink": "Product details",
@@ -288,47 +330,47 @@
       "ingredients": {
         "berberine": {
           "name": "Berberine",
-          "amount": "70 mg"
+          "description": "A naturally occurring plant compound studied for its potential role in glucose and lipid metabolism, primarily in oral formulations."
         },
         "fenugreek": {
           "name": "Fenugreek seed extract",
-          "amount": "25 mg"
+          "description": "A botanical with a long history of use in food and traditional practices, including digestive wellness."
         },
         "chromium": {
           "name": "Chromium",
-          "amount": "200 mcg"
+          "description": "A trace mineral studied for its involvement in insulin action and the metabolism of carbohydrates, fats, and proteins."
         },
         "ginseng": {
           "name": "Panax ginseng extract",
-          "amount": "15 mg"
+          "description": "A traditional botanical studied for fatigue and aspects of cognitive function."
         },
         "greenTea": {
           "name": "Green tea extract",
-          "amount": "15 mg"
+          "description": "An extract known for its naturally occurring polyphenols, including catechins, which have antioxidant properties."
         },
         "cinnamon": {
           "name": "Cinnamon bark extract",
-          "amount": "30 mg"
+          "description": "A familiar botanical studied for its plant compounds and potential effects on glucose metabolism."
         },
         "ginger": {
           "name": "Ginger root extract",
-          "amount": "10 mg"
+          "description": "A traditional botanical best known for its use in digestive wellness and research on nausea when taken orally."
         },
         "carnitine": {
           "name": "L-carnitine",
-          "amount": "30 mg"
+          "description": "A compound naturally present in the body that helps transport fatty acids into cells’ mitochondria for energy production."
         },
         "b12": {
           "name": "Vitamin B12",
-          "amount": "500 mcg"
+          "description": "A vitamin involved in normal nerve function, red blood cell formation, and DNA synthesis."
         },
         "magnesium": {
           "name": "Magnesium",
-          "amount": "45 mg"
+          "description": "A mineral involved in energy production and normal muscle and nerve function."
         },
         "vitaminC": {
           "name": "Vitamin C (as ascorbic acid)",
-          "amount": "40 mg"
+          "description": "A vitamin involved in collagen formation, normal immune function, and antioxidant protection."
         }
       }
     }

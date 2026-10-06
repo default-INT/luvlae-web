@@ -23,6 +23,8 @@ The listing presents the patch as a simple, plant-inspired daily self-care / sup
 ## Directions and package
 
 - Seller's directions: one patch per day, apply to clean, dry skin, replace every 24 hours.
+- `/how-to-use-berberine-patches` describes preparation, application, wear, and removal, and tells readers to follow the package for duration, replacement, showering, swimming, and exercise. It does not state a fixed wear time.
+- `/berberine-patch-safety` is page copy, not a photographed warning label. It says to follow the package, avoid broken skin, eyes, and mucous membranes, stop use if irritation occurs, avoid use during pregnancy or breastfeeding as a precaution, consult a professional about medications or medical conditions, and keep patches away from children and pets. Wear time and storage are deferred to the package.
 - Advertised supply: 60 patches / 60 days.
 - Package: box; listing package dimensions 5.31 × 4.13 × 0.55 in; listed weight 1.76 oz.
 - Item model number: “Berberine Patches”.
@@ -69,7 +71,8 @@ Recheck the live listing before using any price, promotion, availability, sales,
 ## User-supplied ingredient graphic (2026-10-06)
 
 - The supplied `List-05.png` graphic reads “PER ONE PATCH” and lists: berberine 70 mg; fenugreek seed extract 25 mg; chromium 200 mcg; Panax ginseng extract 15 mg; green tea extract 15 mg; cinnamon bark extract 30 mg; ginger root extract 10 mg; L-carnitine 30 mg; vitamin B12 500 mcg; magnesium 45 mg; vitamin C (as ascorbic acid) 40 mg.
-- This is an ingredient graphic, not a photographed complete package label. Its connection to the currently promoted ASIN `B0H6FQFJL8` is unconfirmed. `apps/web/public/images/luvlae-ingredients-per-patch.webp` is the optimized copy; `apps/web/src/_pages/ingredients/` shows it with an exact transcription attributed to the graphic. The route remains `noindex` pending current-package confirmation.
+- This is an ingredient graphic, not a photographed complete package label. Its connection to the currently promoted ASIN `B0H6FQFJL8` is unconfirmed. `apps/web/public/images/luvlae-ingredients-per-patch.webp` is the optimized copy; `apps/web/src/_pages/ingredients/` shows the graphic itself. The route remains `noindex` pending current-package confirmation.
+- The same page includes short descriptions of those 11 ingredients. The descriptions are about the ingredients themselves. Mentions of study, traditional use, or oral research do not establish absorption or outcomes for the finished Luvlae patch.
 
 ## Source
 

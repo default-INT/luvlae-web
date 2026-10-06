@@ -2,6 +2,10 @@
 export interface InformationSection {
   title: string;
   paragraphs: string[];
+  link?: {
+    label: string;
+    href: string;
+  };
 }
 
 export interface InformationSource {
@@ -15,6 +19,7 @@ export interface InformationPageContent {
   title: string;
   description: string;
   lead: string;
+  headline?: string;
   sections: InformationSection[];
   noindex?: boolean;
   sources?: InformationSource[];
@@ -24,24 +29,41 @@ export interface InformationPageContent {
 export const informationPages: Record<string, InformationPageContent> = {
   'how-to-use-berberine-patches': {
     path: '/how-to-use-berberine-patches',
-    eyebrow: 'Using your patch',
-    title: 'How to Use Berberine Patches',
-    description: 'A practical guide to preparing, applying, and caring for your Luvlae patches.',
-    lead: 'Review the directions included with your patches before starting your routine.',
+    eyebrow: 'How to use',
+    title: 'How to Use',
+    headline: 'Your daily patch routine<br>in four simple steps',
+    description: 'A few easy steps to apply and remove your Luvlae Berberine Patch. Read the package directions before your first use.',
+    lead: 'A few easy steps to apply and remove your Luvlae Berberine Patch. Read the package directions before your first use.',
     noindex: true,
     sections: [
       {
-        title: 'Before applying a patch',
+        title: '01 — Prepare your skin',
         paragraphs: [
-          'Read the ingredient, warning, and direction panels before applying your patch.',
-          'Apply to clean, dry skin and avoid broken or irritated areas.',
+          'Choose an application area recommended on the package. Make sure the skin is clean, dry, and free from lotions or oils. Avoid broken or irritated skin.',
         ],
       },
       {
-        title: 'While wearing and removing it',
+        title: '02 — Peel and apply',
         paragraphs: [
-          'Follow the included guidance for timing, removal, and replacement.',
-          'If the adhesive is uncomfortable or your skin reacts, remove the patch and seek appropriate medical advice if needed.',
+          'Remove the protective backing and place the adhesive side onto your skin. Press gently to secure the patch, smoothing down the edges.',
+        ],
+      },
+      {
+        title: '03 — Follow the wear time',
+        paragraphs: [
+          'Wear the patch for the duration stated on your package. Follow the instructions for daily use and replacement.',
+        ],
+      },
+      {
+        title: '04 — Remove gently',
+        paragraphs: [
+          'Slowly peel the patch away from your skin and discard it after use.',
+        ],
+      },
+      {
+        title: 'A little care goes a long way',
+        paragraphs: [
+          'For external use only. Remove the patch if redness, itching, or discomfort occurs. Check the package for guidance on showering, swimming, and exercise.',
         ],
       },
     ],
@@ -49,91 +71,159 @@ export const informationPages: Record<string, InformationPageContent> = {
   'berberine-patch-safety': {
     path: '/berberine-patch-safety',
     eyebrow: 'Safety first',
-    title: 'Berberine Patch Safety',
-    description: 'Review skin-use precautions, medication and pregnancy questions, and the limits of available Luvlae patch safety evidence.',
-    lead: 'Review the included warnings before use. A patch may irritate skin, so pay attention to how your skin feels.',
+    title: 'Safety',
+    headline: 'Before you apply',
+    description: 'Read the ingredients, directions, and warnings on your package before using Luvlae Berberine Patches.',
+    lead: 'Read the ingredients, directions, and warnings on your package before using Luvlae Berberine Patches.',
     noindex: true,
     sections: [
       {
-        title: 'Skin and adhesive',
+        title: 'Care for your skin',
         paragraphs: [
-          'Apply only as directed and avoid broken or irritated skin. Remove the patch if it causes a troublesome reaction. Ask a healthcare professional for advice if symptoms persist or concern you.',
-          'If you have a known adhesive or ingredient sensitivity, review the ingredient information before use.',
+          'Apply only to clean, dry, intact skin as directed. Avoid broken or irritated areas and contact with eyes or mucous membranes.',
         ],
       },
       {
-        title: 'Medication, pregnancy, and breastfeeding',
+        title: 'Check for sensitivities',
         paragraphs: [
-          'If you take medication, are pregnant, or are breastfeeding, speak with a qualified clinician before use.',
+          'Do not use if you have a known allergy to any listed ingredient or the patch adhesive.',
         ],
       },
       {
-        title: 'Make informed choices',
+        title: 'Listen to your skin',
         paragraphs: [
-          'General information cannot replace individual medical advice. Follow the included warnings and contact a clinician with any questions.',
+          'Remove the patch and stop use if redness, itching, burning, or discomfort occurs. Seek medical advice if symptoms persist or worsen.',
         ],
       },
-    ],
-    sources: [
-      { label: 'NCCIH: Berberine and Weight Loss — safety and interactions', href: 'https://www.nccih.nih.gov/health/berberine-and-weight-loss-what-you-need-to-know' },
+      {
+        title: 'Pregnancy and breastfeeding',
+        paragraphs: [
+          'As a precaution, do not use during pregnancy or while breastfeeding.',
+        ],
+      },
+      {
+        title: 'Medications and health conditions',
+        paragraphs: [
+          'If you take medication or have a medical condition, consult a healthcare professional before use and show them the full ingredient list.',
+        ],
+      },
+      {
+        title: 'Keep in mind',
+        paragraphs: [
+          'For external use only. Do not swallow. Keep out of reach of children and pets. Follow the package instructions for wear time and storage.',
+        ],
+      },
+      {
+        title: 'Questions about application?',
+        paragraphs: [],
+        link: {
+          label: 'Visit our step-by-step guide.',
+          href: '/how-to-use-berberine-patches',
+        },
+      },
     ],
   },
   'science/berberine-patches': {
     path: '/science/berberine-patches',
-    eyebrow: 'Evidence by route',
-    title: 'What Research Says About Berberine Patches',
-    description: 'Compare research on oral berberine, experimental topical formulations, and the evidence available for the finished Luvlae patch.',
-    lead: 'Human studies of oral berberine, animal studies of experimental topical formulations, and tests of a finished consumer patch answer different questions. None should be presented as proof for another route or product.',
+    eyebrow: 'Science & ingredients',
+    title: 'Science & Ingredients',
+    headline: 'Understanding the science<br>behind berberine',
+    description: 'Berberine has a long history of traditional use and is an active area of scientific research. Understanding that research starts with looking at the formulation, dose, and method of use.',
+    lead: 'Berberine has a long history of traditional use and is an active area of scientific research. Understanding that research starts with looking at the formulation, dose, and method of use.',
     noindex: true,
     sections: [
       {
-        title: 'Human evidence: berberine taken by mouth',
+        title: 'What is berberine?',
         paragraphs: [
-          'NCCIH summarizes studies of oral berberine and weight-related outcomes as inconclusive. Study formulations and doses varied, and many studies had limitations. These findings cannot establish absorption, appetite effects, or weight outcomes for a Luvlae patch.',
+          'Berberine is a naturally occurring compound found in plants such as barberry and goldenseal. Plants containing berberine have been used in traditional Chinese and Ayurvedic practices for centuries.',
         ],
       },
       {
-        title: 'Preclinical evidence: experimental topical formulations',
+        title: 'What are researchers exploring?',
         paragraphs: [
-          'A 2018 study compared oral berberine with specialized topical berberine and dihydroberberine formulations in rats. Its acute experiment used 19 male rats across three groups and measured berberine exposure in blood over eight hours. The researchers also studied repeated administration. These were experimental formulations, not Luvlae adhesive patches, and the study did not test human appetite or weight outcomes.',
-          'The authors reported a patent interest in their topical formulation. The animal results cannot establish absorption, efficacy, or safety for a different consumer patch.',
+          'Researchers are studying berberine’s potential effects on glucose metabolism, blood lipids, and other aspects of metabolic health. Most human research involves berberine taken by mouth, with findings that vary across studies.',
         ],
       },
       {
-        title: 'Finished Luvlae patch evidence',
+        title: 'Why does the format matter?',
         paragraphs: [
-          'No human clinical study, release test, or skin-permeation test for the finished Luvlae patch has been supplied. We therefore make no product-specific claim about absorption, dose delivered, duration of delivery, or health outcomes.',
+          'An oral supplement and a topical patch deliver ingredients in different ways. Findings from oral studies cannot establish how much berberine a patch delivers or what effects it produces.',
         ],
       },
-    ],
-    sources: [
-      { label: 'NCCIH: Berberine and Weight Loss — overview of oral research', href: 'https://www.nccih.nih.gov/health/berberine-and-weight-loss-what-you-need-to-know' },
-      { label: 'Buchanan et al., PLOS ONE (2018) — rat pharmacokinetics of experimental topical formulations', href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5868852/' },
+      {
+        title: 'Our approach at Luvlae',
+        paragraphs: [
+          'We distinguish ingredient research from evidence about our finished patches. This page provides background on berberine; it does not present those studies as clinical proof of Luvlae patch benefits.',
+        ],
+      },
+      {
+        title: 'Explore the formula',
+        paragraphs: [
+          'Discover the ingredients listed in Luvlae Berberine Patches and learn more about their individual characteristics.',
+        ],
+        link: {
+          label: 'View ingredients →',
+          href: '/ingredients',
+        },
+      },
     ],
   },
   faq: {
     path: '/faq',
-    eyebrow: 'Common questions',
-    title: 'Frequently Asked Questions',
-    description: 'Answers about Luvlae patches, daily use, research, and buying through Amazon.',
-    lead: 'Find helpful answers about the Luvlae patch format and everyday use.',
+    eyebrow: 'FAQ',
+    title: 'FAQ',
+    headline: 'Your questions, answered',
+    description: 'Everything you need to know about your daily patch routine.',
+    lead: 'Everything you need to know about your daily patch routine.',
     noindex: true,
     sections: [
       {
-        title: 'How many patches are in a box?',
-        paragraphs: ['Each box includes 60 Luvlae Berberine Patches.'],
+        title: 'What are Luvlae Berberine Patches?',
+        paragraphs: ['They are topical adhesive patches containing berberine and other listed ingredients, in a discreet, pill-free format.'],
       },
       {
-        title: 'How long should I wear one?',
-        paragraphs: ['Wear-time instructions differ between older records. Follow the directions printed on the package you receive.'],
+        title: 'How many patches come in a box?',
+        paragraphs: ['Each box contains 60 patches — a 60-day supply when used once daily.'],
       },
       {
-        title: 'Do oral berberine studies show that this patch works?',
-        paragraphs: ['No. Oral studies examine a different route and formulation. We have not been supplied with a human efficacy study of the finished Luvlae patch.'],
+        title: 'How do I apply a patch?',
+        paragraphs: ['Peel off the protective backing, apply to clean, dry, intact skin in an area recommended on the package, and gently press down the edges.'],
       },
       {
-        title: 'Where do I buy it?',
-        paragraphs: ['The product link opens the Luvlae listing on Amazon, where current price, shipping, and return terms are shown.'],
+        title: 'How long should I wear each patch?',
+        paragraphs: ['Follow the wear time printed on your package. Remove the patch earlier if you experience irritation or discomfort.'],
+      },
+      {
+        title: 'Can I wear a patch under clothing?',
+        paragraphs: ['Yes. Choose an application area recommended on the package where clothing will not rub against or loosen the patch.'],
+      },
+      {
+        title: 'Can I shower, swim, or exercise while wearing it?',
+        paragraphs: ['Check the package instructions for guidance on water exposure and exercise. Do not assume the patch is waterproof.'],
+      },
+      {
+        title: 'What if I have sensitive skin?',
+        paragraphs: ['Review the ingredients before use. Do not use if you have a known allergy to any ingredient or the adhesive. Stop use if redness, itching, or discomfort occurs.'],
+      },
+      {
+        title: 'Are patches the same as oral berberine supplements?',
+        paragraphs: ['No. The formats differ, and studies of oral berberine do not establish absorption or benefits from Luvlae patches.'],
+      },
+      {
+        title: 'Can I use the patches while taking medication?',
+        paragraphs: ['Consult a healthcare professional before use and show them the full ingredient list, especially if you take medication or have a medical condition.'],
+      },
+      {
+        title: 'Can I use them during pregnancy or breastfeeding?',
+        paragraphs: ['As a precaution, do not use during pregnancy or while breastfeeding.'],
+      },
+      {
+        title: 'How should I store the patches?',
+        paragraphs: ['Follow the storage instructions on the package. Keep them out of reach of children and pets.'],
+      },
+      {
+        title: 'Where can I buy Luvlae Berberine Patches?',
+        paragraphs: ['Visit our Amazon listing for current pricing, availability, and delivery options.'],
       },
     ],
   },

@@ -52,6 +52,24 @@
     letter-spacing: -0.06em;
     line-height: 1.05;
   }
+
+  .lead + .lead {
+    margin-top: 14px;
+  }
+}
+
+.exploreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  color: var(--color-blue);
+  font-weight: 750;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .lead {
@@ -83,13 +101,10 @@
   }
 }
 
-.composition {
-  padding: 94px 0 100px;
-}
-
 .sectionHeading {
   max-width: 730px;
   margin-bottom: 34px;
+  scroll-margin-top: 104px;
 
   h2 {
     margin: 0;
@@ -107,61 +122,36 @@
   }
 }
 
-.tableFrame {
-  overflow: hidden;
-  border: 1px solid #e1e8f2;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: var(--shadow-card);
+.profiles {
+  padding: 72px 0 100px;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+
+  article {
+    padding: 28px;
+    border: 1px solid #e1e8f2;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--shadow-card);
   }
 
-  thead {
-    background: #edf4fb;
-  }
-
-  thead th {
-    padding: 18px 30px;
-    color: var(--color-blue);
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  tbody tr {
-    border-top: 1px solid #e7edf4;
-    transition: background-color 220ms ease;
-
-    &:hover {
-      background: #f7fbfe;
-    }
-  }
-
-  tbody th,
-  tbody td {
-    padding: 19px 30px;
-    font-size: 0.95rem;
-  }
-
-  tbody th {
+  h3 {
+    margin: 0;
+    color: var(--color-navy);
+    font-size: 1.15rem;
     font-weight: 650;
+    letter-spacing: -0.03em;
   }
 
-  tbody td {
-    color: var(--color-navy-strong);
-    font-weight: 800;
-    white-space: nowrap;
-  }
-
-  thead th:last-child,
-  tbody td {
-    width: 170px;
-    text-align: right;
+  p {
+    margin: 10px 0 0;
+    color: var(--color-text);
+    font-size: 0.95rem;
+    line-height: 1.7;
   }
 }
 
@@ -210,7 +200,8 @@
 }
 
 @media (max-width: 900px) {
-  .hero {
+  .hero,
+  .profileGrid {
     grid-template-columns: 1fr;
   }
 
@@ -237,22 +228,9 @@
     font-size: 2.8rem;
   }
 
-  .composition,
+  .profiles,
   .related {
     padding: 28px 0;
-  }
-
-  .tableFrame thead th,
-  .tableFrame tbody th,
-  .tableFrame tbody td {
-    padding-right: 16px;
-    padding-left: 16px;
-    font-size: 0.83rem;
-  }
-
-  .tableFrame thead th:last-child,
-  .tableFrame tbody td {
-    width: 90px;
   }
 
   .relatedGrid {
@@ -261,7 +239,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tableFrame tbody tr,
   .relatedGrid a {
     transition: none;
   }
