@@ -48,7 +48,6 @@ export const SiteFooter = (props: SiteFooterProps) => {
           <div className={styles.brandBlock}>
             <Link href='/' className={styles.brand}>LUVLAE<span aria-hidden='true'>.</span></Link>
             <p>{interpolate(siteFooter.brandDescription, { productName: siteFooter.product })}</p>
-            <p className={styles.asin}>{interpolate(siteFooter.asin, { asin: product.asin })}</p>
           </div>
           {groups.map(group => (
             <div className={styles.group} key={group.title}>
@@ -73,7 +72,6 @@ export const SiteFooter = (props: SiteFooterProps) => {
             </div>
           ))}
         </div>
-        <div className={styles.notice}>{siteFooter.educationalNotice}</div>
         <div className={styles.bottom}>
           <span>{interpolate(siteFooter.copyright, { year: new Date().getFullYear() })}</span>
           <span>{siteFooter.tagline}</span>

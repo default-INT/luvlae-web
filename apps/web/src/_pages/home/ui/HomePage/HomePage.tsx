@@ -94,7 +94,7 @@ export const HomePage = (props: HomePageProps) => {
               <div className={styles.heroVisual}>
                 <div className={styles.heroImage}>
                   <Image
-                    src='/images/luvlae-berberine-patches-box-and-patch-sheet.png'
+                    src='/images/luvlae-berberine-patches-front-box-and-patch-sheet.webp'
                     alt='Luvlae Berberine Patches package and individual patches'
                     width={2500}
                     height={2500}
@@ -135,7 +135,7 @@ export const HomePage = (props: HomePageProps) => {
             <div className={styles.splitLayout}>
               <Reveal className={styles.productImage}>
                 <Image
-                  src='/images/luvlae-berberine-patches-open-box-and-patch-sheets.png'
+                  src='/images/luvlae-berberine-patches-open-box-and-patch-sheets.webp'
                   alt='Illustrative open Luvlae Berberine Patches box showing individual patches and inserts'
                   width={512}
                   height={279}
@@ -186,7 +186,7 @@ export const HomePage = (props: HomePageProps) => {
             <div className={styles.splitLayout}>
               <Reveal className={styles.lifestyleImage}>
                 <Image
-                  src='/images/luvlae-berberine-patches-everyday-use-scenes.png'
+                  src='/images/luvlae-berberine-patches-everyday-use-scenes.webp'
                   alt='Illustrations of people wearing a patch at work, at home, during exercise, and while resting'
                   width={512}
                   height={512}

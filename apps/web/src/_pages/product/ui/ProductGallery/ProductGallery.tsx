@@ -15,21 +15,21 @@ export const ProductGallery = (props: Props) => {
 
   const images = [
     {
-      src: '/images/luvlae-berberine-patches-front-box-and-patch-sheet.png',
+      src: '/images/luvlae-berberine-patches-front-box-and-patch-sheet.webp',
       alt: dictionary.imageThreeAlt,
       id: 'product-image-1',
       imageClass: styles.imageOne,
       optionClass: styles.optionOne,
     },
     {
-      src: '/images/luvlae-berberine-patches-open-box-and-patch-sheets.png',
+      src: '/images/luvlae-berberine-patches-open-box-and-patch-sheets.webp',
       alt: dictionary.imageTwoAlt,
       id: 'product-image-2',
       imageClass: styles.imageTwo,
       optionClass: styles.optionTwo,
     },
     {
-      src: '/images/luvlae-berberine-patches-box-and-patch-sheet.png',
+      src: '/images/luvlae-berberine-patches-box-and-patch-sheet.webp',
       alt: dictionary.imageOneAlt,
       id: 'product-image-3',
       imageClass: styles.imageThree,

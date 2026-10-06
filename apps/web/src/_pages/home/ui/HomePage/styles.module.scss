@@ -164,7 +164,8 @@
   overflow: hidden;
   border-radius: 12px;
   background: rgb(255 255 255 / 93%);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-card);
 
   span {
     display: grid;

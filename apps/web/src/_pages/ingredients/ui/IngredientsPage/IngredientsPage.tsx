@@ -52,12 +52,6 @@ export const IngredientsPage = async () => {
                     priority
                   />
                 </div>
-                <figcaption>
-                  <span>{page.imageCaption}</span>
-                  <a href={ingredientImage} target='_blank' rel='noopener noreferrer'>
-                    {page.imageLink} <span aria-hidden='true'>↗</span>
-                  </a>
-                </figcaption>
               </figure>
             </section>
           </div>
@@ -88,7 +82,6 @@ export const IngredientsPage = async () => {
                 </tbody>
               </table>
             </div>
-            <p className={styles.sourceNote}>{page.sourceNote}</p>
           </div>
         </section>
 

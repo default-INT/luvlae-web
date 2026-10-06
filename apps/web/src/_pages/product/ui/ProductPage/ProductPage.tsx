@@ -80,7 +80,7 @@ export const ProductPage = async () => {
     name: page.hero.title,
     description: page.schemaDescription,
     brand: { '@type': 'Brand', name: page.schemaBrand },
-    image: 'https://luvlae.com/images/luvlae-berberine-patches-box-and-patch-sheet.png',
+    image: 'https://luvlae.com/images/luvlae-berberine-patches-box-and-patch-sheet.webp',
     size: page.hero.detailTwoValue,
     url: 'https://luvlae.com/products/berberine-patches',
   };
@@ -162,7 +162,7 @@ export const ProductPage = async () => {
             <Reveal>
               <figure className={styles.routineImage}>
                 <Image
-                  src='/images/luvlae-berberine-patches-everyday-use-scenes.png'
+                  src='/images/luvlae-berberine-patches-everyday-use-scenes.webp'
                   alt={page.routine.imageAlt}
                   width={512}
                   height={512}
