@@ -12,7 +12,8 @@ export const generateMetadata = async (): Promise<Metadata> => {
     title: `${page.title} | Luvlae`,
     description: page.description,
     alternates: { canonical: '/ingredients' },
-    robots: { index: false, follow: true },
+    // TODO: Re-check the ingredient graphic against the current package label and promoted ASIN.
+    robots: { index: true, follow: true },
     openGraph: {
       title: `${page.title} | Luvlae`,
       description: page.description,

@@ -34,7 +34,7 @@ export const informationPages: Record<string, InformationPageContent> = {
     headline: 'Your daily patch routine<br>in four simple steps',
     description: 'A few easy steps to apply and remove your Luvlae Berberine Patch. Read the package directions before your first use.',
     lead: 'A few easy steps to apply and remove your Luvlae Berberine Patch. Read the package directions before your first use.',
-    noindex: true,
+    // TODO: Re-check application area and wear-time details against the current product label.
     sections: [
       {
         title: '01 — Prepare your skin',
@@ -75,7 +75,7 @@ export const informationPages: Record<string, InformationPageContent> = {
     headline: 'Before you apply',
     description: 'Read the ingredients, directions, and warnings on your package before using Luvlae Berberine Patches.',
     lead: 'Read the ingredients, directions, and warnings on your package before using Luvlae Berberine Patches.',
-    noindex: true,
+    // TODO: Re-check safety copy against the current label and obtain qualified review where needed.
     sections: [
       {
         title: 'Care for your skin',
@@ -130,7 +130,7 @@ export const informationPages: Record<string, InformationPageContent> = {
     headline: 'Understanding the science<br>behind berberine',
     description: 'Berberine has a long history of traditional use and is an active area of scientific research. Understanding that research starts with looking at the formulation, dose, and method of use.',
     lead: 'Berberine has a long history of traditional use and is an active area of scientific research. Understanding that research starts with looking at the formulation, dose, and method of use.',
-    noindex: true,
+    // TODO: Re-check evidence, references, and route-specific claims before the next content review.
     sections: [
       {
         title: 'What is berberine?',
@@ -175,7 +175,6 @@ export const informationPages: Record<string, InformationPageContent> = {
     headline: 'Your questions, answered',
     description: 'Everything you need to know about your daily patch routine.',
     lead: 'Everything you need to know about your daily patch routine.',
-    noindex: true,
     sections: [
       {
         title: 'What are Luvlae Berberine Patches?',
@@ -233,7 +232,6 @@ export const informationPages: Record<string, InformationPageContent> = {
     title: 'About Luvlae',
     description: 'Learn how Luvlae presents its berberine patches and separates product facts from ingredient research.',
     lead: 'Luvlae offers a pill-free berberine patch format. This site is organized around the questions people need answered before choosing and using the product.',
-    noindex: true,
     sections: [
       {
         title: 'How we present product information',
