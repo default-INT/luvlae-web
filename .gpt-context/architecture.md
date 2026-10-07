@@ -54,7 +54,7 @@ The initial Figma-based homepage lives in `src/_pages/home/`, with reusable navi
 
 The current conversion is an outbound Amazon click. The URL map, content evidence rules, metadata, structured data, indexing, and analytics requirements are in [seo-requirements.md](seo-requirements.md). In particular, do not publish a consolidated ingredient list or wear time until the conflicting source records are resolved; see [the product note](products/luvlae-berberine-patches.md). Do not model Amazon price, availability, or reviews as on-site purchase data.
 
-Optional GA4 wiring lives in `src/_app/analytics/`. It is disabled unless `NEXT_PUBLIC_GA_MEASUREMENT_ID` is supplied at build time. Amazon links carry explicit event/location attributes; the client tracker sends `amazon_outbound_click` when GA4 is configured. See `apps/web/README.md` for setup.
+Optional GA4 wiring lives in `src/_app/analytics/`. It is disabled unless `NEXT_PUBLIC_GA_MEASUREMENT_ID` is supplied at build time. GitHub Actions reads this as a repository Actions variable; the Cloudflare workflow passes it to the build, and Turborepo accounts for it in build/deploy tasks. Amazon links carry explicit event/location attributes; the client tracker sends `amazon_outbound_click` when GA4 is configured. See `apps/web/README.md` for setup.
 
 ## Internationalization
 
