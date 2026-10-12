@@ -162,7 +162,6 @@ export const HomePage = (props: HomePageProps) => {
                 </Reveal>
               ))}
             </div>
-            <Reveal delay={120}><p className={styles.photoNote}>{home.stories.note}</p></Reveal>
           </div>
         </section>
 
