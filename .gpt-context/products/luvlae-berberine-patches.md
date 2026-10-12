@@ -78,3 +78,8 @@ Recheck the live listing before using any price, promotion, availability, sales,
 
 - User-provided Amazon listing PDF: `Amazon.com: Luvlae Berberine Patches for Women & Men with L-Glutamine, Garcinia Cambogia, 60 Days Supply : Health & Household.pdf` (5 pages, captured 2026-09-30 at 13:15).
 - Original listing: <https://www.amazon.com/dp/B0H6FQFJL8>
+
+## Homepage campaign materials (2026-10-10)
+
+- The user supplied 15 first-person review texts about routine, convenience, appearance, and application, plus lifestyle photos under `apps/web/public/images/main/`. Reviewer names, ratings, dates, verified purchases, and photo-to-review associations are unknown. These are user-supplied campaign materials, not newly verified Amazon reviews.
+- The user requested a “buy 2, save 20%” badge. The current Amazon fetch did not expose this promotion; the implementation relies on the user's campaign instruction and links readers to Amazon to check eligibility and current terms. No current price or availability claim was added.

@@ -1,6 +1,6 @@
 {
   "en": {
-    "home": {
+    "aboutProduct": {
       "eyebrow": "Berberine patches by Luvlae",
       "title": "A small patch<br>\nA simple daily ritual",
       "description": "Meet Luvlae Berberine Patches — an easy-to-use, pill-free format for your everyday routine. One box contains 60 patches to keep your routine going.",
@@ -272,6 +272,7 @@
       "openMenuLabel": "Open navigation menu",
       "shopOnAmazon": "Shop on Amazon",
       "navigation": {
+        "aboutProduct": "About Product",
         "patches": "The Patches",
         "ingredients": "Ingredients",
         "howToUse": "How to Use",
@@ -291,6 +292,7 @@
       "safety": "Safety",
       "faq": "Frequently Asked Questions",
       "exploreGroup": "Explore",
+      "aboutProduct": "About Product",
       "about": "About Luvlae",
       "shopOnAmazon": "Shop on Amazon",
       "copyright": "© {{year}} Luvlae. All rights reserved.",
@@ -373,6 +375,201 @@
           "description": "A vitamin involved in collagen formation, normal immune function, and antioxidant protection."
         }
       }
+    },
+    "home": {
+      "promo": {
+        "eyebrow": "LUVLAE BERBERINE PATCHES",
+        "titleLineOne": "Small patch.",
+        "titleLineTwo": "Simple moments.",
+        "description": "Meet a discreet, pill-free step made to fit into your everyday routine.",
+        "imageAlt": "Woman holding a Luvlae Berberine Patches box and a sheet of pearly patches",
+        "button": "Buy 2, save 20%",
+        "note": "Check the 2-pack offer and current terms on Amazon."
+      },
+      "hero": {
+        "eyebrow": "LUVLAE BERBERINE PATCHES",
+        "title": "A little patch.<br>A simpler routine.",
+        "description": "Make room for a small moment of self-care. Discover our discreet, pill-free patches, made to fit around your everyday life.",
+        "imageAlt": "Luvlae Berberine Patches box beside a sheet of pearly patches",
+        "badge": "Buy 2, save 20%*",
+        "offerNote": "*Check the 2-pack offer and eligibility on Amazon. Promotions are subject to Amazon’s terms and availability.",
+        "button": "Add to Cart",
+        "destination": "Continue to Amazon to add to your cart.",
+        "details": "About the product",
+        "featureOne": "Pill-free format",
+        "featureTwo": "Discreet design",
+        "featureThree": "Easy to apply"
+      },
+      "stories": {
+        "eyebrow": "THE LITTLE THINGS",
+        "title": "A patch that fits into your day",
+        "description": "Morning rituals, busy days, weekends away. It’s the everyday details that make a routine your own.",
+        "note": "Lifestyle photos paired with selected review excerpts; photos do not identify the reviewers.",
+        "one": {
+          "imageAlt": "Woman holding a Luvlae Berberine Patches box indoors",
+          "quote": "The patch format just makes more sense for my routine.",
+          "label": "A pill-free moment"
+        },
+        "two": {
+          "imageAlt": "Woman holding a Luvlae box and showing a pearly patch on her wrist",
+          "quote": "OMG, these are so easy to use!",
+          "label": "Ready, set, go"
+        },
+        "three": {
+          "imageAlt": "Woman outdoors holding Luvlae patches with a patch on her upper arm",
+          "quote": "I’m all for anything that doesn’t add another ten minutes to getting ready.",
+          "label": "On your schedule"
+        },
+        "four": {
+          "imageAlt": "Woman with glasses holding a Luvlae box and several patch sheets",
+          "quote": "Love that there are 60 in the box!",
+          "label": "The little details"
+        }
+      },
+      "featured": {
+        "eyebrow": "IN THEIR WORDS",
+        "title": "Small details. Everyday stories.",
+        "description": "A closer look at what people appreciate about the patch format.",
+        "link": "Read all the reviews"
+      },
+      "cta": {
+        "eyebrow": "YOUR NEXT LITTLE RITUAL",
+        "title": "Ready to make it part<br>of your day?",
+        "description": "One compact box. 60 pearly patches. A simple addition to the routine you already love.",
+        "button": "Add to Cart",
+        "note": "Choose your quantity and complete your purchase on Amazon.",
+        "details": "Explore the product"
+      },
+      "reviews": {
+        "eyebrow": "THE EVERYDAY EXPERIENCE",
+        "title": "Let’s talk about the little things",
+        "description": "From the first application to packing for a weekend away — read the full stories.",
+        "label": "Review",
+        "more": "Show more",
+        "less": "Hide reviews",
+        "disclosure": "Reviewer names and star ratings are illustrative; they were not supplied with these review texts.",
+        "ratingLabel": "Illustrative rating: {{rating}} out of 5 stars",
+        "note": "Reviews describe individual experiences with the format, not evidence of health effects.",
+        "items": {
+          "one": {
+            "displayName": "Emily R.",
+            "rating": "5",
+            "title": "A simple start to the morning",
+            "topic": "Morning routine",
+            "body": "I’m always looking for ways to keep my morning routine simple, so the patch format caught my attention. These are easy to apply, and I like that I don’t have to prepare a drink or swallow another capsule. I usually put one on while getting dressed. It’s a straightforward little step that fits into my day."
+          },
+          "two": {
+            "displayName": "Lauren M.",
+            "rating": "5",
+            "title": "A discreet little step",
+            "topic": "Discreet design",
+            "body": "What I appreciate most is how discreet the patches are. I wear mine under clothing, so it doesn’t become something I have to explain or draw attention to. The application is simple, too. For someone who prefers a low-fuss routine, the format is really appealing."
+          },
+          "three": {
+            "displayName": "Rachel T.",
+            "rating": "4",
+            "title": "Thoughtfully part of my routine",
+            "topic": "Everyday convenience",
+            "body": "I’m in my 40s, and I’ve become much more selective about what I add to my daily routine. I wanted something easy to use, with ingredient information I could read before trying it. The box contains 60 patches, which is convenient, and the directions make application straightforward. I also like the compact packaging."
+          },
+          "four": {
+            "displayName": "Dana K.",
+            "rating": "5",
+            "title": "My first time trying patches",
+            "topic": "Easy application",
+            "body": "I hadn’t used this kind of patch before, so I took a little time to read the directions and get familiar with it. Applying one turned out to be simple — peel off the backing, place it on clean, dry skin, and press down the edges. I like having a pill-free option, and the subtle pearly design is a nice touch."
+          },
+          "five": {
+            "displayName": "Olivia S.",
+            "rating": "5",
+            "title": "Fits around a changing schedule",
+            "topic": "On the go",
+            "body": "My schedule changes a lot between working from home and going into the office, so I appreciate a product that doesn’t require much preparation. The box is compact enough to tuck into a bag, and the patches are easy to apply. Having 60 in one pack is practical. The convenience of the format is what stands out to me."
+          },
+          "six": {
+            "displayName": "Jess P.",
+            "rating": "5",
+            "title": "Ready and on with my morning",
+            "topic": "Morning routine",
+            "body": "OMG, these are so easy to use! I put one on while I’m getting ready and get on with my morning. I already have enough stuff on my bathroom counter, so I appreciate something this simple."
+          },
+          "seven": {
+            "displayName": "Morgan L.",
+            "rating": "5",
+            "title": "A format that makes sense for me",
+            "topic": "Pill-free format",
+            "body": "Honestly, the no-pill thing is what sold me on trying them. I’m terrible at swallowing capsules, lol. The patch format just makes more sense for my routine."
+          },
+          "eight": {
+            "displayName": "Chloe B.",
+            "rating": "5",
+            "title": "Here for the pearly design",
+            "topic": "The little details",
+            "body": "😍 Okay, the little pearly patches are actually really cute. 😂 I know that’s a small detail, but I like the design. Application was easy once I read the instructions."
+          },
+          "nine": {
+            "displayName": "Allison W.",
+            "rating": "4",
+            "title": "Easy to figure out",
+            "topic": "Easy application",
+            "body": "I wasn’t sure what to expect because I’d never tried patches like these before. Turns out the application is pretty straightforward. No complicated setup, which is a win for me."
+          },
+          "ten": {
+            "displayName": "Natalie G.",
+            "rating": "5",
+            "title": "A little box with plenty inside",
+            "topic": "Everyday convenience",
+            "body": "Love that there are 60 in the box! I don’t want to be reordering something every couple of weeks. The packaging is small too, so it doesn’t take over my drawer."
+          },
+          "eleven": {
+            "displayName": "Sarah C.",
+            "rating": "5",
+            "title": "Made for busy mornings",
+            "topic": "Morning routine",
+            "body": "My mornings are usually coffee, getting dressed, and rushing out the door. These fit into that pretty easily. I’m all for anything that doesn’t add another ten minutes to getting ready."
+          },
+          "twelve": {
+            "displayName": "Kate H.",
+            "rating": "5",
+            "title": "Keeping my routine to myself",
+            "topic": "Discreet design",
+            "body": "The discreet design is probably my favorite part. I prefer wearing mine somewhere covered by my clothes. Just a personal preference, but I like keeping my routine to myself."
+          },
+          "thirteen": {
+            "displayName": "Priya N.",
+            "rating": "4",
+            "title": "Ingredients first",
+            "topic": "An informed choice",
+            "body": "Not gonna lie, I checked out the ingredients before anything else. I like knowing what’s in a product before I try it. Having that information easy to find was a big plus."
+          },
+          "fourteen": {
+            "displayName": "Mia D.",
+            "rating": "5",
+            "title": "Packed for the weekend",
+            "topic": "On the go",
+            "body": "Packed these for a weekend away and barely noticed the box in my bag. Nice to have something that doesn’t involve bottles, scoops, or mixing anything. Pretty convenient."
+          },
+          "fifteen": {
+            "displayName": "Brittany F.",
+            "rating": "5",
+            "title": "A few steps I can get behind",
+            "topic": "Easy application",
+            "body": "I’m usually the person who buys something and then gets annoyed by all the steps involved, haha. This was easy to figure out. Read the directions, peel, apply — that part I can manage!"
+          }
+        }
+      },
+      "guides": {
+        "title": "Get to know your patches",
+        "about": "About Product",
+        "ingredients": "Ingredients",
+        "howTo": "How to Use",
+        "safety": "Safety",
+        "science": "Science & Evidence"
+      }
+    },
+    "aboutProductMetadata": {
+      "title": "About Luvlae Berberine Patches | Format & Everyday Routine",
+      "description": "Get to know Luvlae Berberine Patches, their pill-free format and everyday routine, with guides to ingredients, use, safety and evidence."
     }
   }
 }

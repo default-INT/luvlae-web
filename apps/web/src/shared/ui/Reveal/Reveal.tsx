@@ -9,10 +9,11 @@ import type { ReactNode } from 'react';
 interface Props {
   children: ReactNode;
   className?: string;
+  delay?: number;
 }
 
 export const Reveal = (props: Props) => {
-  const { children, className = '' } = props;
+  const { children, className = '', delay = 0 } = props;
   const elementRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [ready, setReady] = useState(false);
@@ -41,7 +42,7 @@ export const Reveal = (props: Props) => {
   const classes = [styles.reveal, ready && styles.ready, visible && styles.visible, className].filter(Boolean).join(' ');
 
   return (
-    <div ref={elementRef} className={classes}>
+    <div ref={elementRef} className={classes} style={delay ? { animationDelay: `${delay}ms` } : undefined}>
       {children}
     </div>
   );

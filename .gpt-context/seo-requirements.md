@@ -143,3 +143,9 @@ The SEO strategy PDF reports current-site ingredient amounts (berberine 70 mg, g
 
 - User-provided PDF: `luvlae_seo_strategy_ru_v2_competitor_benchmark.pdf`, 19 pages, dated 2026-09-29.
 - The strategy itself says it is not legal advice and notes that no GSC/server logs/CMS, finished-product lab documents, release/permeation tests, or Luvlae-specific human clinical studies were supplied. Treat its audit findings, competitor benchmark, keyword priorities, and recommendations as a plan to verify, not completed implementation facts.
+
+## Marketing homepage update (2026-10-10)
+
+- New homepage uses the user's 15 supplied review texts. The review list displays illustrative names and individual star ratings with a visible disclosure that these were not supplied with the texts; they are not verified customer data. No review dates, verified-purchase badges, helpfulness counts, or Review/AggregateRating schema have been added. Photos are lifestyle images paired with excerpts, not identified reviewers. Reviewer identity, provenance, and photo-to-review matching remain unknown.
+- The 20% discount for buying two packs is supplied by the user. An attempted Amazon listing check on 2026-10-10 did not expose that promotion in the retrieved content. The badge includes a visible qualifier to check current eligibility/terms on Amazon; it is not independent verification of a current offer. Recheck the promotion when publishing or updating campaign copy.
+- `/about-product` retains the previous homepage with unique title, description, canonical and sitemap entry. Organization/WebSite JSON-LD remains on `/`. Home Open Graph now references the existing 2500 × 2500 product image instead of a missing JPG.

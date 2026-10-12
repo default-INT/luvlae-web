@@ -16,6 +16,7 @@ export const SiteHeader = (props: SiteHeaderProps) => {
   const { siteHeader } = dictionary;
 
   const navigation = [
+    { label: siteHeader.navigation.aboutProduct, href: '/about-product' },
     { label: siteHeader.navigation.patches, href: '/products/berberine-patches' },
     { label: siteHeader.navigation.ingredients, href: '/ingredients' },
     { label: siteHeader.navigation.howToUse, href: '/how-to-use-berberine-patches' },

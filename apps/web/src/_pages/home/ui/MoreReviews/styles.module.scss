@@ -1,0 +1,74 @@
+.moreReviews {
+  border-top: 1px solid var(--color-border);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  gap: 0.65rem;
+  min-height: 42px;
+  margin: 1.25rem auto;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-navy-strong);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 250ms ease, background-color 250ms ease, transform 250ms ease;
+
+  &:hover {
+    border-color: var(--color-blue);
+    background: var(--color-surface-muted);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 3px;
+  }
+}
+
+.chevron,
+.chevronOpen {
+  flex: 0 0 1rem;
+  width: 1rem;
+  height: 1rem;
+  transform-origin: center;
+  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 550ms cubic-bezier(0.22, 1, 0.36, 1), opacity 350ms ease;
+}
+
+.panel.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle,
+  .chevron,
+  .chevronOpen,
+  .panel {
+    transition: none;
+  }
+}

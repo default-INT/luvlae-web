@@ -19,6 +19,7 @@ export const SiteFooter = (props: SiteFooterProps) => {
     {
       title: siteFooter.productGroup,
       links: [
+        { label: siteFooter.aboutProduct, href: '/about-product' },
         { label: siteFooter.product, href: '/products/berberine-patches' },
         { label: siteFooter.ingredients, href: '/ingredients' },
         { label: siteFooter.howToUse, href: '/how-to-use-berberine-patches' },
