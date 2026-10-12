@@ -234,7 +234,6 @@ export const HomePage = (props: HomePageProps) => {
               </div>
               <p>{home.reviews.description}</p>
             </Reveal>
-            <p className={styles.reviewDisclosure}>{home.reviews.disclosure}</p>
             {reviews.slice(0, 5).map((review, index) => (
               <Reveal key={review.title}>
                 <ReviewRow {...review} number={index + 1} label={home.reviews.label} ratingLabel={home.reviews.ratingLabel}/>
@@ -247,7 +246,6 @@ export const HomePage = (props: HomePageProps) => {
                 </Reveal>
               ))}
             </MoreReviews>
-            <Reveal><p className={styles.reviewNote}>{home.reviews.note}</p></Reveal>
           </div>
         </section>
 
