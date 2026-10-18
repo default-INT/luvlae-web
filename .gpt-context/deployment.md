@@ -13,7 +13,7 @@ Verified on 2026-10-18 against commit `398b900` using repository configuration, 
 
 ## Build and deployment
 
-- [Workflow](../.github/workflows/cloudflare-workers.yml): PRs and pushes to `main` check and build; eligible release branch creation/updates build with Vite and invoke `vinext-cloudflare deploy --skip-build`, deploying using `cf` for this typed configuration. Transient retries use `--skip-build`. Standard `next build` output in `.next` is not the Workers deployment artifact.
+- [Workflow](../.github/workflows/cloudflare-workers.yml): PRs check and build stage without deploying; pushes to `main` check, build and deploy stage; eligible release branch creation/updates build with Vite and invoke the environment-checked wrapper and `vinext-cloudflare deploy --skip-build --env <mode>`, deploying using `cf` for this typed configuration. Transient retries use `--skip-build`. Standard `next build` output in `.next` is not the Workers deployment artifact.
 - [Worker config](../apps/web/cloudflare.config.ts): `luvlae-web`, entrypoint `vinext/server/fetch-handler`, compatibility date `2026-10-02`, flag `nodejs_compat`, only declared binding `ASSETS`.
 - [Vite config](../apps/web/vite.config.ts) enables prerendering and `staticAssetsAdapter()`. Output is `apps/web/.cloudflare/output/v0/workers/default/{bundle,assets}` plus `worker.config.json`; `dist/server/vinext-prerender.json` records prerender results.
 - Reproduce without deploying: generate dictionaries, then run `vite build` in `apps/web` with Node 22. Local prerendering requires permission to listen on localhost. The sandboxed attempt failed with `listen EPERM`; the unrestricted local build completed. Docker emitted an unavailable-daemon diagnostic, but this build did not require it to succeed.
@@ -51,10 +51,19 @@ References: [asset routing](https://developers.cloudflare.com/workers/static-ass
 ## Production release policy — 2026-10-18
 
 - Workflow changes are local configuration, not yet verified by a GitHub Actions run. Production hosting, credentials and transient retries remain unchanged.
-- `create` handles release branch creation (including creation via GitHub UI/API); `push` handles subsequent commits. Release-creation pushes are skipped to avoid duplicate deployment. Deleted branches do not deploy. PRs into `main` and pushes to `main` check/build without deploying.
+- `create` handles release branch creation (including creation via GitHub UI/API); `push` handles subsequent commits. Release-creation pushes are skipped to avoid duplicate deployment. Deleted branches do not deploy. PRs into `main` check/build without deploying; pushes to `main` deploy stage.
 - Accepted names: `release/release-x.y.z`, where major, minor and patch are nonnegative integers without leading zeros. “Latest” is the highest numeric version among existing remote branches, comparing major first, then minor, then patch (for example, `1.0.0 > 0.99.99` and `1.10.0 > 1.9.99`). Prerelease/build suffixes are not accepted. Do not delete the highest release while older release branches remain writable: deleting it makes the next highest branch eligible again.
 - `.github/scripts/production-release.mjs` queries live remote refs and requires both the highest release name and its current head SHA to match the event. Lookup errors fail closed. Selection is repeated before each deployment attempt; the build finishes before the final selection check; a branch/head change during the actual upload is only reflected in a subsequent run.
 - All release runs share the `cloudflare-workers-production` concurrency group, without cancelling an active deployment. GitHub does not guarantee FIFO ordering and may replace pending runs; obsolete runs are skipped by the live branch/head check.
 - Merge these workflow/script changes into `main` before creating the first release from that updated commit. Existing release branches need these changes before they can follow the new policy.
-- Stage is a separate future step: pushes to `main`, a separate Worker, and an automatic Cloudflare hostname (no custom domain).
+- Stage is configured: pushes to `main`, Worker `luvlae-web-stage`, and an automatic Cloudflare hostname (no custom domain). Its first remote deployment remains unverified. See [architecture](architecture.md#stage-deployment-2026-10-18) and [commands](../apps/web/README.md#cloudflare-environments).
 - Guard checks: `node --test .github/scripts/production-release.test.mjs`.
+
+
+## Stage implementation verification — 2026-10-18
+
+- Stage and production Cloudflare builds pass with Node 22.22.2. ESLint, TypeScript and seven release/artifact guard tests pass.
+- Local Workers preview: stage `/`, product page, robots, sitemap and missing-route 404 all carry `X-Robots-Tag: noindex, nofollow, noarchive`; CSS served by Static Assets does too. Homepage has no Google tag, robots disallows crawling, sitemap has no URL entries.
+- After a stage build, a fresh production build and local preview passed: homepage/robots/sitemap return 200 without stage noindex, production robots allows crawling and sitemap lists production URLs.
+- Stage uses a dedicated Worker wrapper because `next.config` headers did not cover prerender cache hits. Its generated `_headers` appends noindex while preserving vinext’s immutable asset cache rules. Builds clear prior output; the artifact guard rejects stage indexing directives in production and mismatched environment/Worker markers.
+- No local Cloudflare credentials or auth profiles were available. No remote Worker was deployed and no live stage hostname was verified. After merging to `main`, Actions will deploy using existing repository secrets, provided the token permits the new Worker and the account has a `workers.dev` subdomain.

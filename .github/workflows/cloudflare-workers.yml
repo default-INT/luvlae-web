@@ -24,7 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+      DEPLOY_ENV: ${{ (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') && 'stage' || 'production' }}
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ github.event_name != 'pull_request' && github.ref != 'refs/heads/main' && vars.NEXT_PUBLIC_GA_MEASUREMENT_ID || '' }}
 
     steps:
       - name: Checkout repository
@@ -49,6 +50,9 @@ jobs:
       - name: Test production release selection
         run: node --test .github/scripts/production-release.test.mjs
 
+      - name: Test deployment artifact isolation
+        run: node --test apps/web/scripts/cloudflare.test.mjs
+
       - name: Run ESLint
         run: pnpm lint
 
@@ -65,20 +69,28 @@ jobs:
         run: pnpm build:cloudflare
 
       - name: Deploy to Cloudflare Workers
-        if: steps.release.outputs.deploy == 'true'
+        if: steps.release.outputs.deploy == 'true' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           set -o pipefail
 
           for attempt in 1 2 3; do
             # Recheck after waiting/building, and before every transient retry.
-            selection=$(node .github/scripts/production-release.mjs)
-            if [ "$selection" != 'deploy=true' ]; then
-              exit 0
+            if [ "$DEPLOY_ENV" = 'production' ]; then
+              selection=$(node .github/scripts/production-release.mjs)
+              if [ "$selection" != 'deploy=true' ]; then
+                exit 0
+              fi
+            else
+              remote_sha=$(git ls-remote --heads origin refs/heads/main | cut -f1)
+              if [ "$remote_sha" != "$GITHUB_SHA" ]; then
+                echo 'Stage deployment skipped: main has a newer commit.'
+                exit 0
+              fi
             fi
 
             log_file="$RUNNER_TEMP/cloudflare-deploy-$attempt.log"
 
-            if pnpm --filter @luvlae/web exec vinext-cloudflare deploy --skip-build 2>&1 | tee "$log_file"; then
+            if pnpm --filter @luvlae/web exec node scripts/cloudflare.mjs deploy --skip-build 2>&1 | tee "$log_file"; then
               exit 0
             fi
 

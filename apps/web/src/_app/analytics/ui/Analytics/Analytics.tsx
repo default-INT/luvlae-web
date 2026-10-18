@@ -3,13 +3,15 @@
 import { useEffect } from 'react';
 import Script from 'next/script';
 
+import { isStage } from '@/shared/config/environment';
+
 type AnalyticsWindow = Window & {
   gtag?: (...args: unknown[]) => void;
 };
 
 export const Analytics = () => {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  const enabled = Boolean(measurementId && /^G-[A-Z0-9]+$/.test(measurementId));
+  const enabled = !isStage && Boolean(measurementId && /^G-[A-Z0-9]+$/.test(measurementId));
 
   useEffect(() => {
     if (!enabled) {

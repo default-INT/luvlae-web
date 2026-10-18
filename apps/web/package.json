@@ -13,9 +13,9 @@
     "typecheck": "next typegen && node scripts/generate-dictionaries.mjs && tsc --noEmit",
     "sync:dictionaries": "node scripts/generate-dictionaries.mjs",
     "dev:vinext": "node scripts/generate-dictionaries.mjs && vite dev --port 3001",
-    "build:vinext": "node scripts/generate-dictionaries.mjs && vite build",
-    "start:vinext": "vite preview",
-    "deploy:vinext": "vinext-cloudflare deploy"
+    "build:vinext": "node scripts/cloudflare.mjs build",
+    "start:vinext": "node scripts/cloudflare.mjs preview",
+    "deploy:vinext": "node scripts/cloudflare.mjs deploy"
   },
   "dependencies": {
     "next": "16.3.8",

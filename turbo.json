@@ -4,12 +4,12 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["NEXT_PUBLIC_GA_MEASUREMENT_ID"]
+      "env": ["NEXT_PUBLIC_GA_MEASUREMENT_ID", "NEXT_PUBLIC_APP_ENV"]
     },
     "build:vinext": {
       "dependsOn": ["^build:vinext"],
       "outputs": [".cloudflare/**", "dist/**"],
-      "env": ["NEXT_PUBLIC_GA_MEASUREMENT_ID"]
+      "env": ["NEXT_PUBLIC_GA_MEASUREMENT_ID", "NEXT_PUBLIC_APP_ENV", "DEPLOY_ENV"]
     },
     "dev": {
       "cache": false,
@@ -27,12 +27,13 @@
     },
     "start:vinext": {
       "dependsOn": ["build:vinext"],
+      "env": ["DEPLOY_ENV"],
       "cache": false,
       "persistent": true
     },
     "deploy:vinext": {
       "cache": false,
-      "env": ["NEXT_PUBLIC_GA_MEASUREMENT_ID"],
+      "env": ["NEXT_PUBLIC_GA_MEASUREMENT_ID", "NEXT_PUBLIC_APP_ENV", "DEPLOY_ENV"],
       "passThroughEnv": ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"]
     }
   }

@@ -3,14 +3,14 @@
 ## Decision and status — 2026-10-18
 
 - User selected MongoDB Atlas for future order storage.
-- User requested stage: pushes to `main` will deploy a separate Worker using its automatic Cloudflare hostname, without a custom domain. Stage infrastructure is not provisioned; provider isolation details below remain proposals.
-- Current deployment remains one Worker, `luvlae-web`; the workflow now routes production deployment to creation/updates of the highest numbered `release/release-x.y.z` branch, with a current-head check. `main` only checks/builds until stage is implemented. PRs build without deploying. MongoDB, checkout, email, queues, and QA are not implemented.
+- User requested stage: pushes to `main` will deploy a separate Worker using its automatic Cloudflare hostname, without a custom domain. Stage code/workflow is implemented; its remote deployment is not yet verified. Provider isolation details below remain proposals.
+- Current deployment remains one Worker, `luvlae-web`; the workflow now routes production deployment to creation/updates of the highest numbered `release/release-x.y.z` branch, with a current-head check. `main` checks/builds and deploys stage. PRs build without deploying. MongoDB, checkout, email, and queues are not implemented.
 
 ## Recommended first topology
 
 | Resource | Production | QA proposal |
 | --- | --- | --- |
-| Worker | Existing `luvlae-web` | Separate `luvlae-web-stage` (proposed name) |
+| Worker | Existing `luvlae-web` | Separate `luvlae-web-stage` (configured) |
 | Host | Existing `www.luvlae.com` | Automatic Cloudflare hostname (`workers.dev`) |
 | Atlas | Future production project/cluster | Separate QA project/cluster, database and least-privilege user |
 | Stripe | Future live integration | Dedicated QA sandbox, keys, product/price IDs and webhook secret |
@@ -20,9 +20,9 @@
 
 - Deploy pushes to `main` automatically to one stable stage environment. No permanent `develop` branch or PR-specific environments are required initially. Rebuild production with production configuration after review and merge; do not reuse an artifact containing QA URLs or build-time variables.
 - Use GitHub Environments `stage` and `production` with separate secret sets; restrict production deployment to the intended branch. Keep QA deployment concurrency separate from production, and serialize deployments to the shared QA target. Never run untrusted PR code with deployment secrets.
-- Cloudflare typed config supports functions receiving `mode`; this project uses `cf/config`, not an existing Wrangler environment table. Validate exact installed toolchain behavior before implementing QA mode. Make invalid deployment modes fail rather than silently target production. Retries must reuse a build for the same mode and Worker.
-- Protect QA browser routes with Cloudflare Access. Stripe must reach its exact webhook path without interactive login; verify signatures and reject live events in QA. Account for alternate `workers.dev` and preview URLs so they do not bypass the intended access policy.
-- Add `noindex` for QA, including directly served static responses where applicable. `robots.txt` is not an access control. Use an explicit environment-specific application origin for future Stripe redirect URLs and cookies. Existing production metadata/structured-data URLs are hardcoded; inspect them deliberately during implementation rather than replacing every URL blindly.
+- Cloudflare typed config uses functions receiving `mode`; installed vinext `--env stage` passes mode to `cf`. Build/deploy wrappers reject invalid environments and mismatched artifacts. Retries reuse a build for the same mode and Worker. See [implemented stage setup](architecture.md#stage-deployment-2026-10-18).
+- Future account configuration: protect QA browser routes with Cloudflare Access (not implemented by the repository change). Stripe must reach its exact webhook path without interactive login; verify signatures and reject live events in QA. Account for alternate `workers.dev` and preview URLs so they do not bypass the intended access policy.
+- Stage `noindex` headers are implemented for Worker and directly served static responses; robots disallows crawling and sitemap is empty. `robots.txt` is not an access control. Use an explicit environment-specific application origin for future Stripe redirect URLs and cookies. Existing production metadata/structured-data URLs are hardcoded; inspect them deliberately during implementation rather than replacing every URL blindly.
 - Use synthetic fixtures only; give QA credentials no production database permissions. Seed/reset tooling must verify the expected environment and target database. Shared QA resets should be explicit operations, not happen on every deployment.
 - Persist payment updates and email jobs atomically and deduplicate webhook handling in both environments. Configure QA to reject live Stripe configuration, production DB targets and non-allowlisted email recipients. Keep secrets out of `NEXT_PUBLIC_*` and tracked files.
 
