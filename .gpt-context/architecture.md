@@ -2,7 +2,7 @@
 
 ## Latest commerce update — 2026-10-18
 
-The storefront now has a runtime-priced product purchase block, browser-persisted cart/Drawer and noindex order confirmation. Checkout temporarily creates paid mock orders with sample contacts and atomically consumed stock, as explicitly requested by the user. Stage enables mock checkout; production disables it. Schema/data migrations 002/003 applied to stage Atlas; test SKU starts at synthetic USD 29.99 and 100 units. Stripe remains unimplemented. See [current storefront behavior](commerce-ui.md); historical Amazon-only and pending-UI descriptions below refer to earlier stages.
+The product route now renders price/stock on the server; the browser-persisted cart/Drawer uses Zustand without Context. `/orders/:id` server-renders protected confirmation through a per-order HttpOnly cookie. A protected SSR admin interface now supports login, order filters/status tags and actions, and product/price/stock editing; see [admin UI](admin-ui.md). Customer-facing copy omits implementation/test notices. Checkout temporarily creates paid mock orders with sample contacts and atomically consumed stock, as explicitly requested by the user. Stage enables mock checkout; production disables it. Schema/data migrations 002/003 applied to stage Atlas; test SKU starts at synthetic USD 29.99 and 100 units. Stripe remains unimplemented. See [current storefront behavior](commerce-ui.md); historical Amazon-only and pending-UI descriptions below refer to earlier stages.
 
 ## Status and agreed requirements
 

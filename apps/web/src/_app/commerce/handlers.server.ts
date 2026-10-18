@@ -10,11 +10,12 @@ import { findGuestOrder, guestOrderCookie } from '@/entities/order/index.server'
 import { login, logout, requireAdmin, requireSessionCookie, sessionCookie } from './auth.server';
 import { collections } from './collections.server';
 import {
-  cancellationSchema, createProductSchema, fulfillmentSchema, fulfillmentStatuses, idSchema,
-  loginSchema, paymentStatuses, quoteSchema, restockSchema, skuSchema, updateProductSchema,
+  cancellationSchema, createProductSchema, fulfillmentSchema, idSchema,
+  loginSchema, quoteSchema, restockSchema, skuSchema, updateProductSchema,
 } from './contracts';
 import { createMockOrder, mockCheckoutSchema, requireMockCheckout } from './mock-checkout.server';
 import { cancelOrder, orderDetailDto, orderSummaryDto, restockOrder, updateFulfillment } from './orders.server';
+import { orderListFilter } from './order-filters.server';
 import { readPage } from './pagination.server';
 import { calculateQuote, createProduct, productDto, updateProduct } from './products.server';
 
@@ -93,13 +94,7 @@ export const patchProduct = (request: Request, route: RouteParams) => admin(requ
 });
 
 export const listOrders = (request: Request) => admin(request, async ({ db }) => {
-  const params = new URL(request.url).searchParams;
-  const filter: Document = {};
-  if (params.has('orderStatus')) filter.orderStatus = z.enum(['open', 'completed', 'cancelled']).parse(params.get('orderStatus'));
-  if (params.has('paymentStatus')) filter['payment.status'] = z.enum(paymentStatuses).parse(params.get('paymentStatus'));
-  if (params.has('fulfillmentStatus')) {
-    filter['fulfillment.status'] = z.enum(fulfillmentStatuses).parse(params.get('fulfillmentStatus'));
-  }
+  const filter = orderListFilter(new URL(request.url).searchParams);
   const page = await readPage(db.collection('orders'), request, 'createdAt', filter);
   return json({ ...page, items: page.items.map(item => orderSummaryDto(item as Order)) });
 });

@@ -540,3 +540,107 @@ commerce:
   delivered: Delivered
   cancelled: Cancelled
   backToProduct: Continue exploring
+
+admin:
+  retry: Try again
+  title: Workspace
+  label: LUVLAE ADMIN
+  orders: Orders
+  products: Products
+  signOut: Sign out
+  signIn: Sign in
+  signingIn: Signing in…
+  welcome: Welcome back
+  loginDescription: Sign in to manage your orders and product catalog.
+  email: Email address
+  password: Password
+  loginError: Your email or password is incorrect.
+  loginLimited: Too many attempts. Please try again later.
+  requestError: We could not complete the request. Please try again.
+  saved: Changes saved.
+  saving: Saving…
+  save: Save changes
+  ordersDescription: Follow every order from checkout to delivery.
+  productsDescription: Manage your product details, pricing, and inventory.
+  orderNumber: Order number
+  created: Created (UTC)
+  orderStatus: Order
+  paymentStatus: Payment
+  fulfillmentStatus: Fulfillment
+  total: Total
+  subtotal: Subtotal
+  shipping: Shipping
+  tax: Tax
+  discount: Discount
+  search: Search order number
+  from: From (UTC)
+  to: To (UTC)
+  all: All statuses
+  apply: Apply filters
+  reset: Reset
+  next: Next page
+  first: First page
+  noOrders: No orders match these filters.
+  noProducts: No products yet.
+  view: View order
+  edit: Edit product
+  backOrders: Back to orders
+  backProducts: Back to products
+  customer: Customer
+  deliveryAddress: Delivery address
+  notProvided: Not provided
+  items: Order items
+  quantity: Quantity
+  unitPrice: Unit price
+  processing: Start processing
+  ship: Mark as shipped
+  deliver: Mark as delivered
+  carrier: Carrier
+  tracking: Tracking number
+  manageOrder: Manage order
+  fulfillmentBlocked: This order is not ready for fulfillment.
+  cancellation: Cancel order
+  cancellationNote: Cancellation does not refund payments or return items to inventory.
+  reason: Reason for change
+  restock: Return items to inventory
+  returned: I confirm the returned items are sellable.
+  restocked: Already returned to inventory
+  restockEmpty: Select at least one item to return to inventory.
+  sku: SKU
+  name: Product name
+  description: Short description
+  price: Price (USD)
+  stock: Stock quantity
+  reserved: Reserved
+  available: Available
+  sales: Sales
+  salesEnabled: Available for purchase
+  enabled: Enabled
+  disabled: Disabled
+  inventory: Inventory
+  pricing: Pricing and details
+  invalidPrice: Enter a valid USD price with up to two decimal places.
+  statuses:
+    open: Open
+    completed: Completed
+    cancelled: Cancelled
+    pending: Pending
+    processing: Processing
+    paid: Paid
+    failed: Failed
+    expired: Expired
+    partially_refunded: Partially refunded
+    refunded: Refunded
+    unfulfilled: Unfulfilled
+    shipped: Shipped
+    delivered: Delivered
+  errors:
+    VERSION_CONFLICT: This record changed. The latest version has been loaded; review it before saving again.
+    STOCK_RESERVED: Stock cannot be lower than the reserved quantity.
+    FULFILLMENT_BLOCKED: This order is not eligible for fulfillment.
+    INVALID_TRANSITION: The requested status change is not available.
+    TRACKING_REQUIRED: Enter the carrier and tracking number.
+    PAYMENT_RECONCILIATION_REQUIRED: Resolve the active payment before cancelling this order.
+    RESTOCK_BLOCKED: This order is not eligible for restocking.
+    RESTOCK_LIMIT: The selected quantity exceeds the items available for restocking.
+    INVALID_INPUT: Check the form fields and try again.

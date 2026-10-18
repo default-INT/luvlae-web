@@ -9,12 +9,12 @@ import { collections } from './collections.server';
 
 import type { Db } from 'mongodb';
 
-const cookieName = 'luvlae_admin';
+const cookieName = 'luvlae_admin_v2';
 const sessionSeconds = 8 * 60 * 60;
 
 export const sessionCookie = (token: string, request: Request, clear = false) => {
   const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
-  return `${cookieName}=${token}; Path=/api/admin; HttpOnly; SameSite=Strict; Max-Age=${clear ? 0 : sessionSeconds}${secure}`;
+  return `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${clear ? 0 : sessionSeconds}${secure}`;
 };
 
 const getToken = (request: Request) => {
