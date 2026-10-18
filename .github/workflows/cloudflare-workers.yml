@@ -2,7 +2,8 @@ name: Cloudflare Workers
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'release/release-*']
+  create:
   pull_request:
     branches: [main]
 
@@ -10,11 +11,16 @@ permissions:
   contents: read
 
 concurrency:
-  group: cloudflare-workers-${{ github.ref }}
+  group: cloudflare-workers-${{ startsWith(github.ref, 'refs/heads/release/release-') && ((github.event_name == 'create' && github.event.ref_type == 'branch') || (github.event_name == 'push' && !github.event.created && !github.event.deleted)) && 'production' || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   checks-and-deploy:
+    # Branch creation is handled by create; avoid a duplicate deployment from push.
+    if: >-
+      (github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.ref, 'refs/heads/release/release-')) ||
+      (github.event_name == 'push' && !github.event.deleted && (!github.event.created || github.ref == 'refs/heads/main')) ||
+      github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -40,29 +46,39 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Test production release selection
+        run: node --test .github/scripts/production-release.test.mjs
+
       - name: Run ESLint
         run: pnpm lint
 
       - name: Check TypeScript
         run: pnpm typecheck
 
+      - name: Select current production release
+        id: release
+        if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/heads/release/')
+        run: node .github/scripts/production-release.mjs >> "$GITHUB_OUTPUT"
+
       - name: Build Cloudflare Worker
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || steps.release.outputs.deploy == 'true'
         run: pnpm build:cloudflare
 
       - name: Deploy to Cloudflare Workers
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: steps.release.outputs.deploy == 'true'
         run: |
           set -o pipefail
 
           for attempt in 1 2 3; do
+            # Recheck after waiting/building, and before every transient retry.
+            selection=$(node .github/scripts/production-release.mjs)
+            if [ "$selection" != 'deploy=true' ]; then
+              exit 0
+            fi
+
             log_file="$RUNNER_TEMP/cloudflare-deploy-$attempt.log"
 
-            if [ "$attempt" -eq 1 ]; then
-              if pnpm deploy:cloudflare 2>&1 | tee "$log_file"; then
-                exit 0
-              fi
-            elif pnpm --filter @luvlae/web exec vinext-cloudflare deploy --skip-build 2>&1 | tee "$log_file"; then
+            if pnpm --filter @luvlae/web exec vinext-cloudflare deploy --skip-build 2>&1 | tee "$log_file"; then
               exit 0
             fi
 

@@ -17,15 +17,11 @@ export const Analytics = () => {
     }
 
     const handleClick = (event: MouseEvent) => {
-      if (!(event.target instanceof Element)) {
-        return;
-      }
+      if (!(event.target instanceof Element)) return;
 
       const link = event.target.closest<HTMLAnchorElement>('a[data-analytics-event="amazon_outbound_click"]');
 
-      if (!link) {
-        return;
-      }
+      if (!link) return;
 
       (window as AnalyticsWindow).gtag?.('event', 'amazon_outbound_click', {
         link_url: link.href,
