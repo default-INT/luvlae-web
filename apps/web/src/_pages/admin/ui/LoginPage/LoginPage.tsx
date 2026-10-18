@@ -25,7 +25,6 @@ export const LoginPage = (props: Props) => {
     try {
       await adminRequest('/auth/login', { email: fields.get('email'), password: fields.get('password') });
       router.replace('/admin/orders');
-      router.refresh();
     } catch (failure) {
       let message = copy.requestError;
       if (failure instanceof AdminApiError && failure.status === 401) message = copy.loginError;

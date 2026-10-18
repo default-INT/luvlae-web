@@ -8,10 +8,10 @@ import styles from '../styles.module.scss';
 import type { AdminCopy, OrderDetail } from '../../model/types';
 import type { FormEvent } from 'react';
 
-interface Props { order: OrderDetail; copy: AdminCopy; reload: () => Promise<void> }
+interface Props { order: OrderDetail; copy: AdminCopy; reload: () => Promise<void>; onBusyChange: (busy: boolean) => void }
 export const OrderActions = (props: Props) => {
-  const { order, copy, reload } = props;
-  const mutation = useAdminMutation(copy, reload);
+  const { order, copy, reload, onBusyChange } = props;
+  const mutation = useAdminMutation(copy, reload, onBusyChange);
   const [validation, setValidation] = useState('');
   const stages: Record<string, string> = { unfulfilled: 'processing', processing: 'shipped', shipped: 'delivered' };
   const labels: Record<string, string> = { processing: copy.processing, shipped: copy.ship, delivered: copy.deliver };

@@ -2,7 +2,7 @@
 
 ## Latest commerce update — 2026-10-18
 
-The product route now renders price/stock on the server; the browser-persisted cart/Drawer uses Zustand without Context. `/orders/:id` server-renders protected confirmation through a per-order HttpOnly cookie. A protected SSR admin interface now supports login, order filters/status tags and actions, and product/price/stock editing; see [admin UI](admin-ui.md). Customer-facing copy omits implementation/test notices. Checkout temporarily creates paid mock orders with sample contacts and atomically consumed stock, as explicitly requested by the user. Stage enables mock checkout; production disables it. Schema/data migrations 002/003 applied to stage Atlas; test SKU starts at synthetic USD 29.99 and 100 units. Stripe remains unimplemented. See [current storefront behavior](commerce-ui.md); historical Amazon-only and pending-UI descriptions below refer to earlier stages.
+The product route now renders price/stock on the server; the browser-persisted cart/Drawer uses Zustand without Context. `/orders/:id` server-renders protected confirmation through a per-order HttpOnly cookie. Admin uses client-side fetch for session/data loading and mutations, with order viewing/editing in a Drawer, filters/status tags, and product/price/stock editing; every admin API checks authorization. See [admin UI](admin-ui.md). Customer-facing copy omits implementation/test notices. Checkout temporarily creates paid mock orders with sample contacts and atomically consumed stock, as explicitly requested by the user. Stage enables mock checkout; production disables it. Schema/data migrations 002/003 applied to stage Atlas; test SKU starts at synthetic USD 29.99 and 100 units. Stripe remains unimplemented. See [current storefront behavior](commerce-ui.md); historical Amazon-only and pending-UI descriptions below refer to earlier stages.
 
 ## Status and agreed requirements
 
@@ -51,7 +51,7 @@ The app uses Next.js App Router, TypeScript, Sass, CSS Modules, and an ESLint fl
 ## Rendering and content
 
 - Prerender public, non-personalized content when its source and update workflow permit it: home, product, evidence, safety, instructions, and guides. Choose a deliberate revalidation or redeployment path when content changes.
-- Use request-time rendering for future user-specific checkout, order, and admin views. Do not enable `output: 'export'` for an application expected to use SSR, Route Handlers, and payment callbacks.
+- Use request-time rendering for customer order views. Admin loads private data on the client through authorized API requests. Do not enable `output: 'export'` for an application expected to use SSR, Route Handlers, and payment callbacks.
 - Keep Server Components by default. Introduce Client Components only around interactions or browser-only APIs. Keep secrets, privileged data access, and provider credentials on the server.
 - Keep product facts separate from page presentation so a future CMS or admin workflow can replace the data source. The exact initial content format is undecided.
 

@@ -24,11 +24,9 @@ export const AdminShell = (props: Props) => {
     try {
       await adminRequest('/auth/logout', {});
       router.replace('/admin/login');
-      router.refresh();
     } catch (failure) {
       if (failure instanceof AdminApiError && failure.status === 401) {
         router.replace('/admin/login');
-        router.refresh();
       }
       setError(copy.requestError);
       setBusy(false);

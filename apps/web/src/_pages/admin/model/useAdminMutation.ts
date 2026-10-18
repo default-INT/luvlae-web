@@ -7,7 +7,7 @@ import { adminRequest, AdminApiError } from '../api/admin';
 
 import type { AdminCopy } from './types';
 
-export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>) => {
+export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>, onBusyChange?: (busy: boolean) => void) => {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -19,6 +19,7 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>) =
     if (locked.current) return;
     locked.current = true;
     setBusy(true);
+    onBusyChange?.(true);
     setError('');
     setSaved(false);
     const signature = JSON.stringify({ path, body, method });
@@ -33,7 +34,6 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>) =
       const code = failure instanceof AdminApiError ? failure.code : '';
       if (failure instanceof AdminApiError && failure.status === 401) {
         router.replace('/admin/login');
-        router.refresh();
       }
       const errors = copy.errors as Record<string, string>;
       setError(errors[code] ?? copy.requestError);
@@ -43,6 +43,7 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>) =
     } finally {
       locked.current = false;
       setBusy(false);
+      onBusyChange?.(false);
     }
   };
 

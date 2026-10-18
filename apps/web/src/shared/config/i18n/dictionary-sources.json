@@ -611,6 +611,9 @@
       "backToProduct": "Continue exploring"
     },
     "admin": {
+      "loading": "Loading…",
+      "refresh": "Refresh",
+      "closeOrder": "Close order",
       "retry": "Try again",
       "title": "Workspace",
       "label": "LUVLAE ADMIN",
@@ -705,6 +708,8 @@
         "delivered": "Delivered"
       },
       "errors": {
+        "NOT_FOUND": "This record is no longer available.",
+        "INVALID_RANGE": "The start date must be before the end date.",
         "VERSION_CONFLICT": "This record changed. The latest version has been loaded; review it before saving again.",
         "STOCK_RESERVED": "Stock cannot be lower than the reserved quantity.",
         "FULFILLMENT_BLOCKED": "This order is not eligible for fulfillment.",

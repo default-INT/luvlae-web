@@ -1,11 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { useState } from 'react';
-
 import { money } from '@/shared/lib/money';
 
-import { adminRequest } from '../../api/admin';
 import { dateTime } from '../../model/types';
 import { OrderActions } from '../OrderActions';
 import { StatusTag } from '../StatusTag';
@@ -13,11 +9,9 @@ import styles from '../styles.module.scss';
 
 import type { AdminCopy, OrderDetail } from '../../model/types';
 
-interface Props { initialOrder: OrderDetail; copy: AdminCopy }
-export const OrderDetailPage = (props: Props) => {
-  const { initialOrder, copy } = props;
-  const [order, setOrder] = useState(initialOrder);
-  const reload = async () => setOrder(await adminRequest<OrderDetail>(`/orders/${order.id}`));
+interface Props { order: OrderDetail; copy: AdminCopy; reload: () => Promise<void>; onBusyChange: (busy: boolean) => void }
+export const OrderDetails = (props: Props) => {
+  const { order, copy, reload, onBusyChange } = props;
   const address = order.shippingAddress;
 
   const totals = [
@@ -29,7 +23,6 @@ export const OrderDetailPage = (props: Props) => {
   return (
     <>
       <div className={styles.pageHeader}>
-        <Link href='/admin/orders'>← {copy.backOrders}</Link><h1>{order.orderNumber}</h1>
         <p>{dateTime(order.createdAt)} UTC</p>
         <div className={styles.row}>
           <span>{copy.orderStatus}: <StatusTag status={order.orderStatus} copy={copy}/></span>
@@ -73,7 +66,7 @@ export const OrderDetailPage = (props: Props) => {
             <p>{order.cancellation.reason}</p><p className={styles.note}>{dateTime(order.cancellation.cancelledAt)} UTC</p>
           </section>}
         </div>
-        <OrderActions order={order} copy={copy} reload={reload}/>
+        <OrderActions order={order} copy={copy} reload={reload} onBusyChange={onBusyChange}/>
       </div>
     </>
   );
