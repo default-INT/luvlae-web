@@ -59,3 +59,4 @@ tsconfig.tsbuildinfo
 .claude
 .env
 .env.*
+!.env.example

@@ -15,35 +15,45 @@
     "dev:vinext": "node scripts/generate-dictionaries.mjs && vite dev --port 3001",
     "build:vinext": "node scripts/cloudflare.mjs build",
     "start:vinext": "node scripts/cloudflare.mjs preview",
-    "deploy:vinext": "node scripts/cloudflare.mjs deploy"
+    "deploy:vinext": "node scripts/cloudflare.mjs deploy",
+    "db:migrate": "node --conditions=react-server --import tsx scripts/db/cli.ts migrate",
+    "db:check": "node --conditions=react-server --import tsx scripts/db/cli.ts check",
+    "db:admin:create": "node --conditions=react-server --import tsx scripts/db/cli.ts admin:create",
+    "db:admin:reset-password": "node --conditions=react-server --import tsx scripts/db/cli.ts admin:reset-password",
+    "test:server": "node --conditions=react-server --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
+    "@next/env": "16.3.8",
+    "@vinext/cloudflare": "1.0.1",
+    "mongodb": "^6",
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "server-only": "0.0.1",
-    "yaml": "2.9.1",
-    "vinext": "1.0.1",
     "react-server-dom-webpack": "19.2.8",
-    "@vinext/cloudflare": "1.0.1"
+    "server-only": "0.0.1",
+    "vinext": "1.0.1",
+    "yaml": "2.9.1",
+    "zod": "^4"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "2.0.0-beta.sha-52b0dc0e9",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "6.1.1",
+    "@vitejs/plugin-rsc": "0.5.35",
+    "cf": "1.0.0-beta.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
+    "mongodb-memory-server": "^10",
+    "postcss": "8.5.28",
     "sass": "^1.90.0",
+    "tsx": "^4",
     "typescript": "^5",
     "vite": "8.3.0",
-    "@vitejs/plugin-react": "6.1.1",
-    "@vitejs/plugin-rsc": "0.5.35",
-    "@cloudflare/vite-plugin": "2.0.0-beta.sha-52b0dc0e9",
-    "cf": "1.0.0-beta.11",
-    "vite-css-modules": "1.16.0",
-    "postcss": "8.5.28"
+    "vite-css-modules": "1.16.0"
   },
   "type": "module"
 }

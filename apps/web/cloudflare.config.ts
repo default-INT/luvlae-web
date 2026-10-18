@@ -18,6 +18,10 @@ export default defineConfig(({ mode }) => {
       },
       env: {
         ASSETS: bindings.assets(),
+        NEXT_MONGODB_USERNAME: bindings.secret(),
+        NEXT_MONGODB_PASSWORD: bindings.secret(),
+        NEXT_MONGODB_URI: bindings.secret(),
+        NEXT_MONGODB_DB_NAME: bindings.secret(),
       },
     }),
   };

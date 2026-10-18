@@ -1,0 +1,322 @@
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { after, before, test } from 'node:test';
+
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
+import { MongoClient, ObjectId } from 'mongodb';
+
+import { login, requireAdmin, sessionCookie } from '../src/_app/commerce/auth.server';
+import { collections } from '../src/_app/commerce/collections.server';
+import {
+  createProductSchema, fulfillmentSchema, quoteSchema, restockSchema, updateProductSchema,
+} from '../src/_app/commerce/contracts';
+import { migrateCommerce } from '../src/_app/commerce/migrations.server';
+import { cancelOrder, restockOrder, updateFulfillment } from '../src/_app/commerce/orders.server';
+import { appendPaymentTransaction } from '../src/_app/commerce/payments.server';
+import { calculateQuote, createProduct, updateProduct } from '../src/_app/commerce/products.server';
+import { reserveOrder } from '../src/_app/commerce/reservations.server';
+import { ApiError, readJson, requireOrigin } from '../src/shared/lib/api/index.server';
+import { inTransaction } from '../src/shared/lib/mongodb/index.server';
+import { hashPassword, hashToken, randomToken, verifyPassword } from '../src/shared/lib/security/index.server';
+
+import type { DatabaseContext } from '../src/shared/lib/mongodb/index.server';
+
+let replica: MongoMemoryReplSet;
+let context: DatabaseContext;
+const adminId = new ObjectId();
+
+before(async () => {
+  replica = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });
+  const client = await new MongoClient(replica.getUri()).connect();
+  context = { client, db: client.db('commerce_tests') };
+  await migrateCommerce(context.db);
+}, { timeout: 120000 });
+
+after(async () => {
+  await context?.client.close();
+  await replica?.stop();
+});
+
+const productInput = (sku: string, stockQuantity = 1) => createProductSchema.parse({
+  sku, name: 'Synthetic test product', shortDescription: '', unitAmount: 2500,
+  stockQuantity, salesEnabled: true, operationId: randomUUID(),
+});
+
+const reservationInput = (sku: string) => ({
+  creationKeyHash: hashToken(randomToken()), guestTokenHash: hashToken(randomToken()),
+  guestAccessExpiresAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 1800000), livemode: false,
+  pricingPolicy: { shipping: 'test-only', tax: 'test-only', discount: 'none-v1' as const },
+  items: [{ sku, quantity: 1, productVersion: 1 }],
+});
+
+const hasCode = (code: string) => (error: unknown) => error instanceof ApiError && error.code === code;
+
+const paidOrder = async (sku: string) => {
+  await createProduct(context, adminId, productInput(sku));
+  const reserved = await reserveOrder(context, reservationInput(sku));
+  assert.ok(reserved.attemptId);
+  await inTransaction(context, async session => {
+    const { orders, products, attempts } = collections(context.db);
+    await products.updateOne({ sku }, { $inc: { 'inventory.stockQuantity': -1, 'inventory.reservedQuantity': -1 } }, { session });
+    await attempts.updateOne({ _id: reserved.attemptId }, {
+      $set: { state: 'succeeded', active: false, 'inventoryReservation.state': 'committed' },
+    }, { session });
+    await orders.updateOne({ _id: reserved.orderId }, {
+      $set: {
+        'payment.status': 'paid', 'payment.settledAttemptId': reserved.attemptId, 'payment.amountPaid': 2500,
+        pricing: { state: 'final', subtotal: 2500, discount: 0, shipping: 0, tax: 0, total: 2500 },
+        customer: { email: 'synthetic@example.test', name: 'Synthetic buyer' },
+        shippingAddress: {
+          recipientName: 'Synthetic buyer', line1: 'Test address', city: 'Test city',
+          state: 'CA', postalCode: '90001', country: 'US',
+        },
+      },
+      $unset: { 'payment.activeAttemptId': '' },
+    }, { session });
+  });
+  return reserved;
+};
+
+test('migrations are repeatable and validators enforce inventory and unique SKU', async () => {
+  await migrateCommerce(context.db);
+  const input = productInput('VALIDATORS');
+  await createProduct(context, adminId, input);
+  await assert.rejects(createProduct(context, adminId, { ...input, operationId: randomUUID() }));
+  await assert.rejects(collections(context.db).products.updateOne({ sku: input.sku }, {
+    $set: { 'inventory.reservedQuantity': 2 },
+  }));
+  assert.equal((await collections(context.db).products.findOne({ sku: input.sku }))?.inventory.reservedQuantity, 0);
+});
+
+test('admin product changes are versioned, idempotent, and audited atomically', async () => {
+  await createProduct(context, adminId, productInput('EDIT'));
+
+  const input = updateProductSchema.parse({
+    unitAmount: 3500, version: 1, operationId: randomUUID(), reason: 'Test price update',
+  });
+
+  await updateProduct(context, adminId, 'EDIT', input);
+  assert.equal((await updateProduct(context, adminId, 'EDIT', input)).replayed, true);
+  await assert.rejects(updateProduct(context, adminId, 'EDIT', { ...input, unitAmount: 4500 }), hasCode('IDEMPOTENCY_CONFLICT'));
+  await assert.rejects(
+    updateProduct(context, adminId, 'EDIT', { ...input, operationId: randomUUID() }), hasCode('VERSION_CONFLICT'),
+  );
+  assert.equal(await collections(context.db).audit.countDocuments({ operationId: input.operationId }), 1);
+  assert.equal((await collections(context.db).products.findOne({ sku: 'EDIT' }))?.price.unitAmount, 3500);
+});
+
+test('competing buyers cannot reserve the last unit twice', async () => {
+  await createProduct(context, adminId, productInput('LAST'));
+
+  const results = await Promise.allSettled([
+    reserveOrder(context, reservationInput('LAST')), reserveOrder(context, reservationInput('LAST')),
+  ]);
+
+  assert.equal(results.filter(result => result.status === 'fulfilled').length, 1);
+  const rejected = results.find(result => result.status === 'rejected');
+  assert.ok(rejected?.status === 'rejected' && hasCode('OUT_OF_STOCK')(rejected.reason));
+  assert.equal((await collections(context.db).products.findOne({ sku: 'LAST' }))?.inventory.reservedQuantity, 1);
+  assert.equal(await collections(context.db).orders.countDocuments({ 'items.sku': 'LAST' }), 1);
+});
+
+test('multi-item failure rolls back earlier reservations and creates no order', async () => {
+  await createProduct(context, adminId, productInput('ROLLBACK-A'));
+  await createProduct(context, adminId, productInput('ROLLBACK-B', 0));
+  const input = reservationInput('ROLLBACK-A');
+  input.items.push({ sku: 'ROLLBACK-B', quantity: 1, productVersion: 1 });
+  await assert.rejects(reserveOrder(context, input), hasCode('OUT_OF_STOCK'));
+  assert.equal((await collections(context.db).products.findOne({ sku: 'ROLLBACK-A' }))?.inventory.reservedQuantity, 0);
+  assert.equal(await collections(context.db).orders.countDocuments({ creationKeyHash: input.creationKeyHash }), 0);
+});
+
+test('reservation retries preserve snapshots and stock reductions cannot steal held units', async () => {
+  await createProduct(context, adminId, productInput('RESERVE', 2));
+  const input = reservationInput('RESERVE');
+  const first = await reserveOrder(context, input);
+  const retry = await reserveOrder(context, input);
+  assert.equal(first.orderId.toHexString(), retry.orderId.toHexString());
+  assert.equal(retry.replayed, true);
+  await assert.rejects(updateProduct(context, adminId, 'RESERVE', updateProductSchema.parse({
+    stockQuantity: 0, version: 1, operationId: randomUUID(), reason: 'Invalid stock reduction',
+  })), hasCode('STOCK_RESERVED'));
+  await updateProduct(context, adminId, 'RESERVE', updateProductSchema.parse({
+    unitAmount: 4000, version: 1, operationId: randomUUID(), reason: 'New catalog price',
+  }));
+  const order = await collections(context.db).orders.findOne({ _id: first.orderId });
+  assert.equal(order?.items[0].unitAmount, 2500);
+  assert.equal(order?.pricing.total, null);
+  assert.equal(await collections(context.db).attempts.countDocuments({ orderId: first.orderId, active: true }), 1);
+});
+
+test('quote rejects browser-supplied prices, duplicate SKUs, and unsafe amounts', async () => {
+  assert.equal(quoteSchema.safeParse({ items: [{ sku: 'A', quantity: 1, unitAmount: 1 }] }).success, false);
+  assert.equal(quoteSchema.safeParse({ items: [{ sku: 'A', quantity: 1 }, { sku: 'A', quantity: 1 }] }).success, false);
+  await createProduct(context, adminId, { ...productInput('OVERFLOW', 99), unitAmount: Number.MAX_SAFE_INTEGER });
+  await assert.rejects(calculateQuote(context, { items: [{ sku: 'OVERFLOW', quantity: 2 }] }), hasCode('INVALID_AMOUNT'));
+});
+
+test('financial observations are immutable, deduplicated, associated, and rolled back with failed operations', async () => {
+  const order = await paidOrder('LEDGER');
+  assert.ok(order.attemptId);
+  const now = new Date();
+
+  const event = {
+    _id: new ObjectId(), schemaVersion: 1, provider: 'stripe' as const, eventId: 'evt_test_ledger',
+    eventType: 'payment_intent.succeeded', providerObjectId: 'pi_test', livemode: false,
+    orderId: order.orderId, attemptId: order.attemptId, providerCreatedAt: now, receivedAt: now,
+    status: 'pending' as const, processingAttempts: 0, nextAttemptAt: now,
+  };
+
+  const value = {
+    operationId: 'ledger-test', orderId: order.orderId, attemptId: order.attemptId, provider: 'stripe' as const,
+    providerObjectId: 'pi_test', providerEventId: event.eventId, type: 'payment' as const, status: 'succeeded' as const,
+    amount: 2500, currency: 'USD' as const, livemode: false, occurredAt: now,
+  };
+
+  await collections(context.db).events.insertOne(event);
+  await assert.rejects(inTransaction(context, async session => {
+    await appendPaymentTransaction(context.db, session, value);
+    throw new Error('Simulated downstream failure');
+  }));
+  assert.equal(await collections(context.db).transactions.countDocuments({ operationId: value.operationId }), 0);
+  const id = await inTransaction(context, session => appendPaymentTransaction(context.db, session, value));
+  const retry = await inTransaction(context, session => appendPaymentTransaction(context.db, session, value));
+  assert.equal(id.toHexString(), retry.toHexString());
+  await assert.rejects(inTransaction(context, session => appendPaymentTransaction(context.db, session, {
+    ...value, amount: 1,
+  })), hasCode('IDEMPOTENCY_CONFLICT'));
+  await assert.rejects(inTransaction(context, session => appendPaymentTransaction(context.db, session, {
+    ...value, operationId: 'wrong-environment', livemode: true,
+  })), hasCode('PAYMENT_ASSOCIATION_MISMATCH'));
+});
+
+test('fulfillment enforces transitions and creates a single shipping notification', async () => {
+  const order = await paidOrder('SHIP');
+  await assert.rejects(updateFulfillment(context, adminId, order.orderId, fulfillmentSchema.parse({
+    version: 1, operationId: randomUUID(), status: 'shipped', carrier: 'Test carrier', trackingNumber: 'TEST',
+  })), hasCode('INVALID_TRANSITION'));
+  await updateFulfillment(context, adminId, order.orderId, {
+    version: 1, operationId: randomUUID(), status: 'processing',
+  });
+
+  const shipping = fulfillmentSchema.parse({
+    version: 2, operationId: randomUUID(), status: 'shipped', carrier: 'Test carrier', trackingNumber: 'TEST',
+  });
+
+  await updateFulfillment(context, adminId, order.orderId, shipping);
+  await updateFulfillment(context, adminId, order.orderId, shipping);
+  assert.equal((await collections(context.db).orders.findOne({ _id: order.orderId }))?.notifications.length, 1);
+});
+
+test('restocking is explicit, idempotent, and bounded by purchased quantity', async () => {
+  const order = await paidOrder('RESTOCK');
+  await cancelOrder(context, adminId, order.orderId, { version: 1, operationId: randomUUID(), reason: 'Test cancellation' });
+
+  const input = restockSchema.parse({
+    version: 2, operationId: randomUUID(), reason: 'Cancelled before shipment', returnedAndSellable: false,
+    items: [{ sku: 'RESTOCK', quantity: 1 }],
+  });
+
+  await restockOrder(context, adminId, order.orderId, input);
+  await restockOrder(context, adminId, order.orderId, input);
+  await assert.rejects(restockOrder(context, adminId, order.orderId, {
+    ...input, version: 3, operationId: randomUUID(),
+  }), hasCode('RESTOCK_LIMIT'));
+  assert.equal((await collections(context.db).products.findOne({ sku: 'RESTOCK' }))?.inventory.stockQuantity, 1);
+});
+
+test('passwords and sessions enforce expiration/revocation without relying on TTL', async () => {
+  const password = 'synthetic-test-password-123';
+  const passwordHash = await hashPassword(password);
+  assert.equal(await verifyPassword(password, passwordHash), true);
+  assert.equal(await verifyPassword('incorrect-password', passwordHash), false);
+  const now = new Date();
+
+  const user = {
+    _id: adminId, schemaVersion: 1, email: 'admin@example.test', emailNormalized: 'admin@example.test',
+    passwordHash, status: 'active' as const, sessionVersion: 1, passwordChangedAt: now, createdAt: now, updatedAt: now,
+  };
+
+  await collections(context.db).users.insertOne(user);
+  const request = new Request('https://test.local/api/admin/auth/login', { method: 'POST' });
+  const result = await login(context.db, user.email, password, request);
+  const cookie = sessionCookie(result.token, request);
+  assert.ok(cookie.includes('HttpOnly') && cookie.includes('Secure') && cookie.includes('SameSite=Strict'));
+  const authorized = new Request('https://test.local/api/admin/orders', { headers: { cookie } });
+  assert.equal((await requireAdmin(context.db, authorized))._id.toHexString(), adminId.toHexString());
+  await collections(context.db).sessions.updateOne({ tokenHash: hashToken(result.token) }, {
+    $set: { expiresAt: new Date(Date.now() - 1000) },
+  });
+  await assert.rejects(requireAdmin(context.db, authorized), hasCode('UNAUTHORIZED'));
+  assert.ok(await collections(context.db).sessions.findOne({ tokenHash: hashToken(result.token) }));
+  const second = await login(context.db, user.email, password, request);
+  await collections(context.db).users.updateOne({ _id: adminId }, { $inc: { sessionVersion: 1 } });
+  await assert.rejects(requireAdmin(context.db, new Request(authorized, {
+    headers: { cookie: sessionCookie(second.token, request) },
+  })), hasCode('UNAUTHORIZED'));
+});
+
+test('mutations require same origin and JSON bodies reject unknown fields and oversize payloads', async () => {
+  assert.throws(() => requireOrigin(new Request('https://test.local/api/admin/products', {
+    headers: { origin: 'https://attacker.test' },
+  })), hasCode('INVALID_ORIGIN'));
+  await assert.rejects(readJson(new Request('https://test.local', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: 'x'.repeat(16385),
+  }), quoteSchema), hasCode('BODY_TOO_LARGE'));
+});
+
+test('declared routes reject unauthenticated and cross-origin requests before opening the database', async () => {
+  const { listOrders, postProduct, guestOrderStatus, checkoutUnavailable, stripeUnavailable } =
+    await import('../src/_app/commerce/handlers.server');
+
+  const response = await listOrders(new Request('https://test.local/api/admin/orders'));
+  assert.equal(response.status, 401);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+
+  const mutation = await postProduct(new Request('https://test.local/api/admin/products', {
+    method: 'POST', headers: { origin: 'https://attacker.test' },
+  }));
+
+  assert.equal(mutation.status, 403);
+
+  const status = await guestOrderStatus(new Request('https://test.local/api/orders/test/status'), {
+    params: Promise.resolve({ id: new ObjectId().toHexString() }),
+  });
+
+  assert.equal(status.status, 404);
+
+  const checkout = await checkoutUnavailable(new Request('https://test.local/api/checkout/session', {
+    method: 'POST', headers: { origin: 'https://test.local' },
+  }));
+
+  assert.equal(checkout.status, 503);
+  assert.equal((await stripeUnavailable()).status, 503);
+});
+
+test('cursor pagination handles equal timestamps without skipping or repeating rows', async () => {
+  const { readPage } = await import('../src/_app/commerce/pagination.server');
+  const collection = context.db.collection('paginationTest');
+  const createdAt = new Date();
+  await collection.insertMany(Array.from({ length: 5 }, () => ({ createdAt })));
+  const seen = new Set<string>();
+  let cursor: string | null = null;
+  do {
+    const request = new Request(`https://test.local/api?limit=2${cursor ? `&cursor=${cursor}` : ''}`);
+    const page = await readPage(collection, request, 'createdAt', {});
+    for (const item of page.items) {
+      assert.equal(seen.has(item._id.toHexString()), false);
+      seen.add(item._id.toHexString());
+    }
+    cursor = page.nextCursor;
+  } while (cursor);
+  assert.equal(seen.size, 5);
+});
+
+test('distributed login throttling blocks repeated failures across requests', async () => {
+  const request = new Request('https://test.local/api/admin/auth/login', { method: 'POST' });
+  for (let count = 0; count < 10; count++) {
+    await assert.rejects(login(context.db, 'missing-rate-test@example.test', 'wrong-password', request),
+      hasCode('INVALID_CREDENTIALS'));
+  }
+  await assert.rejects(login(context.db, 'missing-rate-test@example.test', 'wrong-password', request), hasCode('RATE_LIMITED'));
+});

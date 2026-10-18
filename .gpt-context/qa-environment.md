@@ -3,6 +3,8 @@
 ## Decision and status — 2026-10-18
 
 - User selected MongoDB Atlas for future order storage.
+- On 2026-10-18 the user selected `0.0.0.0/0` in the stage Atlas IP access list for local and stage connections. This is an intended setting, not remotely applied or verified; production network access remains a separate decision. `apps/web/.env.example` declares server-only `NEXT_MONGODB_USERNAME`, `NEXT_MONGODB_PASSWORD`, `NEXT_MONGODB_URI`, and `NEXT_MONGODB_DB_NAME`. Local development uses stage credentials. The URI excludes credentials; username/password are intended for separate driver options. Driver integration and Worker runtime secrets are not configured yet.
+- The four MongoDB names are now declared as required runtime secrets in `apps/web/cloudflare.config.ts` for each Worker. Values must be configured directly and separately in Cloudflare before deployment; their remote presence has not been verified. No MongoDB values are supplied through GitHub Actions.
 - User requested stage: pushes to `main` will deploy a separate Worker using its automatic Cloudflare hostname, without a custom domain. Stage code/workflow is implemented; its remote deployment is not yet verified. Provider isolation details below remain proposals.
 - Current deployment remains one Worker, `luvlae-web`; the workflow now routes production deployment to creation/updates of the highest numbered `release/release-x.y.z` branch, with a current-head check. `main` checks/builds and deploys stage. PRs build without deploying. MongoDB, checkout, email, and queues are not implemented.
 

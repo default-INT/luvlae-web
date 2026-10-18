@@ -19,7 +19,11 @@ Add focused notes here when the project gains durable architecture, development 
 - [Architecture and technology](architecture.md)
 - [Cloudflare deployment audit](deployment.md)
 - [QA environment proposal](qa-environment.md)
+- [On-site commerce plan](commerce-plan.md)
+- [Commerce database model](database-model.md)
 - [FSD rules](fsd-rules.md)
 - [ESLint rules](eslint-rules.md)
 - [Luvlae Berberine Patches](products/luvlae-berberine-patches.md)
 - [SEO requirements for Luvlae.com](seo-requirements.md)
+
+- [Commerce server implementation and API runbook](../apps/web/docs/commerce-api.md)
