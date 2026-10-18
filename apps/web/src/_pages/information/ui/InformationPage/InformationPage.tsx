@@ -89,10 +89,7 @@ export const InformationPage = async (props: InformationPageProps) => {
                 <Link href='/science/berberine-patches'>{informationUi.science}</Link>
               </div>
               <ActionLink
-                href={product.amazonUrl}
-                external
-                analyticsEvent='amazon_outbound_click'
-                analyticsLocation='information_sidebar'
+                href={product.path}
               >
                 {informationUi.viewOnAmazon}
               </ActionLink>

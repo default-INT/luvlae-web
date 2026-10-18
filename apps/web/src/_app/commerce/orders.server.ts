@@ -14,6 +14,7 @@ import type { Order } from './models';
 import type { DatabaseContext } from '@/shared/lib/mongodb/index.server';
 
 export const orderSummaryDto = (order: Order) => ({
+  checkoutMode: order.checkoutMode ?? 'stripe',
   id: order._id.toHexString(), orderNumber: order.orderNumber, version: order.version,
   orderStatus: order.orderStatus, paymentStatus: order.payment.status, fulfillmentStatus: order.fulfillment.status,
   currency: order.currency, pricing: order.pricing, createdAt: order.createdAt.toISOString(),

@@ -1,6 +1,6 @@
 # Commerce server foundation
 
-Implemented 2026-10-18. Frontend pages/CTAs are unchanged. These same-origin Route Handlers run inside `apps/web`.
+Implemented 2026-10-18. The storefront now uses runtime offers, a persistent browser cart, and a temporary mock paid checkout (see below). These same-origin Route Handlers run inside `apps/web`.
 
 ## Database and operations
 
@@ -23,12 +23,12 @@ DB_CONFIRM_NAME=<exact-target-database> pnpm db:admin:reset-password
 pnpm test:server
 ```
 
-Supply `ADMIN_EMAIL` and `ADMIN_PASSWORD` through a local untracked environment or secret runner, not command arguments or committed files. Creation/reset require a password of 15–256 characters. Reset increments session version and revokes all existing sessions. `db:check` verifies a real write rollback in an aborted transaction using `_databaseProbes`, not merely a ping. Stage/production databases and users must be separate. Migrations are deliberately not part of web builds or automatic deployment.
+Supply `ADMIN_EMAIL` and `ADMIN_PASSWORD` through a local untracked environment or secret runner, not command arguments or committed files. Creation/reset require a password of 15–256 characters. Credentials are validated before connecting to MongoDB; missing/invalid email and missing/short/long password have separate error codes (`ADMIN_EMAIL_REQUIRED`, `INVALID_ADMIN_EMAIL`, `ADMIN_PASSWORD_REQUIRED`, `ADMIN_PASSWORD_TOO_SHORT`, `ADMIN_PASSWORD_TOO_LONG`). Values are never printed. Reset increments session version and revokes all existing sessions. `db:check` verifies a real write rollback in an aborted transaction using `_databaseProbes`, not merely a ping. Stage/production databases and users must be separate. Migrations are deliberately not part of web builds or automatic deployment.
 
 ## Protocol and authentication
 
 - Success: `{ "data": ... }`. Failure: `{ "error": { "code": "...", "message": "..." } }`.
-- All responses: `Cache-Control: no-store`, `X-Robots-Tag: noindex`.
+- All API responses: `Cache-Control: no-store`, `X-Robots-Tag: noindex`.
 - JSON mutations require `Content-Type: application/json`; body size is limited to 16 KiB. Schemas reject unknown fields.
 - Browser mutations, including login and quote, require an `Origin` matching the request URL origin. No cross-origin access is enabled.
 - Login returns an `HttpOnly`, `SameSite=Strict` cookie, `Secure` on HTTPS; localhost HTTP can be used for development. Cookie path is `/api/admin`; lifetime is eight hours, no sliding renewal. Admin endpoints authorize every request against session expiration/revocation and active user/session version. Missing cookies are rejected before connecting to MongoDB.
@@ -106,3 +106,21 @@ Stripe session creation, signed event ingestion, reconciliation, reservation com
 - Cloudflare Vite stage build passed. Local Workers preview reached Atlas and returned `DATABASE_NOT_READY` as expected before schema migration completion; unauthenticated admin requests return 401. PBKDF2 600,000 iterations returned 32 bytes in workerd.
 - Stage Atlas migration `001-commerce` and the transaction rollback check completed successfully after the user granted `dbAdmin`. No products, administrator accounts, orders or prices were seeded. The CLI requires `DB_CONFIRM_NAME` to equal `NEXT_MONGODB_DB_NAME`; missing/mismatched confirmation now reports `DB_CONFIRMATION_REQUIRED` before opening a database connection. Operational errors show allowlisted messages without dumping provider/validation payloads.
 - A deployed stage Worker, remote runtime secrets, production migration, backups/restore and live Stripe have not been verified or changed here.
+
+## Storefront and mock checkout — 2026-10-18
+
+- All purchase CTAs lead to `/products/berberine-patches`; the header opens the cart Drawer. `features/shopping-cart` owns its provider, runtime offer loading, quantity controls, persistence and checkout. Marketing/product HTML stays prerendered; price/availability load through the uncached product API.
+- Cart storage is `luvlae-cart-v1` in localStorage (SKU/quantity only); quantities are 1–99, additionally bounded by current availability. Quotes are rechecked before order creation. Changed offer versions/prices require another explicit checkout click. An uncertain creation response retains the exact request in sessionStorage and disables edits until retried; the replay bypasses a new quote, so consuming the last unit does not prevent recovering a committed order.
+- `POST /api/checkout/mock`: `{operationId,guestToken,items:[{sku,quantity,productVersion}]}`. Token: 32 random bytes, base64url (43 chars); operation ID: UUID. Same-origin JSON only. `MOCK_CHECKOUT_ENABLED=true` is required on the server; disabled mode returns 503. Cloudflare stage sets true, production false; local development uses an untracked `.env.local` setting.
+- One transaction checks every product/version/stock, decrements unreserved stock directly, inserts an open order marked `paid`, an inactive succeeded attempt with committed stock, and an `order.mock-paid` audit entry. No outstanding reservation or payment call is created. The amount equals the BE subtotal; shipping/tax are zero under explicitly mock-only policies. Sample customer/address are server-owned constants. No emails are sent.
+- Response: `{data:{id,replayed}}`; 201 for creation, 200 for replay. Idempotency is scoped to the guest token and operation ID; changed contents return 409. Orders carry `checkoutMode:mock` and `TEST-LV-…` numbers in manager API responses. There are no invented Stripe events or financial journal entries. Existing orders default to `stripe` when reading mode.
+- `/order/:id` is noindex and excluded from sitemap. The client reads the guest token from sessionStorage and loads the protected status API, which now includes item names/quantities/price snapshots, pricing and checkout mode, without contact/address. The token never appears in URLs. Confirmation works after reload in the same browser session. Successful checkout removes purchased quantities.
+- `002-mock-order-mode` is an additive schema migration applied by `db:migrate`. `003-test-berberine-product` is an explicit data migration invoked by `db:seed:test` with the existing exact database confirmation guard and mock-mode switch. It inserts `LUVLAE-BERBERINE-60`, 60 patches per box, **synthetic $29.99**, initial stock **100**, sales enabled. It never overwrites an existing product and never replenishes stock on rerun. These are test settings, not verified retail terms.
+
+```sh
+# apps/web, Node 22+, stage/test database only
+DB_CONFIRM_NAME=<exact-stage-database> pnpm db:migrate
+MOCK_CHECKOUT_ENABLED=true DB_CONFIRM_NAME=<exact-stage-database> pnpm db:seed:test
+```
+
+Verified locally against configured stage Atlas: migrations 002/003 applied; runtime offer loaded; browser checkout created one TEST-LV order with mock contacts, paid status and one consumed unit. Desktop and 390px Drawer, cart quantity/subtotal, persistence/removal, and protected confirmation were checked. Stripe routes remain unavailable; replacing the mock requires real payment reconciliation and inventory lifecycle integration, not merely changing the button endpoint.

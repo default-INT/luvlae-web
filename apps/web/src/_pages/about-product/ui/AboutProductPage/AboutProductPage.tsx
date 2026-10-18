@@ -226,11 +226,8 @@ export const AboutProductPage = (props: AboutProductPageProps) => {
               <p>{home.cta.description}</p>
               <div className={styles.ctaActions}>
                 <ActionLink
-                  href={product.amazonUrl}
-                  external
+                  href={product.path}
                   variant='light'
-                  analyticsEvent='amazon_outbound_click'
-                  analyticsLocation='about_product_cta'
                 >
                   {home.cta.amazonButton}
                 </ActionLink>

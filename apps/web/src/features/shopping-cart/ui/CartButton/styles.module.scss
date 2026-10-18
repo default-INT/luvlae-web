@@ -1,0 +1,29 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 50px;
+  background: var(--color-navy);
+  color: white;
+  font: 650 0.88rem var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.count {
+  min-width: 22px;
+  padding: 2px 5px;
+  border-radius: 50px;
+  background: #ffffff26;
+}
+
+@media (max-width: 480px) {
+  .button {
+    gap: 6px;
+    padding: 9px 12px;
+  }
+}

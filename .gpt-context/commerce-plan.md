@@ -1,6 +1,6 @@
 # On-site commerce plan
 
-Date: 2026-10-18. Status: server foundation implemented; UI and Stripe integration remain pending. See [implementation and API runbook](../apps/web/docs/commerce-api.md).
+Date: 2026-10-18. Status: server foundation and storefront cart/mock paid checkout implemented; real Stripe integration remains pending. See [current temporary flow](commerce-ui.md). See [implementation and API runbook](../apps/web/docs/commerce-api.md).
 
 ## Confirmed by the user
 

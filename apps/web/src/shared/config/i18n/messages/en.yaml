@@ -4,7 +4,7 @@ aboutProduct:
     A small patch<br>
     A simple daily ritual
   description: Meet Luvlae Berberine Patches — an easy-to-use, pill-free format for your everyday routine. One box contains 60 patches to keep your routine going.
-  heroButton: Shop on Amazon
+  heroButton: View product
   heroNote: Discover the patches
   badgeOne: 60 Patches per Box
   badgeTwo: Pill-Free Format
@@ -90,11 +90,11 @@ aboutProduct:
     threeBody: Visit our FAQs for practical guidance on application, storage, and everyday use.
   cta:
     eyebrow: Compare the details
-    title: Ready to see the current listing?
-    description: Review the product page here, then check Amazon for today's price, availability, shipping, and return terms.
-    amazonButton: Shop on Amazon
+    title: Ready to explore the patches?
+    description: Explore the product details, choose your quantity, and add it to your cart.
+    amazonButton: View product
     productButton: Read product details
-    note: Amazon handles checkout, fulfillment, and returns for purchases made there.
+    note: Choose your quantity on the product page.
 
 productPage:
   breadcrumbLabel: Breadcrumb
@@ -106,9 +106,9 @@ productPage:
     subtitle: One patch. A simple daily ritual.
     description: Bring simplicity to your everyday routine with Luvlae Berberine Patches. A discreet, pill-free format combining berberine with botanical extracts and other ingredients — easy to apply at home or on the go.
     badge: 60 patches per box
-    primaryAction: View on Amazon
+    primaryAction: Add to cart
     secondaryAction: Explore product details
-    purchaseNote: Amazon provides the current price, availability, shipping, and return terms.
+    purchaseNote: Choose your quantity and add the patches to your cart.
     imageOneAlt: Luvlae Berberine Patches box beside a sheet of iridescent patches
     imageTwoAlt: Open Luvlae Berberine Patches box with a sheet of patches
     imageThreeAlt: Close view of the Luvlae Berberine Patches box and patch sheet
@@ -214,13 +214,13 @@ productPage:
         answer: Follow the storage instructions on the package. Keep them out of reach of children and pets.
       buy:
         question: Where can I buy Luvlae Berberine Patches?
-        answer: Visit our Amazon listing for current pricing, availability, and delivery options.
+        answer: See the product purchase section for current pricing and availability.
   cta:
     eyebrow: NEXT STEP
-    title: Ready to check the current listing?
-    description: Compare the product details here, then review the live Amazon page before you decide.
-    button: View on Amazon
-    note: Amazon handles checkout, shipping, and returns for orders placed there.
+    title: Ready to choose your patches?
+    description: Explore the product details and choose your quantity above.
+    button: View product
+    note: Your cart is available from the top of every page.
   schemaDescription: Luvlae Berberine Patches in a 60-count, pill-free patch format.
   schemaBrand: Luvlae
   metadata:
@@ -239,7 +239,7 @@ siteHeader:
   navigationLabel: Main navigation
   mobileNavigationLabel: Mobile navigation
   openMenuLabel: Open navigation menu
-  shopOnAmazon: Shop on Amazon
+  shopOnAmazon: View product
   navigation:
     aboutProduct: About Product
     patches: The Patches
@@ -262,7 +262,7 @@ siteFooter:
   exploreGroup: Explore
   aboutProduct: About Product
   about: About Luvlae
-  shopOnAmazon: Shop on Amazon
+  shopOnAmazon: View product
   copyright: '© {{year}} Luvlae. All rights reserved.'
   tagline: Simple wellness, one patch at a time.
 
@@ -279,7 +279,7 @@ informationUi:
   howToUse: How to use
   safety: Safety
   science: Science
-  viewOnAmazon: View on Amazon
+  viewOnAmazon: View product
 
 ingredientsPage:
   eyebrow: Ingredient guide
@@ -341,17 +341,17 @@ home:
     titleLineTwo: Simple moments.
     description: Meet a discreet, pill-free step made to fit into your everyday routine.
     imageAlt: Woman holding a Luvlae Berberine Patches box and a sheet of pearly patches
-    button: Buy 2, save 20%
-    note: Check the 2-pack offer and current terms on Amazon.
+    button: View product
+    note: Explore the patches and choose your quantity.
   hero:
     eyebrow: LUVLAE BERBERINE PATCHES
     title: A little patch.<br>A simpler routine.
     description: Make room for a small moment of self-care. Discover our discreet, pill-free patches, made to fit around your everyday life.
     imageAlt: Luvlae Berberine Patches box beside a sheet of pearly patches
-    badge: Buy 2, save 20%*
-    offerNote: '*Check the 2-pack offer and eligibility on Amazon. Promotions are subject to Amazon’s terms and availability.'
-    button: Add to Cart
-    destination: Continue to Amazon to add to your cart.
+    badge: 60 patches per box
+    offerNote: Choose the quantity that fits your routine.
+    button: View product
+    destination: Choose your quantity on the product page.
     details: About the product
     featureOne: Pill-free format
     featureTwo: Discreet design
@@ -386,8 +386,8 @@ home:
     eyebrow: YOUR NEXT LITTLE RITUAL
     title: Ready to make it part<br>of your day?
     description: One compact box. 60 pearly patches. A simple addition to the routine you already love.
-    button: Add to Cart
-    note: Choose your quantity and complete your purchase on Amazon.
+    button: View product
+    note: Explore the product and add your selection to the cart.
     details: Explore the product
   reviews:
     eyebrow: THE EVERYDAY EXPERIENCE
@@ -501,3 +501,42 @@ home:
 aboutProductMetadata:
   title: About Luvlae Berberine Patches | Format & Everyday Routine
   description: Get to know Luvlae Berberine Patches, their pill-free format and everyday routine, with guides to ingredients, use, safety and evidence.
+
+commerce:
+  cart: Cart
+  yourSelection: Your selection
+  quantity: Quantity
+  close: Close cart
+  remove: Remove
+  subtotal: Subtotal
+  checkout: Checkout
+  creatingOrder: Creating order…
+  continueShopping: Continue shopping
+  addToCart: Add to cart
+  priceUnavailable: Price unavailable
+  inStock: In stock
+  soldOut: Currently unavailable
+  cartLimit: Your cart already contains the maximum available quantity.
+  emptyTitle: Your cart is waiting
+  emptyDescription: A small step toward your everyday routine. Explore the patches and find your fit.
+  exploreProduct: Explore the patches
+  retry: Refresh prices
+  offerError: We could not load this product. Please refresh to try again.
+  stockError: This quantity is no longer available. Reduce it or remove the item to continue.
+  checkoutError: We could not confirm your order. Please try again; a retry will not create a duplicate order.
+  changedError: The price or availability has changed. Review your cart before checking out again.
+  openingOrder: Opening your order…
+  orderEyebrow: YOUR LUVLAE ORDER
+  orderTitle: Thank you for your order
+  orderDescription: Your selection is saved and ready for our team to review.
+  orderNumber: Order number
+  orderItems: Your selection
+  paid: Paid
+  orderStatus: Payment status
+  fulfillmentStatus: Fulfillment
+  unfulfilled: Awaiting processing
+  processing: Processing
+  shipped: Shipped
+  delivered: Delivered
+  cancelled: Cancelled
+  backToProduct: Continue exploring

@@ -222,7 +222,7 @@ export const informationPages: Record<string, InformationPageContent> = {
       },
       {
         title: 'Where can I buy Luvlae Berberine Patches?',
-        paragraphs: ['Visit our Amazon listing for current pricing, availability, and delivery options.'],
+        paragraphs: ['Visit the product page for current pricing and availability.'],
       },
     ],
   },
@@ -237,7 +237,7 @@ export const informationPages: Record<string, InformationPageContent> = {
         title: 'How we present product information',
         paragraphs: [
           'We share product details, ingredients, and practical guidance to help you explore the Luvlae patch format.',
-          'Amazon hosts the product listing and handles checkout, shipping, and applicable returns for purchases made there.',
+          'Explore the product page, choose your quantity, and add your selection to your cart.',
         ],
       },
     ],

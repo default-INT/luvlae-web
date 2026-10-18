@@ -320,3 +320,121 @@ test('distributed login throttling blocks repeated failures across requests', as
   }
   await assert.rejects(login(context.db, 'missing-rate-test@example.test', 'wrong-password', request), hasCode('RATE_LIMITED'));
 });
+
+test('mock checkout is gated, atomic, replayable, and usable by manager without invented Stripe payments', async () => {
+  const { createMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+  const { seedTestProduct } = await import('../src/_app/commerce/mock-migration.server');
+  const previous = process.env.MOCK_CHECKOUT_ENABLED;
+  try {
+    const input = { operationId: randomUUID(), guestToken: randomToken(),
+      items: [{ sku: 'MOCK-PAID', quantity: 2, productVersion: 1 }] };
+
+    delete process.env.MOCK_CHECKOUT_ENABLED;
+    await assert.rejects(createMockOrder(context, input), hasCode('MOCK_CHECKOUT_DISABLED'));
+    process.env.MOCK_CHECKOUT_ENABLED = 'true';
+    await createProduct(context, adminId, productInput('MOCK-PAID', 2));
+    const result = await createMockOrder(context, input);
+    const replay = await createMockOrder(context, input);
+    assert.equal(result.id, replay.id);
+    assert.equal(replay.replayed, true);
+    const { orders, products, attempts, transactions } = collections(context.db);
+    const order = await orders.findOne({ _id: new ObjectId(result.id) });
+    assert.ok(order);
+    assert.equal(order.checkoutMode, 'mock');
+    assert.equal(order.payment.status, 'paid');
+    assert.equal(order.payment.amountPaid, 5000);
+    assert.equal(order.pricing.total, 5000);
+    assert.equal(order.customer?.email, 'checkout@example.test');
+    assert.equal(order.guestAccess.tokenHash, hashToken(input.guestToken));
+    assert.equal((await products.findOne({ sku: 'MOCK-PAID' }))?.inventory.stockQuantity, 0);
+    assert.equal((await products.findOne({ sku: 'MOCK-PAID' }))?.inventory.reservedQuantity, 0);
+    assert.equal(await transactions.countDocuments({ orderId: order._id }), 0);
+    assert.equal((await attempts.findOne({ orderId: order._id }))?.inventoryReservation.state, 'committed');
+    await assert.rejects(createMockOrder(context, { ...input,
+      items: [{ sku: 'MOCK-PAID', quantity: 1, productVersion: 1 }] }), hasCode('IDEMPOTENCY_CONFLICT'));
+    await updateFulfillment(context, adminId, order._id, fulfillmentSchema.parse({
+      version: 1, operationId: randomUUID(), status: 'processing',
+    }));
+    await seedTestProduct(context);
+    await products.updateOne({ sku: 'LUVLAE-BERBERINE-60' }, { $inc: { 'inventory.stockQuantity': -1 } });
+    await seedTestProduct(context);
+    assert.equal((await products.findOne({ sku: 'LUVLAE-BERBERINE-60' }))?.inventory.stockQuantity, 99);
+  } finally {
+    if (previous === undefined) delete process.env.MOCK_CHECKOUT_ENABLED;
+    else process.env.MOCK_CHECKOUT_ENABLED = previous;
+  }
+});
+
+test('mock checkout prevents overselling and rolls back all items when a price changes', async () => {
+  const { createMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+  const previous = process.env.MOCK_CHECKOUT_ENABLED;
+  process.env.MOCK_CHECKOUT_ENABLED = 'true';
+
+  const input = (sku: string) => ({ operationId: randomUUID(), guestToken: randomToken(),
+    items: [{ sku, quantity: 1, productVersion: 1 }] });
+
+  try {
+    await createProduct(context, adminId, productInput('MOCK-RACE'));
+
+    const results = await Promise.allSettled([
+      createMockOrder(context, input('MOCK-RACE')), createMockOrder(context, input('MOCK-RACE')),
+    ]);
+
+    assert.equal(results.filter(result => result.status === 'fulfilled').length, 1);
+    assert.equal((await collections(context.db).products.findOne({ sku: 'MOCK-RACE' }))?.inventory.stockQuantity, 0);
+    await createProduct(context, adminId, productInput('MOCK-ROLLBACK'));
+
+    const request = { ...input('MOCK-ROLLBACK'), items: [
+      { sku: 'MOCK-ROLLBACK', quantity: 1, productVersion: 1 },
+      { sku: 'MOCK-RACE', quantity: 1, productVersion: 2 },
+    ] };
+
+    await assert.rejects(createMockOrder(context, request), hasCode('PRICE_CHANGED'));
+    assert.equal((await collections(context.db).products.findOne({ sku: 'MOCK-ROLLBACK' }))?.inventory.stockQuantity, 1);
+    assert.equal(await collections(context.db).orders.countDocuments({
+      creationKeyHash: hashToken(`mock:${request.guestToken}:${request.operationId}`),
+    }), 0);
+    await assert.rejects(createMockOrder(context, { ...input('MOCK-ROLLBACK'),
+      items: [{ sku: 'MOCK-ROLLBACK', quantity: 100, productVersion: 1 }] }));
+  } finally {
+    if (previous === undefined) delete process.env.MOCK_CHECKOUT_ENABLED;
+    else process.env.MOCK_CHECKOUT_ENABLED = previous;
+  }
+});
+
+test('SSR guest access is scoped, expires and never returns customer/address or access secrets', async () => {
+  const { findGuestOrder, getGuestOrder, guestOrderCookie } = await import('../src/entities/order/index.server');
+  const { createMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+  const previous = process.env.MOCK_CHECKOUT_ENABLED;
+  process.env.MOCK_CHECKOUT_ENABLED = 'true';
+  try {
+    await createProduct(context, adminId, productInput('SSR-ORDER'));
+    const token = randomToken();
+
+    const result = await createMockOrder(context, { operationId: randomUUID(), guestToken: token,
+      items: [{ sku: 'SSR-ORDER', quantity: 1, productVersion: 1 }] });
+
+    const order = await findGuestOrder(context.db, result.id, token);
+    assert.ok(order);
+    assert.equal(order.paymentStatus, 'paid');
+    assert.equal(order.pricing.subtotal, 2500);
+    assert.equal('customer' in order, false);
+    assert.equal('shippingAddress' in order, false);
+    assert.equal(JSON.stringify(order).includes(token), false);
+    assert.equal(await findGuestOrder(context.db, result.id, randomToken()), null);
+    assert.equal(await getGuestOrder(result.id), null);
+    assert.equal(await getGuestOrder('invalid', token), null);
+    const cookie = guestOrderCookie(result.id, token, 'https://test.local/api/checkout/mock');
+    assert.match(cookie, new RegExp(`Path=/orders/${result.id};`));
+    assert.match(cookie, /HttpOnly; SameSite=Lax; Max-Age=2592000; Secure$/);
+    assert.doesNotMatch(guestOrderCookie(result.id, token, 'http://localhost:3002/api/checkout/mock'), /; Secure/);
+    assert.throws(() => guestOrderCookie('invalid', token, 'https://test.local'));
+    await collections(context.db).orders.updateOne({ _id: new ObjectId(result.id) }, {
+      $set: { 'guestAccess.expiresAt': new Date(0) },
+    });
+    assert.equal(await findGuestOrder(context.db, result.id, token), null);
+  } finally {
+    if (previous === undefined) delete process.env.MOCK_CHECKOUT_ENABLED;
+    else process.env.MOCK_CHECKOUT_ENABLED = previous;
+  }
+});

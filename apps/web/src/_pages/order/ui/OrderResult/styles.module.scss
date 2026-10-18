@@ -1,0 +1,25 @@
+.main { padding: 72px 24px 100px; min-height: 75vh;
+  background: radial-gradient(ellipse at top, #e0efff, transparent 65%); }
+.card { width: min(100%, 760px); padding: clamp(24px, 5vw, 60px); margin: auto; border-radius: 24px;
+  border: 1px solid var(--color-border); background: white; box-shadow: var(--shadow-card);
+  h1 { margin: 20px 0 14px; font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -0.055em; line-height: 1.2; }
+  button { padding: 12px 24px; border: 0; border-radius: 50px; background: var(--color-navy);
+    color: white; font: inherit; cursor: pointer; } }
+.eyebrow { color: var(--color-blue); letter-spacing: 0.12em; font-size: 0.75rem; font-weight: 650; }
+.check { display: grid; place-items: center; width: 64px; height: 64px; margin-top: 28px;
+  border-radius: 50%; background: var(--color-surface-muted); color: var(--color-blue); font-size: 1.8rem; }
+.description { color: var(--color-text); line-height: 1.7; }
+.details { display: grid; gap: 18px; margin: 32px 0; padding: 24px; border-radius: 16px;
+  background: var(--color-surface-muted);
+  > div { display: flex; gap: 16px; justify-content: space-between; font-size: 0.85rem; }
+  dt { color: var(--color-text); } dd { margin: 0; font-weight: 700; text-align: right; overflow-wrap: anywhere; } }
+.selection { h2 { font-size: 1.1rem; } }
+.line, .total { display: flex; gap: 20px; justify-content: space-between; padding: 20px 0;
+  border-bottom: 1px solid var(--color-border); font-size: 0.9rem;
+  small { display: block; margin-top: 8px; color: var(--color-text); } strong { white-space: nowrap; } }
+.total { border: 0; font-size: 1.1rem; }
+.note { border-radius: 12px; background: var(--color-surface-muted); padding: 16px;
+  color: var(--color-text); font-size: 0.8rem; line-height: 1.7; }
+.back { display: inline-block; margin-top: 20px; padding: 15px 26px; border-radius: 50px;
+  background: var(--color-navy); color: white; text-decoration: none; font-size: 0.9rem; }
+@media (max-width: 480px) { .main { padding: 32px 16px 60px; } .details { padding: 16px; } }

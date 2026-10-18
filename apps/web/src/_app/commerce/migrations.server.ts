@@ -2,6 +2,8 @@ import 'server-only';
 
 import { ObjectId } from 'mongodb';
 
+import { migrateMockOrders } from './mock-migration.server';
+
 import type { Db, Document, IndexDescription } from 'mongodb';
 
 const text = { bsonType: 'string', minLength: 1, maxLength: 2000 };
@@ -186,7 +188,7 @@ const definitions: Definition[] = [
 ];
 
 // Add new migrations instead of editing this migration after it is applied to a shared environment.
-export const migrateCommerce = async (db: Db) => {
+const migrateFoundation = async (db: Db) => {
   await db.collection('_migrations').createIndex({ name: 1 }, { unique: true, name: 'migration_name_unique' });
   const completed = await db.collection('_migrations').findOne({ name: '001-commerce' });
   if (completed) return;
@@ -209,4 +211,9 @@ export const migrateCommerce = async (db: Db) => {
   } finally {
     await db.collection('_migrationLocks').deleteOne({ owner });
   }
+};
+
+export const migrateCommerce = async (db: Db) => {
+  await migrateFoundation(db);
+  await migrateMockOrders(db);
 };

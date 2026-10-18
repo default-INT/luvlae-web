@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { product } from '@/entities/product';
+import { getProductOffer } from '@/entities/product/index.server';
+import { ProductPurchase } from '@/features/shopping-cart';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { ActionLink } from '@/shared/ui/ActionLink';
@@ -15,7 +17,10 @@ import { ProductGallery } from '../ProductGallery';
 import styles from './styles.module.scss';
 
 export const ProductPage = async () => {
-  const dictionary = await getDictionary(defaultLocale);
+  const [dictionary, offer] = await Promise.all([
+    getDictionary(defaultLocale), getProductOffer(product.sku).catch(() => null),
+  ]);
+
   const { productPage: page } = dictionary;
 
   const facts = [
@@ -90,7 +95,7 @@ export const ProductPage = async () => {
             <span aria-hidden='true'>/</span>
             <span aria-current='page'>{page.breadcrumbCurrent}</span>
           </nav>
-          <section className={styles.hero} aria-labelledby='product-title'>
+          <section id='purchase' className={styles.hero} aria-labelledby='product-title'>
             <ProductGallery dictionary={page.hero}/>
             <div className={styles.heroCopy}>
               <p className={styles.eyebrow}>{page.hero.eyebrow}</p>
@@ -103,15 +108,7 @@ export const ProductPage = async () => {
                 <div><dt>{page.hero.detailThreeLabel}</dt><dd>{page.hero.detailThreeValue}</dd></div>
                 <div><dt>{page.hero.detailFourLabel}</dt><dd>{page.hero.detailFourValue}</dd></div>
               </dl>
-              <ActionLink
-                href={product.amazonUrl}
-                external
-                className={styles.buyButton}
-                analyticsEvent='amazon_outbound_click'
-                analyticsLocation='product_hero'
-              >
-                {page.hero.primaryAction}
-              </ActionLink>
+              <ProductPurchase offer={offer} copy={dictionary.commerce}/>
               <p className={styles.purchaseNote}>{page.hero.purchaseNote}</p>
               <Link className={styles.inlineLink} href='#product-details'>{page.hero.secondaryAction} ↗</Link>
             </div>
@@ -227,11 +224,8 @@ export const ProductPage = async () => {
                 <small>{page.cta.note}</small>
               </div>
               <ActionLink
-                href={product.amazonUrl}
-                external
+                href='#purchase'
                 variant='light'
-                analyticsEvent='amazon_outbound_click'
-                analyticsLocation='product_cta'
               >
                 {page.cta.button}
               </ActionLink>

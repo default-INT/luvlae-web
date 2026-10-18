@@ -16,6 +16,7 @@ export interface Product {
 }
 
 export interface Order {
+  checkoutMode?: 'mock' | 'stripe';
   _id: ObjectId;
   schemaVersion: number;
   version: number;

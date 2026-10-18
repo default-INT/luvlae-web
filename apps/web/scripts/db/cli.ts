@@ -4,16 +4,20 @@ import { z } from 'zod';
 
 import { collections } from '../../src/_app/commerce/collections.server';
 import { migrateCommerce } from '../../src/_app/commerce/migrations.server';
+import { seedTestProduct } from '../../src/_app/commerce/mock-migration.server';
+import { requireMockCheckout } from '../../src/_app/commerce/mock-checkout.server';
 import { ApiError } from '../../src/shared/lib/api/index.server';
 import { createDatabaseClient, inTransaction } from '../../src/shared/lib/mongodb/index.server';
 import { hashPassword } from '../../src/shared/lib/security/index.server';
+
+import { readAdminCredentials } from './admin-credentials';
 
 nextEnv.loadEnvConfig(process.cwd());
 
 const run = async () => {
   const command = process.argv[2];
-  if (!['migrate', 'check', 'admin:create', 'admin:reset-password'].includes(command)) {
-    throw new ApiError(400, 'INVALID_COMMAND', 'Use migrate, check, admin:create, or admin:reset-password.');
+  if (!['migrate', 'seed:test', 'check', 'admin:create', 'admin:reset-password'].includes(command)) {
+    throw new ApiError(400, 'INVALID_COMMAND', 'Use migrate, seed:test, check, admin:create, or admin:reset-password.');
   }
   // Prevent accidental operations against a different environment/database.
   if (!process.env.NEXT_MONGODB_DB_NAME) {
@@ -23,6 +27,8 @@ const run = async () => {
     throw new ApiError(400, 'DB_CONFIRMATION_REQUIRED',
       'Set DB_CONFIRM_NAME to exactly the same value as NEXT_MONGODB_DB_NAME before running this command.');
   }
+  const credentialEnvironment = { ADMIN_EMAIL: process.env.ADMIN_EMAIL, ADMIN_PASSWORD: process.env.ADMIN_PASSWORD };
+  const credentials = command.startsWith('admin:') ? readAdminCredentials(credentialEnvironment) : undefined;
   const context = createDatabaseClient();
   try {
     await context.client.connect();
@@ -31,7 +37,11 @@ const run = async () => {
     } else {
       const migration = await context.db.collection('_migrations').findOne({ name: '001-commerce' });
       if (!migration) throw new ApiError(503, 'DATABASE_NOT_READY', 'Run db:migrate before this command.');
-      if (command === 'check') {
+      if (command === 'seed:test') {
+        requireMockCheckout();
+        await migrateCommerce(context.db);
+        await seedTestProduct(context);
+      } else if (command === 'check') {
         // A write in an aborted transaction proves transaction support without retaining probe data.
         const session = context.client.startSession();
         const probe = new ObjectId();
@@ -46,8 +56,7 @@ const run = async () => {
           await session.endSession();
         }
       } else {
-        const email = z.email().max(254).parse(process.env.ADMIN_EMAIL?.trim().toLowerCase());
-        const password = z.string().min(15).max(256).parse(process.env.ADMIN_PASSWORD);
+        const { email, password } = credentials ?? readAdminCredentials(credentialEnvironment);
         const passwordHash = await hashPassword(password);
         const now = new Date();
         const { users, sessions } = collections(context.db);

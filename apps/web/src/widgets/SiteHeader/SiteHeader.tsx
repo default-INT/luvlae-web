@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
-import { product } from '@/entities/product';
-import { ActionLink } from '@/shared/ui/ActionLink';
+import { CartButton } from '@/features/shopping-cart';
 
 import styles from './styles.module.scss';
 
@@ -35,14 +34,7 @@ export const SiteHeader = (props: SiteHeaderProps) => {
           {navigation.map(item => <Link href={item.href} key={item.href}>{item.label}</Link>)}
         </nav>
         <div className={styles.actions}>
-          <ActionLink
-            href={product.amazonUrl}
-            external
-            analyticsEvent='amazon_outbound_click'
-            analyticsLocation='header'
-          >
-            {siteHeader.shopOnAmazon}
-          </ActionLink>
+          <CartButton copy={dictionary.commerce}/>
           <details className={styles.mobileMenu}>
             <summary aria-label={siteHeader.openMenuLabel}><span/><span/><span/></summary>
             <nav aria-label={siteHeader.mobileNavigationLabel}>

@@ -3,6 +3,9 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { test } from 'node:test';
 
+import { readAdminCredentials } from '../scripts/db/admin-credentials';
+import { ApiError } from '../src/shared/lib/api/index.server';
+
 const appRoot = path.resolve(import.meta.dirname, '..');
 
 for (const confirmation of ['', 'different-database']) {
@@ -28,3 +31,28 @@ for (const confirmation of ['', 'different-database']) {
     assert.doesNotMatch(result.stderr, /synthetic-stage/);
   });
 }
+
+for (const [email, password, code] of [
+  ['', 'synthetic-password-123', 'ADMIN_EMAIL_REQUIRED'],
+  ['invalid', 'synthetic-password-123', 'INVALID_ADMIN_EMAIL'],
+  ['admin@example.test', '', 'ADMIN_PASSWORD_REQUIRED'],
+  ['admin@example.test', 'too-short', 'ADMIN_PASSWORD_TOO_SHORT'],
+  ['admin@example.test', 'x'.repeat(257), 'ADMIN_PASSWORD_TOO_LONG'],
+]) {
+  test(`admin credentials report ${code} without exposing values`, () => {
+    assert.throws(() => readAdminCredentials({ ADMIN_EMAIL: email, ADMIN_PASSWORD: password }), error => {
+      assert.ok(error instanceof ApiError);
+      assert.equal(error.code, code);
+      if (password) assert.equal(error.message.includes(password), false);
+      if (email) assert.equal(error.message.includes(email), false);
+      return true;
+    });
+  });
+}
+
+test('admin credentials normalize email and preserve password exactly', () => {
+  const password = ' synthetic-password-123 ';
+  assert.deepEqual(readAdminCredentials({ ADMIN_EMAIL: ' ADMIN@EXAMPLE.TEST ', ADMIN_PASSWORD: password }), {
+    email: 'admin@example.test', password,
+  });
+});

@@ -20,6 +20,7 @@ Add focused notes here when the project gains durable architecture, development 
 - [Cloudflare deployment audit](deployment.md)
 - [QA environment proposal](qa-environment.md)
 - [On-site commerce plan](commerce-plan.md)
+- [Storefront cart and mock checkout](commerce-ui.md)
 - [Commerce database model](database-model.md)
 - [FSD rules](fsd-rules.md)
 - [ESLint rules](eslint-rules.md)

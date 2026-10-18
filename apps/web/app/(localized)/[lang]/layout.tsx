@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 
+import { CartRuntime } from '@/features/shopping-cart';
+import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { Analytics } from '@/_app/analytics';
 import { defaultLocale, isLocale, locales } from '@/shared/config/i18n';
 import { manrope } from '@/shared/styles/fonts';
@@ -30,9 +32,11 @@ export default async function LocalizedRootLayout(props: Readonly<Props>) {
     notFound();
   }
 
+  const dictionary = await getDictionary(lang);
+
   return (
     <html lang={lang} className={manrope.variable}>
-      <body>{children}<Analytics/></body>
+      <body>{children}<CartRuntime copy={dictionary.commerce}/><Analytics/></body>
     </html>
   );
 }

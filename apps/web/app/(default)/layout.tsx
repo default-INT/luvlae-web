@@ -1,5 +1,7 @@
 import '@/shared/styles/globals.css';
 
+import { CartRuntime } from '@/features/shopping-cart';
+import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { Analytics } from '@/_app/analytics';
 import { manrope } from '@/shared/styles/fonts';
 
@@ -14,12 +16,13 @@ interface Props {
   children: ReactNode;
 }
 
-export default function DefaultRootLayout(props: Readonly<Props>) {
+export default async function DefaultRootLayout(props: Readonly<Props>) {
   const { children } = props;
+  const dictionary = await getDictionary('en');
 
   return (
     <html lang='en' className={manrope.variable}>
-      <body>{children}<Analytics/></body>
+      <body>{children}<CartRuntime copy={dictionary.commerce}/><Analytics/></body>
     </html>
   );
 }

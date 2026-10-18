@@ -37,7 +37,7 @@ export const SiteFooter = (props: SiteFooterProps) => {
       title: siteFooter.exploreGroup,
       links: [
         { label: siteFooter.about, href: '/about' },
-        { label: siteFooter.shopOnAmazon, href: product.amazonUrl, external: true },
+        { label: siteFooter.shopOnAmazon, href: product.path },
       ],
     },
   ];
@@ -56,17 +56,7 @@ export const SiteFooter = (props: SiteFooterProps) => {
               <ul>
                 {group.links.map(link => (
                   <li key={link.label}>
-                    {'external' in link ? (
-                      <a
-                        href={link.href}
-                        target='_blank'
-                        rel='noopener noreferrer sponsored'
-                        data-analytics-event='amazon_outbound_click'
-                        data-analytics-location='footer'
-                      >
-                        {link.label}
-                      </a>
-                    ) : <Link href={link.href}>{link.label}</Link>}
+                    <Link href={link.href}>{link.label}</Link>
                   </li>
                 ))}
               </ul>

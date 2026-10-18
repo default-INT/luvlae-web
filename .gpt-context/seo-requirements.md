@@ -4,7 +4,7 @@
 
 This note captures the actionable recommendations in `luvlae_seo_strategy_ru_v2_competitor_benchmark.pdf`, prepared 2026-09-29 for the US market. It is a working SEO/content strategy, not legal advice or proof that a health claim is compliant or effective. Recheck current Google, FDA, FTC, and product-label requirements before implementation when they matter.
 
-Primary conversion: click through to Amazon. The strategy treats Luvlae Berberine Patches as a health/YMYL product and calls for stronger trust and evidence handling than a general ecommerce landing page.
+Original strategy conversion: click through to Amazon. As of 2026-10-18, purchase CTAs lead to the product page and the storefront uses an explicitly temporary mock checkout; see [implementation](commerce-ui.md). Do not add real purchase analytics or merchant Offer markup based on simulated payments or synthetic seed pricing. The strategy treats Luvlae Berberine Patches as a health/YMYL product and calls for stronger trust and evidence handling than a general ecommerce landing page.
 
 ## Strategic direction
 

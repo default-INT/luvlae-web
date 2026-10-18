@@ -1,5 +1,9 @@
 # Luvlae.com architecture and technology
 
+## Latest commerce update — 2026-10-18
+
+The storefront now has a runtime-priced product purchase block, browser-persisted cart/Drawer and noindex order confirmation. Checkout temporarily creates paid mock orders with sample contacts and atomically consumed stock, as explicitly requested by the user. Stage enables mock checkout; production disables it. Schema/data migrations 002/003 applied to stage Atlas; test SKU starts at synthetic USD 29.99 and 100 units. Stripe remains unimplemented. See [current storefront behavior](commerce-ui.md); historical Amazon-only and pending-UI descriptions below refer to earlier stages.
+
 ## Status and agreed requirements
 
 The initial monorepo and Next.js app were created on 2026-10-02. Cloudflare Workers integration is configured and a GitHub Actions workflow is implemented. As verified on 2026-10-18, production workflow runs #12 and #13 succeeded on 2026-10-12 after transient deployment retries were added; #13 deployed current commit `398b900`. `https://www.luvlae.com/` serves vinext responses, and the apex redirects to `www`; account-level domain mapping remains uninspected. See the [deployment audit](deployment.md) for evidence and artifact measurements. The homepage and initial product/information routes are implemented. A commerce server foundation now exists; the stage Atlas migration and rollback check are verified, and payments/UI remain pending (see implementation update below). The user selected these requirements:

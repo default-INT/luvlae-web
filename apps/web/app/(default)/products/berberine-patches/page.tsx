@@ -4,7 +4,7 @@ import { getDictionary } from '@/shared/lib/i18n/index.server';
 
 import type { Metadata } from 'next';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const dictionary = await getDictionary(defaultLocale);

@@ -81,12 +81,9 @@ export const HomePage = (props: HomePageProps) => {
               </h1>
               <p className={styles.promoDescription}>{home.promo.description}</p>
               <ActionLink
-                href={product.amazonUrl}
-                external
+                href={product.path}
                 variant='outline'
                 className={styles.promoButton}
-                analyticsEvent='amazon_outbound_click'
-                analyticsLocation='home_promo'
               >
                 {home.promo.button}
               </ActionLink>
@@ -117,11 +114,8 @@ export const HomePage = (props: HomePageProps) => {
               </ul>
               <div className={styles.heroActions}>
                 <ActionLink
-                  href={product.amazonUrl}
-                  external
+                  href={product.path}
                   className={styles.cartButton}
-                  analyticsEvent='amazon_outbound_click'
-                  analyticsLocation='home_hero'
                 >
                   {home.hero.button}
                 </ActionLink>
@@ -208,12 +202,9 @@ export const HomePage = (props: HomePageProps) => {
                 <p>{home.cta.description}</p>
                 <div className={styles.ctaActions}>
                   <ActionLink
-                    href={product.amazonUrl}
-                    external
+                    href={product.path}
                     variant='light'
                     className={styles.cartButton}
-                    analyticsEvent='amazon_outbound_click'
-                    analyticsLocation='home_cta'
                   >
                     {home.cta.button}
                   </ActionLink>

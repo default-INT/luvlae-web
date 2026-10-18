@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { fail, handle, json, readJson, requireOrigin } from '@/shared/lib/api/index.server';
 import { withDatabase } from '@/shared/lib/mongodb/index.server';
-import { hashToken } from '@/shared/lib/security/index.server';
+import { findGuestOrder, guestOrderCookie } from '@/entities/order/index.server';
 
 import { login, logout, requireAdmin, requireSessionCookie, sessionCookie } from './auth.server';
 import { collections } from './collections.server';
@@ -13,6 +13,7 @@ import {
   cancellationSchema, createProductSchema, fulfillmentSchema, fulfillmentStatuses, idSchema,
   loginSchema, paymentStatuses, quoteSchema, restockSchema, skuSchema, updateProductSchema,
 } from './contracts';
+import { createMockOrder, mockCheckoutSchema, requireMockCheckout } from './mock-checkout.server';
 import { cancelOrder, orderDetailDto, orderSummaryDto, restockOrder, updateFulfillment } from './orders.server';
 import { readPage } from './pagination.server';
 import { calculateQuote, createProduct, productDto, updateProduct } from './products.server';
@@ -153,16 +154,9 @@ export const guestOrderStatus = (request: Request, route: RouteParams) => handle
     return fail(404, 'NOT_FOUND', 'Order not found.');
   }
   return withDatabase(async ({ db }) => {
-    const order = await collections(db).orders.findOne({
-      _id: new ObjectId(id), 'guestAccess.tokenHash': hashToken(authorization.slice(7)),
-      'guestAccess.expiresAt': { $gt: new Date() },
-    });
-
+    const order = await findGuestOrder(db, id, authorization.slice(7));
     if (!order) return fail(404, 'NOT_FOUND', 'Order not found.');
-    return json({
-      orderNumber: order.orderNumber, orderStatus: order.orderStatus,
-      paymentStatus: order.payment.status, fulfillmentStatus: order.fulfillment.status,
-    });
+    return json(order);
   });
 })();
 
@@ -173,3 +167,31 @@ export const checkoutUnavailable = (request: Request) => handle(async () => {
 
 export const stripeUnavailable = () => handle(async () =>
   fail(503, 'PAYMENTS_NOT_CONFIGURED', 'Stripe signature verification and event processing are not configured.'))();
+
+export const mockCheckout = (request: Request) => handle(async () => {
+  requireOrigin(request);
+  requireMockCheckout();
+  const input = await readJson(request, mockCheckoutSchema);
+  return withDatabase(async context => {
+    const result = await createMockOrder(context, input);
+    return json(result, result.replayed ? 200 : 201, {
+      'Set-Cookie': guestOrderCookie(result.id, input.guestToken, request.url),
+    });
+  });
+})();
+
+// Upgrade links created before SSR order pages without exposing order details to browser JavaScript.
+export const restoreGuestAccess = (request: Request, route: RouteParams) => handle(async () => {
+  requireOrigin(request);
+  const id = idSchema.parse((await route.params).id);
+  const authorization = request.headers.get('authorization');
+  if (!authorization || !/^Bearer [A-Za-z0-9_-]{43}$/.test(authorization)) {
+    return fail(404, 'NOT_FOUND', 'Order not found.');
+  }
+  await readJson(request, z.strictObject({}));
+  return withDatabase(async ({ db }) => {
+    const token = authorization.slice(7);
+    if (!await findGuestOrder(db, id, token)) return fail(404, 'NOT_FOUND', 'Order not found.');
+    return json({ authenticated: true }, 200, { 'Set-Cookie': guestOrderCookie(id, token, request.url) });
+  });
+})();
