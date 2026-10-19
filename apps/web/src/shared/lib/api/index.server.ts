@@ -42,8 +42,19 @@ export const handle = (operation: () => Promise<Response>) => async () => {
       message = 'The database is temporarily unavailable.';
     }
 
-    // Never log request bodies, provider payloads, connection strings, or error messages with PII.
-    if (status >= 500) console.error('Commerce API error', { code });
+    // Keep diagnostic categories/codes, never raw messages, stacks, bodies, cookies or connection strings.
+    if (status >= 500) {
+      let errorType = 'Error';
+      if (error instanceof MongoServerError) errorType = 'MongoServerError';
+      else if (error instanceof Error && [
+        'TypeError', 'RangeError', 'ReferenceError', 'SyntaxError', 'NotSupportedError', 'OperationError',
+      ].includes(error.name)) {
+        errorType = error.name;
+      }
+
+      const databaseCode = error instanceof MongoServerError && Number.isSafeInteger(error.code) ? error.code : undefined;
+      console.error('Commerce API error', { code, errorType, ...(databaseCode !== undefined ? { databaseCode } : {}) });
+    }
 
     return Response.json({ error: { code, message } }, {
       status,
