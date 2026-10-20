@@ -17,3 +17,22 @@ Implemented 2026-10-18 following user approval of a temporary paid-order simulat
 - localStorage v2 holds SKU/quantity and server-originated offer snapshots so the Drawer can open without fetching products. Old v1 carts are imported. These cached prices are advisory; BE verifies them at checkout. No verification on Add to cart, Drawer open, window focus or quantity edits. Buttons are not blocked by background product requests; checkout itself has an in-flight lock and exact-request retry protection.
 - Customer-facing UI must not expose implementation/test wording (for example “Test checkout”, “Paid (test)”, sample-details explanations). The underlying temporary backend behavior and internal audit remain explicit in code/docs. Keep future customer copy focused on the purchase flow.
 - Private orders and admin routes declare request rendering and noindex/no-store headers, including CDN-Cache-Control no-store.
+
+
+## Embedded Stripe Checkout — 2026-10-19
+
+- CartDrawer now calls `/api/checkout/session` and navigates to the protected `/orders/:id/checkout` SSR route,
+  within the existing per-order HttpOnly cookie path. Embedded Stripe.js collects card, contact and US shipping details.
+- Prices remain Atlas-owned. Shipping/tax are included with zero additional surcharge, no discounts or automatic tax.
+  A new Stripe reservation stores final totals and lasts 24 hours; server copies preserve the original deadline on retry.
+- Cart quantities and the exact pending request remain until a server-confirmed paid order. Paid cleanup writes an
+  atomic localStorage receipt with updated quantities, preventing repeated subtraction on refresh. The receipt list
+  is bounded to 50 orders. Expired/failed attempts unlock editing only after server confirmation; clock expiry alone does not.
+- Result pages render appropriate paid/pending/failure/expiry copy. Pending state refreshes SSR for up to 60 seconds,
+  then offers manual status refresh. onComplete navigates only and cannot mark a payment paid.
+- Stripe client secrets are server-rendered only for an owned payable Session; not stored in URLs or browser storage.
+  Locale is English; Link is disabled for newly created card-only Sessions. Returning to shopping preserves the pending checkout.
+- Creation defaults disabled; local test mode is enabled in ignored configuration. Runtime test/live keys, production
+  environment gates, deployment artifact isolation and outstanding live setup are in [live readiness](../apps/web/docs/stripe-live-readiness.md).
+- Browser sandbox verification completed the actual CartDrawer -> Embedded Checkout -> signed webhook -> paid order
+  flow with synthetic contacts. Atlas verified one observation/committed reservation; no real live payment was made.

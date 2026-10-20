@@ -3,6 +3,7 @@ import 'server-only';
 import { ObjectId } from 'mongodb';
 
 import { migrateMockOrders } from './mock-migration.server';
+import { migrateStripeRequests } from './stripe-request-migration.server';
 
 import type { Db, Document, IndexDescription } from 'mongodb';
 
@@ -191,22 +192,30 @@ const definitions: Definition[] = [
 const migrateFoundation = async (db: Db) => {
   await db.collection('_migrations').createIndex({ name: 1 }, { unique: true, name: 'migration_name_unique' });
   const completed = await db.collection('_migrations').findOne({ name: '001-commerce' });
+
   if (completed) return;
+
   const owner = new ObjectId().toHexString();
   // No automatic lease takeover: an interrupted migration must be inspected before its lock is removed.
   await db.collection('_migrationLocks').insertOne({ _id: new ObjectId('000000000000000000000001'), owner });
+
   try {
     for (const definition of definitions) {
       const validator: Document = { $jsonSchema: definition.schema };
+
       if (definition.expression) validator.$expr = definition.expression;
+
       const exists = await db.listCollections({ name: definition.name }, { nameOnly: true }).hasNext();
+
       if (exists) {
         await db.command({ collMod: definition.name, validator, validationLevel: 'strict', validationAction: 'error' });
       } else {
         await db.createCollection(definition.name, { validator, validationLevel: 'strict', validationAction: 'error' });
       }
+
       await db.collection(definition.name).createIndexes(definition.indexes);
     }
+
     await db.collection('_migrations').insertOne({ name: '001-commerce', appliedAt: new Date() });
   } finally {
     await db.collection('_migrationLocks').deleteOne({ owner });
@@ -216,4 +225,5 @@ const migrateFoundation = async (db: Db) => {
 export const migrateCommerce = async (db: Db) => {
   await migrateFoundation(db);
   await migrateMockOrders(db);
+  await migrateStripeRequests(db);
 };

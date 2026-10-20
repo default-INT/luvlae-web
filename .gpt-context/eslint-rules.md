@@ -13,6 +13,7 @@ These conventions are distilled from the user's example at `ai-slots-app-git/esl
 - Do not leave trailing whitespace. End files with a newline. Allow at most one consecutive blank line and no blank lines at end of file.
 - Set a 130-character maximum line length, allowing the linter's normal exceptions/configuration where appropriate.
 - Keep multiline object braces consistent and put a blank line between imports and following code. Import statements are separated by one blank line after the import block.
+- Separate logical operations with blank lines: put a blank line before `if`/`switch` control-flow blocks and other complex constructs, and after a multiline statement or construct when another operation follows. Do not add blank lines inside a construct solely to satisfy this rule. Keep the existing limit of one consecutive blank line.
 
 ## JavaScript and TypeScript
 
@@ -22,6 +23,8 @@ These conventions are distilled from the user's example at `ai-slots-app-git/esl
 - Avoid nested ternaries, useless concatenation/returns, `new` for side effects, and reassignment of function parameters.
 - Prefer object shorthand, object spread, template strings, and radix-free `parseInt` when applicable.
 - Require a final `default` branch in switches and put it last. Require curly braces for multiline control-flow bodies.
+- Prefer guard clauses and early returns (`if (condition) return ...;`) over `if`/`else if`/`else` branching when the branches can be expressed as sequential guards. ESLint's `no-else-return` rule enforces returning from `else` blocks; `else if` is disallowed by this project's configuration.
+- Prefer declarative domain logic: named validation rules and transition tables instead of long compound conditions and branching chains. Separate pure decisions/plans from database effects; express workflows as explicit named stages. Keep the composition local unless reuse justifies a shared pipeline utility.
 - Use an appropriate TypeScript-aware unused-variable rule in the real TS config. The reference disables core `no-unused-vars`; do not interpret that as allowing arbitrary unused code.
 - For component props, use an `interface Props` local to the component, or export `interface <ComponentName>Props` when consumers need the type. Destructure from a `props` argument inside the component body, not in the parameter list. Re-export a public props interface from the component's `index.ts`.
 

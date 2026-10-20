@@ -142,3 +142,15 @@ Checked on 2026-10-18. These sources describe provider capabilities, not an exis
 ## Implementation update — 2026-10-18
 
 The user authorized the DB/access/API stage and requested stored financial transaction history. Direct-sale prices and stock are administrator-supplied. Models, explicit migration, product/admin/order APIs, internal atomic reservation, append-only payment observation history and integration tests are implemented without UI changes. Checkout Session and Stripe webhook routes are declared but return 503; provider integration and reservation completion/release remain pending. Stage Atlas connectivity, schema migration and transaction rollback are verified after the user granted `dbAdmin`. No direct-sale price/stock or admin account was seeded.
+
+## Stripe webhook phase — 2026-10-19
+
+The user authorized sandbox Checkout webhook processing now, with Checkout Session creation and refunds deferred. The signed endpoint and local CLI workflow are implemented; see the [Stripe runbook](../apps/web/docs/stripe-local.md) for the integration contract and verified limits. Existing mock checkout remains the storefront flow.
+
+
+## Embedded Checkout decisions — 2026-10-19
+
+The user confirmed immediate implementation by collaborating agents: an embedded card form on this site,
+US shipping and tax included in item prices (no separately added shipping/tax), and a 24-hour reservation.
+Prepare live configuration as well as sandbox. See [implementation plan and assignments](stripe-checkout-integration.md).
+This supersedes hosted-Checkout and unknown cost/expiry proposals above. Refund/dispute/email workflows remain separate.

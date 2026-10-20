@@ -24,10 +24,15 @@ export const CartDrawer = (props: Props) => {
 
   useEffect(() => {
     const element = dialog.current;
+
     if (!element) return;
+
     if (open && !element.open) element.showModal();
+
     if (!open && element.open) element.close();
+
     if (!open) return;
+
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = previous; };
@@ -35,6 +40,7 @@ export const CartDrawer = (props: Props) => {
 
   const knownPrices = items.every(item => offers[item.sku]);
   const subtotal = items.reduce((sum, item) => sum + (offers[item.sku]?.price.unitAmount ?? 0) * item.quantity, 0);
+  const checkoutLabel = pending ? copy.resumeCheckout : copy.checkout;
 
   return (
     <dialog ref={dialog} className={styles.drawer} aria-labelledby='cart-title' onCancel={() => setOpen(false)}>
@@ -50,6 +56,7 @@ export const CartDrawer = (props: Props) => {
         {items.map(item => {
           const offer = offers[item.sku];
           const max = 99;
+
           return (
             <article className={styles.item} key={item.sku}>
               <Image src='/images/luvlae-berberine-patches-box-and-patch-sheet.webp' alt='' width={96} height={96}/>
@@ -74,12 +81,14 @@ export const CartDrawer = (props: Props) => {
       </div>
       {!!items.length && <div className={styles.summary}>
         <div className={styles.subtotal}><span>{copy.subtotal}</span><strong>{knownPrices ? money(subtotal) : '—'}</strong></div>
+        {pending && <p className={styles.pending}>{copy.pendingCheckout}</p>}
         {error && <p role='alert' className={styles.error}>{error}</p>}
         <button className={styles.checkout} disabled={busy}
           onClick={async () => {
             const id = await checkout(copy);
-            if (id) router.push(`/orders/${id}`);
-          }}>{busy ? copy.creatingOrder : copy.checkout}</button>
+
+            if (id) router.push(`/orders/${id}/checkout`);
+          }}>{busy ? copy.creatingOrder : checkoutLabel}</button>
         <button className={styles.continue} onClick={() => setOpen(false)}>{copy.continueShopping}</button>
       </div>}
     </dialog>

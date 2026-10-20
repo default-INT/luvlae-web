@@ -7,6 +7,7 @@ import { ProductEditor } from '../ProductEditor';
 import type { AdminCopy, AdminProduct } from '../../model/types';
 
 interface Props { sku: string; copy: AdminCopy }
+
 export const ProductPage = (props: Props) => {
   const { sku, copy } = props;
   const resource = useAdminResource<AdminProduct>(`/products/${encodeURIComponent(sku)}`, copy);

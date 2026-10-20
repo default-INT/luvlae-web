@@ -266,7 +266,7 @@ test('mutations require same origin and JSON bodies reject unknown fields and ov
 });
 
 test('declared routes reject unauthenticated and cross-origin requests before opening the database', async () => {
-  const { listOrders, postProduct, guestOrderStatus, checkoutUnavailable, stripeUnavailable } =
+  const { listOrders, postProduct, guestOrderStatus, checkoutUnavailable } =
     await import('../src/_app/commerce/handlers.server');
 
   const response = await listOrders(new Request('https://test.local/api/admin/orders'));
@@ -290,7 +290,6 @@ test('declared routes reject unauthenticated and cross-origin requests before op
   }));
 
   assert.equal(checkout.status, 503);
-  assert.equal((await stripeUnavailable()).status, 503);
 });
 
 test('cursor pagination handles equal timestamps without skipping or repeating rows', async () => {
@@ -300,24 +299,30 @@ test('cursor pagination handles equal timestamps without skipping or repeating r
   await collection.insertMany(Array.from({ length: 5 }, () => ({ createdAt })));
   const seen = new Set<string>();
   let cursor: string | null = null;
+
   do {
     const request = new Request(`https://test.local/api?limit=2${cursor ? `&cursor=${cursor}` : ''}`);
     const page = await readPage(collection, request, 'createdAt', {});
+
     for (const item of page.items) {
       assert.equal(seen.has(item._id.toHexString()), false);
       seen.add(item._id.toHexString());
     }
+
     cursor = page.nextCursor;
   } while (cursor);
+
   assert.equal(seen.size, 5);
 });
 
 test('distributed login throttling blocks repeated failures across requests', async () => {
   const request = new Request('https://test.local/api/admin/auth/login', { method: 'POST' });
+
   for (let count = 0; count < 10; count++) {
     await assert.rejects(login(context.db, 'missing-rate-test@example.test', 'wrong-password', request),
       hasCode('INVALID_CREDENTIALS'));
   }
+
   await assert.rejects(login(context.db, 'missing-rate-test@example.test', 'wrong-password', request), hasCode('RATE_LIMITED'));
 });
 
@@ -325,6 +330,7 @@ test('mock checkout is gated, atomic, replayable, and usable by manager without 
   const { createMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
   const { seedTestProduct } = await import('../src/_app/commerce/mock-migration.server');
   const previous = process.env.MOCK_CHECKOUT_ENABLED;
+
   try {
     const input = { operationId: randomUUID(), guestToken: randomToken(),
       items: [{ sku: 'MOCK-PAID', quantity: 2, productVersion: 1 }] };
@@ -407,6 +413,7 @@ test('SSR guest access is scoped, expires and never returns customer/address or 
   const { createMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
   const previous = process.env.MOCK_CHECKOUT_ENABLED;
   process.env.MOCK_CHECKOUT_ENABLED = 'true';
+
   try {
     await createProduct(context, adminId, productInput('SSR-ORDER'));
     const token = randomToken();
@@ -437,4 +444,166 @@ test('SSR guest access is scoped, expires and never returns customer/address or 
     if (previous === undefined) delete process.env.MOCK_CHECKOUT_ENABLED;
     else process.env.MOCK_CHECKOUT_ENABLED = previous;
   }
+});
+
+test('Stripe verifies raw signatures and rejects tampering, stale signatures, live events and oversized bodies', async () => {
+  const { default: Stripe } = await import('stripe');
+  const { verifyStripeEvent } = await import('../src/shared/lib/stripe/index.server');
+  const { POST } = await import('../app/api/webhooks/stripe/route');
+  const stripe = new Stripe('sk_test_synthetic');
+  const oldSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const oldKey = process.env.STRIPE_SECRET_KEY;
+  process.env.STRIPE_WEBHOOK_SECRET = 'whsec_synthetic';
+  process.env.STRIPE_SECRET_KEY = 'sk_test_synthetic';
+
+  const payload = JSON.stringify({ id: 'evt_signed', type: 'checkout.session.completed',
+    created: Math.floor(Date.now() / 1000), livemode: false, data: { object: { id: 'cs_test_signed' } } });
+
+  const signed = (body = payload, timestamp?: number) => new Request('http://localhost/api/webhooks/stripe', {
+    method: 'POST', body, headers: { 'Stripe-Signature': stripe.webhooks.generateTestHeaderString({
+      payload, secret: 'whsec_synthetic', timestamp,
+    }) },
+  });
+
+  try {
+    assert.equal((await verifyStripeEvent(signed(), stripe)).id, 'evt_signed');
+    await assert.rejects(verifyStripeEvent(signed(`${payload} `), stripe), hasCode('INVALID_STRIPE_SIGNATURE'));
+    await assert.rejects(verifyStripeEvent(signed(payload, 1), stripe), hasCode('INVALID_STRIPE_SIGNATURE'));
+    await assert.rejects(verifyStripeEvent(signed('x'.repeat(262145)), stripe), hasCode('BODY_TOO_LARGE'));
+    const unsigned = new Request('http://localhost/api/webhooks/stripe', { method: 'POST', body: payload });
+    assert.equal((await POST(unsigned)).status, 400);
+    const live = payload.replace('"livemode":false', '"livemode":true');
+
+    const request = new Request('http://localhost/api/webhooks/stripe', { method: 'POST', body: live,
+      headers: { 'Stripe-Signature': stripe.webhooks.generateTestHeaderString({ payload: live, secret: 'whsec_synthetic' }) } });
+
+    await assert.rejects(verifyStripeEvent(request, stripe), hasCode('STRIPE_ENVIRONMENT_MISMATCH'));
+    process.env.STRIPE_SECRET_KEY = 'sk_live_synthetic';
+    assert.equal((await POST(signed())).status, 503);
+  } finally {
+    if (oldSecret === undefined) delete process.env.STRIPE_WEBHOOK_SECRET;
+    else process.env.STRIPE_WEBHOOK_SECRET = oldSecret;
+
+    if (oldKey === undefined) delete process.env.STRIPE_SECRET_KEY;
+    else process.env.STRIPE_SECRET_KEY = oldKey;
+  }
+});
+
+test('Stripe Checkout handles duplicates, async payments, expiry/failure, retries and late payments', async () => {
+  const { default: Stripe } = await import('stripe');
+  const { processStripeEvent } = await import('../src/_app/commerce/stripe-webhook.server');
+  const stripe = new Stripe('sk_test_synthetic');
+  type Session = import('stripe').Stripe.Checkout.Session;
+  type Event = import('stripe').Stripe.Event;
+  const { orders, attempts, products, transactions, events } = collections(context.db);
+
+  const fixture = async (sku: string) => {
+    await createProduct(context, adminId, productInput(sku, 2));
+    const reserved = await reserveOrder(context, reservationInput(sku));
+    assert.ok(reserved.attemptId);
+    const sessionId = `cs_test_${sku}`;
+    await attempts.updateOne({ _id: reserved.attemptId }, { $set: {
+      stripeSessionId: sessionId, state: 'open',
+      'quoteSnapshot.pricing': { state: 'final', subtotal: 2500, discount: 0, shipping: 100, tax: 50, total: 2650 },
+    } });
+
+    const checkout = {
+      id: sessionId, object: 'checkout.session', mode: 'payment', livemode: false, status: 'complete', payment_status: 'paid',
+      metadata: { orderId: reserved.orderId.toHexString(), attemptId: reserved.attemptId.toHexString() },
+      client_reference_id: reserved.orderId.toHexString(), currency: 'usd', amount_subtotal: 2500, amount_total: 2650,
+      total_details: { amount_discount: 0, amount_shipping: 100, amount_tax: 50 },
+      payment_intent: {
+        id: `pi_${sku}`, livemode: false, status: 'succeeded', currency: 'usd', amount: 2650, amount_received: 2650,
+      },
+      customer_details: { email: 'synthetic@example.test', name: 'Test buyer' },
+      collected_information: { shipping_details: { name: 'Test buyer', address: {
+        line1: 'Test address', city: 'Test city', state: 'CA', postal_code: '90001', country: 'US',
+      } } },
+    } as unknown as Session;
+
+    stripe.checkout.sessions.retrieve = async () => checkout as import('stripe').Stripe.Response<Session>;
+
+    const event = (type = 'checkout.session.completed', id = `evt_${randomUUID()}`) => ({
+      id, type, livemode: false, created: Math.floor(Date.now() / 1000), data: { object: { id: sessionId } },
+    }) as Event;
+
+    return { ...reserved, checkout, event };
+  };
+
+  const first = await fixture('STRIPE-PAID');
+  const paid = first.event();
+  await Promise.all([processStripeEvent(context, paid, stripe), processStripeEvent(context, paid, stripe)]);
+  assert.equal((await orders.findOne({ _id: first.orderId }))?.payment.status, 'paid');
+  assert.equal((await orders.findOne({ _id: first.orderId }))?.payment.amountPaid, 2650);
+  assert.equal((await orders.findOne({ _id: first.orderId }))?.shippingAddress?.country, 'US');
+  assert.equal((await products.findOne({ sku: 'STRIPE-PAID' }))?.inventory.stockQuantity, 1);
+  assert.equal((await products.findOne({ sku: 'STRIPE-PAID' }))?.inventory.reservedQuantity, 0);
+  await processStripeEvent(context, first.event('checkout.session.async_payment_succeeded'), stripe);
+  await processStripeEvent(context, first.event('checkout.session.expired'), stripe);
+  assert.equal(await transactions.countDocuments({ orderId: first.orderId }), 1);
+  assert.equal((await orders.findOne({ _id: first.orderId }))?.payment.status, 'paid');
+
+  const mismatch = await fixture('STRIPE-MISMATCH');
+  mismatch.checkout.metadata!.attemptId = new ObjectId().toHexString();
+  await assert.rejects(processStripeEvent(context, mismatch.event(), stripe), hasCode('PAYMENT_ASSOCIATION_MISMATCH'));
+  mismatch.checkout.metadata!.attemptId = mismatch.attemptId!.toHexString();
+  mismatch.checkout.currency = 'eur';
+  await assert.rejects(processStripeEvent(context, mismatch.event(), stripe), hasCode('PAYMENT_ASSOCIATION_MISMATCH'));
+  mismatch.checkout.currency = 'usd';
+  mismatch.checkout.amount_total = 1;
+  const retry = mismatch.event();
+  await assert.rejects(processStripeEvent(context, retry, stripe), hasCode('PAYMENT_AMOUNT_MISMATCH'));
+  assert.equal((await orders.findOne({ _id: mismatch.orderId }))?.payment.status, 'pending');
+  assert.equal((await products.findOne({ sku: 'STRIPE-MISMATCH' }))?.inventory.reservedQuantity, 1);
+  assert.equal((await events.findOne({ eventId: retry.id }))?.status, 'failed');
+  mismatch.checkout.amount_total = 2650;
+  await processStripeEvent(context, retry, stripe);
+  assert.equal((await events.findOne({ eventId: retry.id }))?.status, 'processed');
+
+  const delayed = await fixture('STRIPE-ASYNC');
+  delayed.checkout.payment_status = 'unpaid';
+  Object.assign(delayed.checkout.payment_intent!, { status: 'processing', amount_received: 0 });
+  await processStripeEvent(context, delayed.event(), stripe);
+  assert.equal((await orders.findOne({ _id: delayed.orderId }))?.payment.status, 'processing');
+  assert.equal((await products.findOne({ sku: 'STRIPE-ASYNC' }))?.inventory.reservedQuantity, 1);
+  Object.assign(delayed.checkout.payment_intent!, { status: 'succeeded', amount_received: 2650 });
+  delayed.checkout.payment_status = 'paid';
+  await processStripeEvent(context, delayed.event('checkout.session.async_payment_succeeded'), stripe);
+  assert.equal((await orders.findOne({ _id: delayed.orderId }))?.payment.status, 'paid');
+
+  const expired = await fixture('STRIPE-EXPIRED');
+  expired.checkout.status = 'expired';
+  expired.checkout.payment_status = 'unpaid';
+  expired.checkout.payment_intent = null;
+  await processStripeEvent(context, expired.event('checkout.session.expired'), stripe);
+  await processStripeEvent(context, expired.event('checkout.session.expired'), stripe);
+  assert.equal((await orders.findOne({ _id: expired.orderId }))?.payment.status, 'expired');
+  assert.equal((await products.findOne({ sku: 'STRIPE-EXPIRED' }))?.inventory.stockQuantity, 2);
+  assert.equal((await products.findOne({ sku: 'STRIPE-EXPIRED' }))?.inventory.reservedQuantity, 0);
+
+  const failure = await fixture('STRIPE-FAILED');
+  failure.checkout.payment_status = 'unpaid';
+  Object.assign(failure.checkout.payment_intent!, { status: 'requires_payment_method', amount_received: 0 });
+  await processStripeEvent(context, failure.event('checkout.session.async_payment_failed'), stripe);
+  assert.equal((await orders.findOne({ _id: failure.orderId }))?.payment.status, 'failed');
+  assert.equal((await products.findOne({ sku: 'STRIPE-FAILED' }))?.inventory.reservedQuantity, 0);
+  failure.checkout.payment_status = 'paid';
+  Object.assign(failure.checkout.payment_intent!, { status: 'succeeded', amount_received: 2650 });
+  await processStripeEvent(context, failure.event('checkout.session.async_payment_succeeded'), stripe);
+  assert.equal((await orders.findOne({ _id: failure.orderId }))?.payment.status, 'paid');
+  assert.equal((await orders.findOne({ _id: failure.orderId }))?.payment.reconciliationRequired, true);
+  assert.equal((await products.findOne({ sku: 'STRIPE-FAILED' }))?.inventory.stockQuantity, 2);
+
+  const unrelated = await fixture('STRIPE-UNRELATED');
+  unrelated.checkout.metadata = {};
+  unrelated.checkout.id = 'cs_test_unrelated';
+  const unrelatedEvent = unrelated.event();
+  Object.assign(unrelatedEvent.data.object, { id: 'cs_test_unrelated' });
+  const ignored = await processStripeEvent(context, unrelatedEvent, stripe);
+  assert.equal('ignored' in ignored && ignored.ignored, true);
+  assert.equal((await orders.findOne({ _id: unrelated.orderId }))?.payment.status, 'pending');
+  await processStripeEvent(context, unrelated.event('payment_intent.succeeded'), stripe);
+  stripe.checkout.sessions.retrieve = async () => { throw new Error('Synthetic network failure'); };
+  await assert.rejects(processStripeEvent(context, unrelated.event(), stripe));
+  assert.equal((await products.findOne({ sku: 'STRIPE-UNRELATED' }))?.inventory.reservedQuantity, 1);
 });

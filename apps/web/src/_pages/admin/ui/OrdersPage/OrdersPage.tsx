@@ -16,6 +16,7 @@ import type { AdminCopy, AdminOrder, PageResult } from '../../model/types';
 import type { FormEvent } from 'react';
 
 interface Props { copy: AdminCopy }
+
 export const OrdersPage = (props: Props) => {
   const { copy } = props;
   const search = useSearchParams();
@@ -34,6 +35,7 @@ export const OrdersPage = (props: Props) => {
 
   const navigate = (next: Record<string, string>, id?: string | null, replace = false) => {
     const url = ordersUrl(next, id);
+
     if (replace) window.history.replaceState(null, '', url);
     else window.history.pushState(null, '', url);
   };
@@ -42,10 +44,13 @@ export const OrdersPage = (props: Props) => {
     event.preventDefault();
     const values = new FormData(event.currentTarget);
     const next: Record<string, string> = {};
+
     for (const key of ['q', 'orderStatus', 'paymentStatus', 'fulfillmentStatus', 'from', 'to']) {
       const value = String(values.get(key) ?? '').trim();
+
       if (value) next[key] = value;
     }
+
     navigate(next);
   };
 

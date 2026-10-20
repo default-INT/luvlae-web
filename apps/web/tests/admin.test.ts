@@ -30,6 +30,7 @@ test('admin filters reject invalid statuses, dates, ranges and oversized searche
   for (const params of invalid) {
     assert.throws(() => orderListFilter(new URLSearchParams(params)));
   }
+
   assert.throws(() => orderListFilter(new URLSearchParams({ from: '2026-10-20', to: '2026-10-01' })),
     error => error instanceof ApiError && error.code === 'INVALID_RANGE');
 });
@@ -39,6 +40,7 @@ test('admin price input preserves exact cents and rejects extra precision, zero,
   assert.equal(priceInCents('9.9'), 990);
   assert.equal(priceInCents('10'), 1000);
   assert.equal(priceInCents('0.01'), 1);
+
   for (const value of ['0', '-1', '1.005', '1e3', 'NaN', '', '99999999999999999999']) {
     assert.equal(priceInCents(value), null);
   }

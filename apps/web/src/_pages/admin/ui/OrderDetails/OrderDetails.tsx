@@ -10,6 +10,7 @@ import styles from '../styles.module.scss';
 import type { AdminCopy, OrderDetail } from '../../model/types';
 
 interface Props { order: OrderDetail; copy: AdminCopy; reload: () => Promise<void>; onBusyChange: (busy: boolean) => void }
+
 export const OrderDetails = (props: Props) => {
   const { order, copy, reload, onBusyChange } = props;
   const address = order.shippingAddress;

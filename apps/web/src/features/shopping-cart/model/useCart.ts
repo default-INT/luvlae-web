@@ -9,6 +9,7 @@ let browserStore: ReturnType<typeof createCartStore> | undefined;
 
 export const getCartStore = () => {
   if (typeof window === 'undefined') return createCartStore();
+
   browserStore ??= createCartStore();
   return browserStore;
 };

@@ -24,12 +24,14 @@ test('server diagnostics retain database failure codes without exposing secrets 
 test('runtime diagnostics allow only known exception categories, never arbitrary exception names or messages', async context => {
   const output: unknown[][] = [];
   context.mock.method(console, 'error', (...args: unknown[]) => { output.push(args); });
+
   for (const error of [
     new TypeError('private-runtime-details'), new DOMException('private-runtime-details', 'NotSupportedError'),
     Object.assign(new Error('private'), { name: 'private-name' }),
   ]) {
     await handle(async () => { throw error; })();
   }
+
   assert.deepEqual(output, [
     ['Commerce API error', { code: 'INTERNAL_ERROR', errorType: 'TypeError' }],
     ['Commerce API error', { code: 'INTERNAL_ERROR', errorType: 'NotSupportedError' }],

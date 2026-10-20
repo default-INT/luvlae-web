@@ -28,8 +28,10 @@ export const fulfillmentStatuses = ['unfulfilled', 'processing', 'shipped', 'del
 export const dateTime = (value: string) => new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC',
 }).format(new Date(value));
+
 export const priceInCents = (value: string) => {
   if (!/^\d+(?:\.\d{1,2})?$/.test(value)) return null;
+
   const [whole, fraction = ''] = value.split('.');
   const amount = Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
   return Number.isSafeInteger(amount) && amount > 0 ? amount : null;

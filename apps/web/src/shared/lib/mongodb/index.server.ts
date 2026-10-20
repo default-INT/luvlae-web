@@ -20,6 +20,7 @@ export const createDatabaseClient = () => {
   if (!uri || !username || !password || !database) {
     return fail(503, 'DATABASE_NOT_CONFIGURED', 'Database configuration is incomplete.');
   }
+
   // Accept legacy credential-bearing URIs, but separate credentials remain authoritative.
   const connectionUri = uri.replace(/^(mongodb(?:\+srv)?:\/\/)[^/]*@/, '$1');
 
@@ -45,10 +46,13 @@ export const createDatabaseClient = () => {
 // Workers sockets are request-scoped. Do not reuse a module-global client across requests.
 export const withDatabase = async <T>(operation: (context: DatabaseContext) => Promise<T>): Promise<T> => {
   const context = createDatabaseClient();
+
   try {
     await context.client.connect();
     const migration = await context.db.collection('_migrations').findOne({ name: '001-commerce' });
+
     if (!migration) fail(503, 'DATABASE_NOT_READY', 'Run database migrations before using the API.');
+
     return await operation(context);
   } finally {
     await context.client.close();
@@ -57,6 +61,7 @@ export const withDatabase = async <T>(operation: (context: DatabaseContext) => P
 
 export const inTransaction = async <T>(context: DatabaseContext, operation: (session: ClientSession) => Promise<T>) => {
   const session = context.client.startSession();
+
   try {
     return await session.withTransaction(() => operation(session), {
       readConcern: { level: 'snapshot' },

@@ -13,7 +13,9 @@ interface OfferDocument {
 
 export const getProductOffer = (sku: string): Promise<ProductOffer | null> => withDatabase(async ({ db }) => {
   const offer = await db.collection<OfferDocument>('products').findOne({ sku, salesEnabled: true });
+
   if (!offer) return null;
+
   return {
     id: offer._id.toHexString(), sku: offer.sku, name: offer.name, shortDescription: offer.shortDescription,
     price: offer.price, salesEnabled: offer.salesEnabled, version: offer.version,

@@ -5,6 +5,7 @@ import { getDictionary } from '@/shared/lib/i18n/index.server';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-static';
+
 export const generateMetadata = async (): Promise<Metadata> => {
   const { ingredientsPage: page } = await getDictionary(defaultLocale);
 

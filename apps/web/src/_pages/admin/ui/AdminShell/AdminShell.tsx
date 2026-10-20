@@ -11,6 +11,7 @@ import type { AdminCopy } from '../../model/types';
 import type { ReactNode } from 'react';
 
 interface Props { email: string; copy: AdminCopy; children: ReactNode }
+
 export const AdminShell = (props: Props) => {
   const { email, copy, children } = props;
   const path = usePathname();
@@ -20,7 +21,9 @@ export const AdminShell = (props: Props) => {
 
   const signOut = async () => {
     if (busy) return;
+
     setBusy(true);
+
     try {
       await adminRequest('/auth/logout', {});
       router.replace('/admin/login');
@@ -28,6 +31,7 @@ export const AdminShell = (props: Props) => {
       if (failure instanceof AdminApiError && failure.status === 401) {
         router.replace('/admin/login');
       }
+
       setError(copy.requestError);
       setBusy(false);
     }

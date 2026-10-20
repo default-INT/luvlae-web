@@ -8,14 +8,15 @@ import { OrderResult } from '../OrderResult';
 
 import type { GuestOrder } from '@/entities/order';
 
-interface Props { order: GuestOrder }
+interface Props { id: string; order: GuestOrder }
+
 export const OrderPage = async (props: Props) => {
-  const { order } = props;
+  const { id, order } = props;
   const dictionary = await getDictionary(defaultLocale);
   return (
     <>
       <SiteHeader dictionary={dictionary}/>
-      <OrderResult order={order} copy={dictionary.commerce}/>
+      <OrderResult id={id} order={order} copy={dictionary.commerce}/>
       <SiteFooter dictionary={dictionary}/>
     </>
   );

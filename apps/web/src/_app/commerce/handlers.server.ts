@@ -5,10 +5,12 @@ import { z } from 'zod';
 
 import { fail, handle, json, readJson, requireOrigin } from '@/shared/lib/api/index.server';
 import { withDatabase } from '@/shared/lib/mongodb/index.server';
+import { requireStripeCheckoutConfiguration } from '@/shared/lib/stripe/index.server';
 import { findGuestOrder, guestOrderCookie } from '@/entities/order/index.server';
 
 import { login, logout, requireAdmin, requireSessionCookie, sessionCookie } from './auth.server';
 import { collections } from './collections.server';
+import { checkoutSessionSchema, createCheckoutSession } from './checkout-session.server';
 import {
   cancellationSchema, createProductSchema, fulfillmentSchema, idSchema,
   loginSchema, quoteSchema, restockSchema, skuSchema, updateProductSchema,
@@ -28,6 +30,7 @@ export interface RouteParams { params: Promise<Record<string, string>> }
 const admin = (request: Request, operation: (context: DatabaseContext, adminId: ObjectId) => Promise<Response>) =>
   handle(async () => {
     if (!['GET', 'HEAD'].includes(request.method)) requireOrigin(request);
+
     requireSessionCookie(request);
     return withDatabase(async context => {
       const user = await requireAdmin(context.db, request);
@@ -39,7 +42,9 @@ export const getProduct = (request: Request, route: RouteParams) => handle(async
   const sku = skuSchema.parse((await route.params).sku);
   return withDatabase(async ({ db }) => {
     const product = await collections(db).products.findOne({ sku });
+
     if (!product || !product.salesEnabled) return fail(404, 'NOT_FOUND', 'Product not found.');
+
     return json(productDto(product));
   });
 })();
@@ -83,7 +88,9 @@ export const postProduct = (request: Request) => admin(request, async (context, 
 export const getAdminProduct = (request: Request, route: RouteParams) => admin(request, async ({ db }) => {
   const sku = skuSchema.parse((await route.params).sku);
   const product = await collections(db).products.findOne({ sku });
+
   if (!product) return fail(404, 'NOT_FOUND', 'Product not found.');
+
   return json(productDto(product, true));
 });
 
@@ -102,7 +109,9 @@ export const listOrders = (request: Request) => admin(request, async ({ db }) =>
 export const getAdminOrder = (request: Request, route: RouteParams) => admin(request, async ({ db }) => {
   const id = idSchema.parse((await route.params).id);
   const order = await collections(db).orders.findOne({ _id: new ObjectId(id) });
+
   if (!order) return fail(404, 'NOT_FOUND', 'Order not found.');
+
   return json(orderDetailDto(order));
 });
 
@@ -127,9 +136,13 @@ export const postRestock = (request: Request, route: RouteParams) => admin(reque
 export const listTransactions = (request: Request) => admin(request, async ({ db }) => {
   const params = new URL(request.url).searchParams;
   const filter: Document = {};
+
   if (params.has('orderId')) filter.orderId = new ObjectId(idSchema.parse(params.get('orderId')));
+
   if (params.has('type')) filter.type = z.enum(['payment', 'refund', 'dispute']).parse(params.get('type'));
+
   if (params.has('status')) filter.status = z.enum(['pending', 'succeeded', 'failed', 'cancelled']).parse(params.get('status'));
+
   const page = await readPage(db.collection('paymentTransactions'), request, 'recordedAt', filter);
   return json({ ...page, items: page.items.map(item => {
     const value = item as PaymentTransaction;
@@ -145,23 +158,37 @@ export const listTransactions = (request: Request) => admin(request, async ({ db
 export const guestOrderStatus = (request: Request, route: RouteParams) => handle(async () => {
   const id = idSchema.parse((await route.params).id);
   const authorization = request.headers.get('authorization');
+
   if (!authorization || !/^Bearer [A-Za-z0-9_-]{43}$/.test(authorization)) {
     return fail(404, 'NOT_FOUND', 'Order not found.');
   }
+
   return withDatabase(async ({ db }) => {
     const order = await findGuestOrder(db, id, authorization.slice(7));
+
     if (!order) return fail(404, 'NOT_FOUND', 'Order not found.');
+
     return json(order);
   });
 })();
 
-export const checkoutUnavailable = (request: Request) => handle(async () => {
+export const checkoutSession = (request: Request) => handle(async () => {
   requireOrigin(request);
-  return fail(503, 'CHECKOUT_NOT_CONFIGURED', 'Checkout requires configured Stripe, shipping, and tax policies.');
+  requireStripeCheckoutConfiguration();
+  const input = await readJson(request, checkoutSessionSchema);
+  return withDatabase(async context => {
+    const result = await createCheckoutSession(context, input);
+    return json(result, result.replayed ? 200 : 201, {
+      'Set-Cookie': guestOrderCookie(result.id, input.guestToken, request.url),
+    });
+  });
 })();
 
-export const stripeUnavailable = () => handle(async () =>
-  fail(503, 'PAYMENTS_NOT_CONFIGURED', 'Stripe signature verification and event processing are not configured.'))();
+// Retained for callers checking the legacy unavailable endpoint contract.
+export const checkoutUnavailable = (request: Request) => handle(async () => {
+  requireOrigin(request);
+  return fail(503, 'CHECKOUT_NOT_CONFIGURED', 'Checkout requires configured Stripe settings.');
+})();
 
 export const mockCheckout = (request: Request) => handle(async () => {
   requireOrigin(request);
@@ -180,13 +207,17 @@ export const restoreGuestAccess = (request: Request, route: RouteParams) => hand
   requireOrigin(request);
   const id = idSchema.parse((await route.params).id);
   const authorization = request.headers.get('authorization');
+
   if (!authorization || !/^Bearer [A-Za-z0-9_-]{43}$/.test(authorization)) {
     return fail(404, 'NOT_FOUND', 'Order not found.');
   }
+
   await readJson(request, z.strictObject({}));
   return withDatabase(async ({ db }) => {
     const token = authorization.slice(7);
+
     if (!await findGuestOrder(db, id, token)) return fail(404, 'NOT_FOUND', 'Order not found.');
+
     return json({ authenticated: true }, 200, { 'Set-Cookie': guestOrderCookie(id, token, request.url) });
   });
 })();

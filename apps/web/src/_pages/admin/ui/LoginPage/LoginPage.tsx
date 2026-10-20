@@ -10,6 +10,7 @@ import type { AdminCopy } from '../../model/types';
 import type { FormEvent } from 'react';
 
 interface Props { copy: AdminCopy }
+
 export const LoginPage = (props: Props) => {
   const { copy } = props;
   const router = useRouter();
@@ -18,17 +19,23 @@ export const LoginPage = (props: Props) => {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     if (busy) return;
+
     const fields = new FormData(event.currentTarget);
     setBusy(true);
     setError('');
+
     try {
       await adminRequest('/auth/login', { email: fields.get('email'), password: fields.get('password') });
       router.replace('/admin/orders');
     } catch (failure) {
       let message = copy.requestError;
+
       if (failure instanceof AdminApiError && failure.status === 401) message = copy.loginError;
+
       if (failure instanceof AdminApiError && failure.status === 429) message = copy.loginLimited;
+
       setError(message);
       setBusy(false);
     }

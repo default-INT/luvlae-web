@@ -30,7 +30,9 @@ export const requireSessionCookie = (request: Request) => {
 
 export const requireAdmin = async (db: Db, request: Request) => {
   const token = getToken(request);
+
   if (!token) return fail(401, 'UNAUTHORIZED', 'Sign in to continue.');
+
   const { sessions, users } = collections(db);
 
   const session = await sessions.findOne({
@@ -44,6 +46,7 @@ export const requireAdmin = async (db: Db, request: Request) => {
   });
 
   if (!user) return fail(401, 'UNAUTHORIZED', 'Sign in to continue.');
+
   return user;
 };
 
@@ -59,7 +62,9 @@ const throttle = async (db: Db, key: string, max: number, windowSeconds: number)
   } catch (error) {
     if (!(error instanceof Error) || !('code' in error) || error.code !== 11000) throw error;
   }
+
   const result = await limits.findOneAndUpdate(filter, { $inc: { count: 1 } }, { returnDocument: 'after' });
+
   if (!result || result.count > max + 1) fail(429, 'RATE_LIMITED', 'Too many sign-in attempts. Try again later.');
 };
 
@@ -69,12 +74,15 @@ export const login = async (db: Db, email: string, password: string, request: Re
   const { users, sessions } = collections(db);
   const user = await users.findOne({ emailNormalized: email });
   const valid = await verifyPassword(password, user?.passwordHash ?? dummyPasswordHash);
+
   if (!user || user.status !== 'active' || !valid) return fail(401, 'INVALID_CREDENTIALS', 'Invalid email or password.');
+
   const token = randomToken();
   const now = new Date();
   const previous = getToken(request);
 
   if (previous) await sessions.updateOne({ tokenHash: hashToken(previous) }, { $set: { revokedAt: now } });
+
   await sessions.insertOne({
     _id: new ObjectId(), schemaVersion: 1, adminUserId: user._id, tokenHash: hashToken(token),
     sessionVersion: user.sessionVersion, createdAt: now, expiresAt: new Date(now.getTime() + sessionSeconds * 1000),
@@ -85,5 +93,6 @@ export const login = async (db: Db, email: string, password: string, request: Re
 
 export const logout = async (db: Db, request: Request) => {
   const token = getToken(request);
+
   if (token) await collections(db).sessions.updateOne({ tokenHash: hashToken(token) }, { $set: { revokedAt: new Date() } });
 };

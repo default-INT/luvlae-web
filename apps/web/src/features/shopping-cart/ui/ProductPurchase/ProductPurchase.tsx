@@ -13,6 +13,7 @@ import type { ProductOffer } from '@/entities/product';
 import type { Dictionary } from '@/shared/config/i18n';
 
 interface Props { offer: ProductOffer | null; copy: Dictionary['commerce'] }
+
 export const ProductPurchase = (props: Props) => {
   const { offer, copy } = props;
   const { busy, pending, add, items } = useCart();
@@ -31,6 +32,7 @@ export const ProductPurchase = (props: Props) => {
             disabled={busy || !!pending || max < 1}
             onChange={event => {
               const value = Number(event.target.value);
+
               if (Number.isInteger(value)) setQuantity(Math.min(Math.max(1, value), Math.max(1, max)));
             }}/>
         </label>

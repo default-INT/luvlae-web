@@ -45,22 +45,32 @@ export const updateFulfillment = async (
   });
 
   const replay = await checkReplay(context.db, session, input.operationId, requestHash);
+
   if (replay) return { id: orderId.toHexString(), replayed: true };
+
   const order = await orders.findOne({ _id: orderId }, { session });
+
   if (!order) return fail(404, 'NOT_FOUND', 'Order not found.');
+
   if (order.version !== input.version) fail(409, 'VERSION_CONFLICT', 'Reload the order before editing.');
+
   if (order.orderStatus !== 'open' || order.payment.status !== 'paid'
     || order.payment.disputed || order.payment.reconciliationRequired || !order.shippingAddress || !order.customer) {
     fail(409, 'FULFILLMENT_BLOCKED', 'The order is not eligible for fulfillment.');
   }
+
   const next: Record<string, string> = { unfulfilled: 'processing', processing: 'shipped', shipped: 'delivered' };
+
   if (next[order.fulfillment.status] !== input.status) fail(409, 'INVALID_TRANSITION', 'Invalid fulfillment transition.');
+
   if (input.status === 'shipped' && (!input.carrier || !input.trackingNumber)) {
     fail(400, 'TRACKING_REQUIRED', 'Carrier and tracking number are required.');
   }
+
   if (input.status !== 'shipped' && (input.carrier || input.trackingNumber)) {
     fail(400, 'INVALID_INPUT', 'Tracking fields are accepted only for shipment.');
   }
+
   const now = new Date();
 
   const fulfillment = {
@@ -82,6 +92,7 @@ export const updateFulfillment = async (
   }, { session });
 
   if (!result.modifiedCount) fail(409, 'VERSION_CONFLICT', 'Reload the order before editing.');
+
   await appendAudit(context.db, session, {
     operationId: input.operationId, requestHash, actor: { type: 'admin', id: adminId },
     entityType: 'order', entityId: orderId, action: 'order.fulfillment',
@@ -102,14 +113,20 @@ export const cancelOrder = async (
   if (await checkReplay(context.db, session, input.operationId, requestHash)) {
     return { id: orderId.toHexString(), replayed: true };
   }
+
   const order = await orders.findOne({ _id: orderId }, { session });
+
   if (!order) return fail(404, 'NOT_FOUND', 'Order not found.');
+
   if (order.version !== input.version) fail(409, 'VERSION_CONFLICT', 'Reload the order before editing.');
+
   if (order.orderStatus !== 'open') fail(409, 'INVALID_TRANSITION', 'Only open orders can be cancelled.');
+
   // A provider session must be expired/reconciled by the future Stripe adapter before cancellation.
   if (order.payment.activeAttemptId || order.payment.status === 'processing' || order.payment.reconciliationRequired) {
     fail(409, 'PAYMENT_RECONCILIATION_REQUIRED', 'Resolve the active payment before cancellation.');
   }
+
   const now = new Date();
 
   const fulfillment = ['shipped', 'delivered'].includes(order.fulfillment.status)
@@ -142,19 +159,29 @@ export const restockOrder = async (
   if (await checkReplay(context.db, session, input.operationId, requestHash)) {
     return { id: orderId.toHexString(), replayed: true };
   }
+
   const order = await orders.findOne({ _id: orderId }, { session });
+
   if (!order) return fail(404, 'NOT_FOUND', 'Order not found.');
+
   if (order.version !== input.version) fail(409, 'VERSION_CONFLICT', 'Reload the order before editing.');
+
   if (!order.payment.settledAttemptId || order.payment.activeAttemptId || order.payment.reconciliationRequired
     || order.payment.disputed) fail(409, 'RESTOCK_BLOCKED', 'The payment must be settled and reconciled before restocking.');
+
   const shipped = ['shipped', 'delivered'].includes(order.fulfillment.status);
+
   if ((shipped && !input.returnedAndSellable) || (!shipped && order.orderStatus !== 'cancelled')) {
     fail(409, 'RESTOCK_BLOCKED', 'Cancel an unshipped order or confirm returned sellable goods.');
   }
+
   const restocked = { ...order.restockedQuantities };
+
   for (const item of input.items) {
     const purchased = order.items.find(value => value.sku === item.sku);
+
     if (!purchased) return fail(409, 'RESTOCK_LIMIT', 'The item does not belong to this order.');
+
     if ((restocked[item.sku] ?? 0) + item.quantity > purchased.quantity) {
       fail(409, 'RESTOCK_LIMIT', 'Restocking exceeds the purchased quantity.');
     }
@@ -164,8 +191,10 @@ export const restockOrder = async (
     }, { session });
 
     if (!result.modifiedCount) fail(409, 'PRODUCT_UNAVAILABLE', 'The referenced product does not exist.');
+
     restocked[item.sku] = (restocked[item.sku] ?? 0) + item.quantity;
   }
+
   await orders.updateOne({ _id: orderId, version: input.version }, {
     $set: { restockedQuantities: restocked, updatedAt: new Date() }, $inc: { version: 1 },
   }, { session });

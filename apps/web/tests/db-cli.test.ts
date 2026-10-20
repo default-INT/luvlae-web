@@ -43,8 +43,11 @@ for (const [email, password, code] of [
     assert.throws(() => readAdminCredentials({ ADMIN_EMAIL: email, ADMIN_PASSWORD: password }), error => {
       assert.ok(error instanceof ApiError);
       assert.equal(error.code, code);
+
       if (password) assert.equal(error.message.includes(password), false);
+
       if (email) assert.equal(error.message.includes(email), false);
+
       return true;
     });
   });

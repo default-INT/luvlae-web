@@ -1,0 +1,10 @@
+.main { padding: 56px 24px 80px; min-height: 70vh;
+  background: radial-gradient(ellipse at top, #e0efff, transparent 65%); }
+.heading { max-width: 980px; margin: 0 auto 32px;
+  h1 { font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.055em; margin: 12px 0; }
+  p { color: var(--color-text); line-height: 1.7; }
+  p:first-child { color: var(--color-blue); font-size: 0.75rem; letter-spacing: 0.12em; font-weight: 650; }
+  a { display: inline-block; margin-top: 8px; color: var(--color-navy); } }
+.payment { max-width: 1020px; margin: auto; border-radius: 24px; padding: clamp(12px, 3vw, 28px);
+  background: white; border: 1px solid var(--color-border); box-shadow: var(--shadow-card); }
+@media (max-width: 480px) { .main { padding: 32px 12px 56px; } .heading { padding: 0 8px; } }

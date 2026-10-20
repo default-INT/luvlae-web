@@ -1,1 +1,1 @@
-export type { GuestOrder } from './model/order';
+export type { GuestOrder, GuestCheckout } from './model/order';

@@ -9,9 +9,12 @@ import type { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 interface Props { params: Promise<{ id: string }> }
+
 export default async function LegacyOrderRoute(props: Props) {
   const { id } = await props.params;
+
   if (!/^[a-f0-9]{24}$/.test(id)) notFound();
+
   const dictionary = await getDictionary(defaultLocale);
   return <LegacyOrderAccess id={id} label={dictionary.commerce.openingOrder}/>;
 }

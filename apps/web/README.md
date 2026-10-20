@@ -10,14 +10,23 @@ The MongoDB variable contract is declared in `.env.example`. Fill these entries 
 
 - `NEXT_MONGODB_USERNAME` — Atlas database user.
 - `NEXT_MONGODB_PASSWORD` — database user's raw password.
-- `NEXT_MONGODB_URI` — Atlas `mongodb+srv://` URI containing the host and connection options, without username/password; credentials will be supplied separately through driver options when the connection is implemented.
+- `NEXT_MONGODB_URI` — Atlas `mongodb+srv://` URI containing the host and connection options, without username/password; credentials are supplied separately through driver options.
 - `NEXT_MONGODB_DB_NAME` — target database (`luvlae_stage` or `luvlae_prod`, proposed names).
 
-These are server-only variables; do not rename them to `NEXT_PUBLIC_*`, expose them through Next.js `env` config, or import credentials into client modules. `cloudflare.config.ts` declares all four names with `bindings.secret()` for both Workers; declarations do not upload their values. The database driver and connection are not implemented yet.
+These are server-only variables; do not rename them to `NEXT_PUBLIC_*`, expose them through Next.js `env` config, or import credentials into client modules. `cloudflare.config.ts` declares all four names with `bindings.secret()` for both Workers; declarations do not upload their values. The MongoDB driver uses request-scoped connections.
+
+## Stripe stage secrets
+
+`apps/web/.env.example` also lists the server-only Stripe variables. For local development, put the Stripe test-mode values in the ignored `apps/web/.env.local`. The stage Worker declares these two Cloudflare runtime secrets. Local forwarding uses the CLI signing secret, which differs from the stage endpoint secret:
+
+- `STRIPE_SECRET_KEY` — Stripe sandbox secret API key beginning with `sk_test_`; used by the server to retrieve Checkout Sessions and verify current payment state; Session creation is a later phase.
+- `STRIPE_WEBHOOK_SECRET` — signing secret beginning with `whsec_`; Stripe provides it for the stage webhook endpoint after that endpoint is created. Used to verify incoming webhook signatures.
+
+In Cloudflare Dashboard, open **Workers & Pages → `luvlae-web-stage` → Settings → Variables and Secrets → Add**, choose **Secret**, and create both names with their stage values. The webhook signing secret is not the API key and is not available until a webhook endpoint exists. Never use `sk_live_` for stage, expose either value as `NEXT_PUBLIC_*`, or put real values in tracked files. Embedded Checkout creation and webhook settlement are implemented with explicit activation and test/live isolation. See [live preparation and runtime configuration](docs/stripe-live-readiness.md).
 
 ### Cloudflare runtime secrets
 
-In Cloudflare Dashboard, open **Workers & Pages → the Worker → Settings → Variables and Secrets → Add**, choose **Secret**, and add each of the four names above. Save/deploy the settings. Repeat with separate values for each Worker:
+In Cloudflare Dashboard, open **Workers & Pages → the Worker → Settings → Variables and Secrets → Add**, choose **Secret**, and add all four `NEXT_MONGODB_*` names from the MongoDB section. Save/deploy the settings. Repeat with separate values for each Worker:
 
 | Worker | Credentials |
 | --- | --- |
@@ -56,6 +65,6 @@ Use Node >=22. Database commands are app-local: `pnpm --filter @luvlae/web db:mi
 `pnpm --filter @luvlae/web test:server` runs synthetic MongoDB replica-set integration tests.
 
 Prices and stock are supplied by an administrator; there are no production product seeds.
-Stripe session/webhook endpoints currently return 503 until the payment integration is implemented.
+Embedded Checkout, protected result pages and signed webhook settlement are implemented. Checkout defaults disabled; see [local Stripe testing](docs/stripe-local.md) and [test/live activation](docs/stripe-live-readiness.md).
 Stage Atlas migration and transaction rollback check are verified after granting `dbAdmin`.
 Missing/mismatched `DB_CONFIRM_NAME` reports `DB_CONFIRMATION_REQUIRED` before connecting.

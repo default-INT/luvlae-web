@@ -20,6 +20,7 @@ test('opening and closing an order preserves filters without including the drawe
   assert.equal(closed.searchParams.get('fulfillmentStatus'), 'processing');
   assert.equal(closed.searchParams.get('from'), '2026-10-01');
   assert.equal(orderSelection(new URL(ordersUrl(filters, id), 'https://test.local').searchParams), id);
+
   for (const order of ['', '../products', 'unknown', 'A'.repeat(24)]) {
     assert.equal(orderSelection(new URLSearchParams({ order })), null);
   }

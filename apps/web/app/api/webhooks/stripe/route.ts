@@ -1,3 +1,3 @@
 export const dynamic = 'force-dynamic';
 
-export { stripeUnavailable as POST } from '@/_app/commerce/handlers.server';
+export { stripeWebhook as POST } from '@/_app/commerce/stripe-webhook.server';

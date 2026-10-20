@@ -45,3 +45,5 @@
 @media (prefers-reduced-motion: reduce) { .drawer[open] { animation: none; } }
 @media (max-width: 380px) { .heading, .summary { padding: 20px; } .items { padding: 0 20px; }
   .item { gap: 12px; > img { width: 70px; height: 70px; } } }
+
+.pending { color: var(--color-text); font-size: 0.8rem; line-height: 1.6; }

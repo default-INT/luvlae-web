@@ -1,4 +1,5 @@
 import type { ObjectId } from 'mongodb';
+import type Stripe from 'stripe';
 
 export interface Product {
   _id: ObjectId;
@@ -68,6 +69,7 @@ export interface CheckoutAttempt {
     expiresAt: Date; committedAt?: Date; releasedAt?: Date;
   };
   stripeSessionId?: string; stripePaymentIntentId?: string; livemode: boolean;
+  stripeRequest?: { apiVersion: string; parameters: Stripe.Checkout.SessionCreateParams };
   createdAt: Date; updatedAt: Date;
 }
 

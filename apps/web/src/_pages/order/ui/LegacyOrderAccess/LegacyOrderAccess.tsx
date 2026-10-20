@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import styles from '../OrderResult/styles.module.scss';
 
 interface Props { id: string; label: string }
+
 export const LegacyOrderAccess = (props: Props) => {
   const { id, label } = props;
   const router = useRouter();
@@ -15,6 +16,7 @@ export const LegacyOrderAccess = (props: Props) => {
     const restore = async () => {
       try {
         const token = sessionStorage.getItem(`luvlae-order-${id}`);
+
         if (token) {
           const response = await fetch(`/api/orders/${id}/access`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

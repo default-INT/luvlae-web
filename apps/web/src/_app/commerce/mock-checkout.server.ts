@@ -37,17 +37,23 @@ export const createMockOrder = async (context: DatabaseContext, input: z.infer<t
   return inTransaction(context, async session => {
     const { products, orders, attempts } = collections(context.db);
     const existing = await orders.findOne({ creationKeyHash }, { session });
+
     if (existing) {
       if (existing.creationRequestHash !== requestHash) fail(409, 'IDEMPOTENCY_CONFLICT', 'Request contents changed.');
+
       return { id: existing._id.toHexString(), replayed: true };
     }
+
     const now = new Date();
     const orderId = new ObjectId();
     const attemptId = new ObjectId();
     const items: Order['items'] = [];
+
     for (const requested of value.items) {
       const product = await products.findOne({ sku: requested.sku }, { session });
+
       if (!product || !product.salesEnabled) return fail(409, 'PRODUCT_UNAVAILABLE', 'A product is unavailable.');
+
       if (product.version !== requested.productVersion) fail(409, 'PRICE_CHANGED', 'Review the updated price before checkout.');
 
       const result = await products.updateOne({
@@ -56,13 +62,19 @@ export const createMockOrder = async (context: DatabaseContext, input: z.infer<t
       }, { $inc: { 'inventory.stockQuantity': -requested.quantity }, $set: { updatedAt: now } }, { session });
 
       if (!result.modifiedCount) fail(409, 'OUT_OF_STOCK', 'Requested quantity is unavailable.');
+
       const lineSubtotal = requested.quantity * product.price.unitAmount;
+
       if (!Number.isSafeInteger(lineSubtotal)) fail(400, 'INVALID_AMOUNT', 'Amount exceeds supported bounds.');
+
       items.push({ productId: product._id, sku: product.sku, name: product.name, quantity: requested.quantity,
         unitAmount: product.price.unitAmount, lineSubtotal, productVersion: product.version });
     }
+
     const subtotal = items.reduce((sum, item) => sum + item.lineSubtotal, 0);
+
     if (!Number.isSafeInteger(subtotal)) fail(400, 'INVALID_AMOUNT', 'Amount exceeds supported bounds.');
+
     // Zero delivery/tax are test-only policies, not commercial shipping or tax terms.
     const pricing: Order['pricing'] = { state: 'final', subtotal, discount: 0, shipping: 0, tax: 0, total: subtotal };
     const pricingPolicy = { shipping: 'mock-zero-v1', tax: 'mock-zero-v1', discount: 'none-v1' };

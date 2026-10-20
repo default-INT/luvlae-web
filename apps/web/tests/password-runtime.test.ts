@@ -9,7 +9,9 @@ test('password creation, verification and unknown-account work stay within the d
 
   const cappedPbkdf2: typeof crypto.pbkdf2 = (password, salt, iterations, length, digest, callback) => {
     requests.push(iterations);
+
     if (iterations > 100000) throw new DOMException('PBKDF2 iteration cap exceeded.', 'NotSupportedError');
+
     nativePbkdf2(password, salt, iterations, length, digest, callback);
   };
 
@@ -33,6 +35,7 @@ test('password creation, verification and unknown-account work stay within the d
   assert.ok(requests.every(count => count === 100000));
 
   const beforeInvalid = requests.length;
+
   for (const stored of [
     first.replace('$100000$', '$600000$'), first.replace('$100000$', '$0100000$'),
     first.replace('pbkdf2-sha256', 'sha256'), `${first}$extra`, 'malformed-hash',
@@ -40,5 +43,6 @@ test('password creation, verification and unknown-account work stay within the d
   ]) {
     assert.equal(await verifyPassword(password, stored), false);
   }
+
   assert.equal(requests.length, beforeInvalid);
 });

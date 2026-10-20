@@ -3,12 +3,25 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const getDeployment = (environment = 'production') => {
+export const getDeployment = (environment = 'production', settings = {}) => {
   if (!['stage', 'production'].includes(environment)) {
     throw new Error(`Unsupported deployment environment: ${environment}`);
   }
 
-  return { environment, worker: environment === 'stage' ? 'luvlae-web-stage' : 'luvlae-web' };
+  const stripeMode = settings.STRIPE_MODE ?? 'test';
+  const checkoutEnabled = settings.STRIPE_CHECKOUT_ENABLED ?? 'false';
+
+  if (!['test', 'live'].includes(stripeMode) || !['true', 'false'].includes(checkoutEnabled)) {
+    throw new Error('Invalid Stripe deployment settings. Use STRIPE_MODE=test|live and STRIPE_CHECKOUT_ENABLED=true|false.');
+  }
+  if (environment === 'stage' && stripeMode === 'live') {
+    throw new Error('Stage must use Stripe test mode.');
+  }
+
+  return {
+    environment, worker: environment === 'stage' ? 'luvlae-web-stage' : 'luvlae-web',
+    stripe: { mode: stripeMode, enabled: checkoutEnabled },
+  };
 };
 
 export const verifyArtifact = (root, deployment) => {
@@ -18,6 +31,17 @@ export const verifyArtifact = (root, deployment) => {
 
   if (config.name !== deployment.worker || manifest.environment !== deployment.environment) {
     throw new Error(`Build does not target ${deployment.environment}/${deployment.worker}. Rebuild before deploying.`);
+  }
+
+  const stripeMatches = [
+    manifest.stripe?.mode === deployment.stripe.mode,
+    manifest.stripe?.enabled === deployment.stripe.enabled,
+    config.env?.STRIPE_MODE?.value === deployment.stripe.mode,
+    config.env?.STRIPE_CHECKOUT_ENABLED?.value === deployment.stripe.enabled,
+  ].every(Boolean);
+
+  if (!stripeMatches) {
+    throw new Error('Stripe mode/activation differs from the build artifact. Rebuild before deploying.');
   }
 
   const headersFile = path.join(output, 'assets/_headers');
@@ -38,11 +62,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     throw new Error('Usage: cloudflare.mjs build|deploy|preview [--skip-build] (DEPLOY_ENV=stage|production)');
   }
 
-  const deployment = getDeployment(process.env.DEPLOY_ENV);
+  const deployment = getDeployment(process.env.DEPLOY_ENV, process.env);
   const root = path.resolve(import.meta.dirname, '..');
   const env = {
     ...process.env,
     NEXT_PUBLIC_APP_ENV: deployment.environment,
+    STRIPE_MODE: deployment.stripe.mode,
+    STRIPE_CHECKOUT_ENABLED: deployment.stripe.enabled,
     ...(deployment.environment === 'stage' ? { NEXT_PUBLIC_GA_MEASUREMENT_ID: '' } : {}),
   };
   const run = (args) => {
@@ -57,7 +83,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     run(['exec', 'node', 'scripts/generate-dictionaries.mjs']);
     run(['exec', 'vite', 'build', '--mode', deployment.environment]);
     const output = path.join(root, '.cloudflare/output/v0/workers/default');
-    writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({ environment: deployment.environment }));
+    writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({
+      environment: deployment.environment, stripe: deployment.stripe,
+    }));
     if (deployment.environment === 'stage') {
       const headersFile = path.join(output, 'assets/_headers');
       const headers = existsSync(headersFile) ? readFileSync(headersFile, 'utf8') : '';

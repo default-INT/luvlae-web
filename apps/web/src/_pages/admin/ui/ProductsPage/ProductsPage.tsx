@@ -13,6 +13,7 @@ import styles from '../styles.module.scss';
 import type { AdminCopy, AdminProduct, PageResult } from '../../model/types';
 
 interface Props { copy: AdminCopy }
+
 export const ProductsPage = (props: Props) => {
   const { copy } = props;
   const search = useSearchParams();

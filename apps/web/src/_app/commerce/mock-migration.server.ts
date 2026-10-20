@@ -12,13 +12,18 @@ import type { DatabaseContext } from '@/shared/lib/mongodb/index.server';
 
 export const migrateMockOrders = async (db: Db) => {
   const name = '002-mock-order-mode';
+
   if (await db.collection('_migrations').findOne({ name })) return;
+
   const owner = new ObjectId().toHexString();
   await db.collection('_migrationLocks').insertOne({ _id: new ObjectId('000000000000000000000001'), owner });
+
   try {
     const info = await db.listCollections({ name: 'orders' }, { nameOnly: false }).next();
     const validator = info?.options?.validator as Document | undefined;
+
     if (!validator?.$jsonSchema?.properties) fail(503, 'DATABASE_NOT_READY', 'Run the commerce schema migration first.');
+
     const schema = validator!.$jsonSchema;
     await db.command({
       collMod: 'orders',
@@ -36,7 +41,9 @@ export const migrateMockOrders = async (db: Db) => {
 // Explicit test-data migration. Existing product edits and stock are never overwritten.
 export const seedTestProduct = async (context: DatabaseContext) => inTransaction(context, async session => {
   const name = '003-test-berberine-product';
+
   if (await context.db.collection('_migrations').findOne({ name }, { session })) return;
+
   const now = new Date();
   await collections(context.db).products.updateOne({ sku: 'LUVLAE-BERBERINE-60' }, { $setOnInsert: {
     _id: new ObjectId(), schemaVersion: 1, sku: 'LUVLAE-BERBERINE-60',

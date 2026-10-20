@@ -45,6 +45,7 @@ export const handle = (operation: () => Promise<Response>) => async () => {
     // Keep diagnostic categories/codes, never raw messages, stacks, bodies, cookies or connection strings.
     if (status >= 500) {
       let errorType = 'Error';
+
       if (error instanceof MongoServerError) errorType = 'MongoServerError';
       else if (error instanceof Error && [
         'TypeError', 'RangeError', 'ReferenceError', 'SyntaxError', 'NotSupportedError', 'OperationError',
@@ -69,19 +70,25 @@ export const readJson = async <T>(request: Request, schema: z.ZodType<T>): Promi
   }
 
   const reader = request.body?.getReader();
+
   if (!reader) return fail(400, 'INVALID_INPUT', 'A JSON body is required.');
+
   const chunks: Uint8Array[] = [];
   let size = 0;
 
   try {
     while (true) {
       const { done, value } = await reader.read();
+
       if (done) break;
+
       size += value.byteLength;
+
       if (size > 16384) {
         await reader.cancel();
         fail(413, 'BODY_TOO_LARGE', 'Request body exceeds 16 KiB.');
       }
+
       chunks.push(value);
     }
   } finally {
@@ -90,22 +97,26 @@ export const readJson = async <T>(request: Request, schema: z.ZodType<T>): Promi
 
   const bytes = new Uint8Array(size);
   let offset = 0;
+
   for (const chunk of chunks) {
     bytes.set(chunk, offset);
     offset += chunk.length;
   }
 
   let body: unknown;
+
   try {
     body = JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     return fail(400, 'INVALID_JSON', 'A valid JSON body is required.');
   }
+
   return schema.parse(body);
 };
 
 export const requireOrigin = (request: Request) => {
   const origin = request.headers.get('origin');
+
   if (origin !== new URL(request.url).origin) {
     fail(403, 'INVALID_ORIGIN', 'A same-origin request is required.');
   }

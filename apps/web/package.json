@@ -21,10 +21,15 @@
     "db:admin:create": "node --conditions=react-server --import tsx scripts/db/cli.ts admin:create",
     "db:admin:reset-password": "node --conditions=react-server --import tsx scripts/db/cli.ts admin:reset-password",
     "test:server": "node --conditions=react-server --import tsx --test tests/*.test.ts",
-    "db:seed:test": "node --conditions=react-server --import tsx scripts/db/cli.ts seed:test"
+    "db:seed:test": "node --conditions=react-server --import tsx scripts/db/cli.ts seed:test",
+    "stripe:listen": "node scripts/stripe.mjs listen",
+    "stripe:trigger": "node scripts/stripe.mjs trigger",
+    "stripe:version": "node scripts/stripe.mjs version",
+    "stripe:reconcile": "node --conditions=react-server --import tsx scripts/stripe-reconcile.ts"
   },
   "dependencies": {
     "@next/env": "16.3.8",
+    "@stripe/stripe-js": "^10.1.0",
     "@vinext/cloudflare": "1.0.1",
     "mongodb": "^6",
     "next": "16.3.8",
@@ -32,6 +37,7 @@
     "react-dom": "19.2.8",
     "react-server-dom-webpack": "19.2.8",
     "server-only": "0.0.1",
+    "stripe": "^23.0.0",
     "vinext": "1.0.1",
     "yaml": "2.9.1",
     "zod": "^4",
@@ -39,6 +45,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "2.0.0-beta.sha-52b0dc0e9",
+    "@stripe/cli": "^1.54.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

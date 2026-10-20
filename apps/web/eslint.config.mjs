@@ -133,6 +133,10 @@ const eslintConfig = defineConfig([
       'no-tabs': 'error',
       'padding-line-between-statements': [
         'error',
+        { blankLine: 'always', prev: '*', next: ['if', 'switch', 'try', 'for', 'while', 'do'] },
+        { blankLine: 'always', prev: ['if', 'switch', 'try', 'for', 'while', 'do'], next: '*' },
+        { blankLine: 'always', prev: ['multiline-block-like'], next: '*' },
+        { blankLine: 'always', prev: '*', next: ['multiline-block-like'] },
         { blankLine: 'always', prev: ['multiline-const', 'multiline-let'], next: '*' },
         { blankLine: 'always', prev: '*', next: ['multiline-const', 'multiline-let'] },
         { blankLine: 'never', prev: ['singleline-let', 'singleline-const'], next: ['singleline-let', 'singleline-const'] },

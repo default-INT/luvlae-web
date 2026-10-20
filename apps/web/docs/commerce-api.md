@@ -98,8 +98,8 @@ The following routes are declared but deliberately unavailable:
 
 | Method | Path | Response |
 | --- | --- | --- |
-| POST | `/api/checkout/session` | 503 `CHECKOUT_NOT_CONFIGURED` |
-| POST | `/api/webhooks/stripe` | 503 `PAYMENTS_NOT_CONFIGURED` |
+| POST | `/api/checkout/session` | Embedded Session creation when enabled; `{data:{id,replayed}}`, sets guest cookie |
+| POST | `/api/webhooks/stripe` | Signed sandbox Checkout events; [contract and local testing](stripe-local.md) |
 
 Stripe session creation, signed event ingestion, reconciliation, reservation commit/release, refunds synchronization and financial journal population from Stripe are not implemented in this stage. These routes neither create payable orders nor acknowledge unverified events. Shipping/tax policies, reservation/payment-method policy, email delivery and retention remain integration decisions. No sales are enabled by this change.
 
@@ -137,3 +137,17 @@ The cart now uses Zustand, no Context. A browser-only shared store and per-SSR-c
 The admin UI is reachable only by direct `/admin` URL, with `/admin/login` and client-loaded order/product lists and details. Session, data and mutation requests use fetch to the existing authorized `/api/admin/**` endpoints, with loading/error/retry feedback, stale-read cancellation and login redirect on 401. Orders open/edit in a modal right Drawer at `/admin/orders?order=:id`; legacy `/admin/orders/:id` redirects there. Selection preserves filters, saves refresh details/list through API, and native History API changes do not reload the server shell. Admin SSR database loaders have been removed; public product/customer order SSR is unchanged. Session cookie `luvlae_admin_v2` uses root path; old API-only cookies require signing in again. Public storefront navigation has no admin links. Private pages are noindex and excluded from sitemap; explicit private/no-store and CDN no-store headers are configured.
 
 Order list filters: `q` (literal case-insensitive order-number substring, max 100), `from`/`to` (YYYY-MM-DD, inclusive UTC days), `orderStatus`, `paymentStatus`, `fulfillmentStatus`, cursor/limit. Empty filters are ignored; invalid dates/ranges/statuses return 400. All three statuses display as tags. Order UI supports the existing fulfillment, cancellation and bounded restocking APIs. Product UI edits name/description, integer-cent USD price, stock and sales availability using versioned audited updates. No payment-status override, refund provider integration, shipping/email provider, or public admin registration was added.
+
+
+## Embedded Checkout — 2026-10-19
+
+`POST /api/checkout/session` accepts the existing operationId/guestToken/items request and creates or resumes
+one embedded Session. Returns 201 initial/200 replay and the guest HttpOnly cookie; client navigates to
+`/orders/:id/checkout`. No client-supplied totals. Final USD total equals subtotal (delivery/tax included),
+with a 24-hour deadline. App supports checkout totals 50 through 99,999,999 cents.
+Migration 004-stripe-request-snapshot must run before creating a Session. It stores exact provider request
+parameters and API version atomically before contacting Stripe; retries preserve both. Existing bound legacy
+Sessions resume; ambiguous unbound legacy attempts require operator recovery. Migration 004 was applied to the
+configured stage Atlas on 2026-10-19; production migration remains unverified.
+See [integration plan](../../../.gpt-context/stripe-checkout-integration.md), [sandbox testing](stripe-local.md)
+and [live operation/recovery](stripe-live-readiness.md). Refund/dispute app workflows and emails remain pending.

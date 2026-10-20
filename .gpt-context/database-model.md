@@ -208,5 +208,14 @@ Checked 2026-10-18:
 - `loginLimits` stores distributed fixed-window counters with TTL. Sessions last eight hours; expiry/revocation/user-version checks do not depend on TTL deletion. Password KDF: standard PBKDF2-HMAC-SHA256, 100,000 iterations, random 16-byte salt and 32-byte key, constant-time comparison. The user selected the deployed Workers cap and administrator recreation; old 600,000-iteration hashes require recreation/reset. Local workerd omits this cap, so regression tests enforce it explicitly; see [admin UI notes](admin-ui.md).
 - Code-first migration `001-commerce` creates the validators and indexes. An explicit migration principal needs schema-management permissions; runtime does not create indexes. Collection creation is not an atomic migration: incomplete runs have no completed marker and can be retried after resolving errors.
 - Product/order admin operations and atomic order/reservation creation are implemented. `orders.restockedQuantities` tracks cumulative per-SKU restocks. The initial notification schema is a bounded pending/sent outbox; the fuller leased/retry sender described above requires a future migration and worker.
-- Stripe session/webhook routes are declared and return 503. Provider verification, event processing, reservation commit/release and reconciliation remain unimplemented; none of the target lifecycle text above implies a working provider integration.
+- Sandbox Stripe Checkout webhook verification and atomic processing now commit/release reservations and append payment observations. Checkout Session creation still returns 503; scheduled reconciliation, refunds and disputes remain pending. See [Stripe runbook](../apps/web/docs/stripe-local.md).
 - Stage Atlas connection and local Workers driver execution verified. The initial Atlas 8000 `collMod` permission failure was resolved after the user granted `dbAdmin`; migration and rollback check completed. No product/order/admin seed. Local replica-set tests pass. See the runbook for commands and acceptance evidence.
+
+
+## Durable Stripe request snapshot — 2026-10-19
+
+Migration 004 adds optional checkoutAttempts.stripeRequest with the server-generated Session parameters and API version.
+New Stripe reservations persist that immutable request atomically with order and inventory before calling Stripe;
+retries use the saved parameters/version and original idempotency key. Applied migrations 001/002 remain unchanged.
+Legacy bound Sessions are retrieved; ambiguous unbound legacy attempts require operator metadata recovery and are
+never recreated with guessed request defaults. See [integration plan](stripe-checkout-integration.md).

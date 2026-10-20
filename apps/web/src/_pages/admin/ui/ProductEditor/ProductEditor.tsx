@@ -12,6 +12,7 @@ import type { AdminCopy, AdminProduct } from '../../model/types';
 import type { FormEvent } from 'react';
 
 interface Props { initialProduct: AdminProduct; copy: AdminCopy }
+
 export const ProductEditor = (props: Props) => {
   const { initialProduct, copy } = props;
   const [product, setProduct] = useState(initialProduct);
@@ -24,7 +25,9 @@ export const ProductEditor = (props: Props) => {
     const fields = new FormData(event.currentTarget);
     const unitAmount = priceInCents(String(fields.get('price')));
     setValidation('');
+
     if (unitAmount === null) { setValidation(copy.invalidPrice); return; }
+
     await mutation.run(`/products/${product.sku}`, {
       version: product.version, name: String(fields.get('name')), shortDescription: String(fields.get('description')),
       unitAmount, stockQuantity: Number(fields.get('stock')), salesEnabled: fields.get('salesEnabled') === 'on',

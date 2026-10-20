@@ -9,6 +9,7 @@ import type { AdminCopy, OrderDetail } from '../../model/types';
 import type { FormEvent } from 'react';
 
 interface Props { order: OrderDetail; copy: AdminCopy; reload: () => Promise<void>; onBusyChange: (busy: boolean) => void }
+
 export const OrderActions = (props: Props) => {
   const { order, copy, reload, onBusyChange } = props;
   const mutation = useAdminMutation(copy, reload, onBusyChange);
@@ -57,6 +58,7 @@ export const OrderActions = (props: Props) => {
       .filter(item => item.quantity > 0);
 
     setValidation('');
+
     if (!items.length) { setValidation(copy.restockEmpty); return; }
 
     const saved = await mutation.run(`/orders/${order.id}/restock`, {

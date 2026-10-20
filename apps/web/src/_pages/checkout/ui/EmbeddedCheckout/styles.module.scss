@@ -1,0 +1,6 @@
+.form { min-height: 320px; width: 100%; }
+.container { width: 100%; }
+.form > p { padding: 32px; text-align: center; color: var(--color-text); }
+.error { padding: 32px; background: var(--color-surface-muted); border-radius: 16px;
+  button { padding: 12px 20px; border: 0; border-radius: 30px; background: var(--color-navy);
+    color: white; cursor: pointer; font: inherit; } }

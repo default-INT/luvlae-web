@@ -26,7 +26,9 @@ export const createProduct = async (
   const { products } = collections(context.db);
   const requestHash = requestFingerprint({ action: 'product.create', actor: adminId.toHexString(), input });
   const replay = await checkReplay(context.db, session, input.operationId, requestHash);
+
   if (replay) return { id: replay.entityId.toHexString(), replayed: true };
+
   const now = new Date();
 
   const product: Product = {
@@ -50,10 +52,15 @@ export const updateProduct = async (
   const { products } = collections(context.db);
   const requestHash = requestFingerprint({ action: 'product.update', actor: adminId.toHexString(), sku, input });
   const replay = await checkReplay(context.db, session, input.operationId, requestHash);
+
   if (replay) return { id: replay.entityId.toHexString(), replayed: true };
+
   const current = await products.findOne({ sku }, { session });
+
   if (!current) return fail(404, 'NOT_FOUND', 'Product not found.');
+
   if (current.version !== input.version) fail(409, 'VERSION_CONFLICT', 'Reload the product before editing.');
+
   if (input.stockQuantity !== undefined && input.stockQuantity < current.inventory.reservedQuantity) {
     fail(409, 'STOCK_RESERVED', 'Stock cannot be lower than the reserved quantity.');
   }
@@ -69,7 +76,9 @@ export const updateProduct = async (
   };
 
   const result = await products.replaceOne({ _id: current._id, version: input.version }, updated, { session });
+
   if (!result.modifiedCount) fail(409, 'VERSION_CONFLICT', 'Reload the product before editing.');
+
   await appendAudit(context.db, session, {
     operationId: input.operationId, requestHash, actor: { type: 'admin', id: adminId },
     entityType: 'product', entityId: current._id, action: 'product.update', reason: input.reason,
@@ -83,12 +92,17 @@ export const calculateQuote = async (context: DatabaseContext, input: z.infer<ty
 
   const items = input.items.map(item => {
     const product = products.find(value => value.sku === item.sku);
+
     if (!product || !product.salesEnabled) return fail(409, 'PRODUCT_UNAVAILABLE', 'A product is unavailable.');
+
     if (product.inventory.stockQuantity - product.inventory.reservedQuantity < item.quantity) {
       fail(409, 'OUT_OF_STOCK', 'Requested quantity is unavailable.');
     }
+
     const lineSubtotal = product.price.unitAmount * item.quantity;
+
     if (!Number.isSafeInteger(lineSubtotal)) fail(400, 'INVALID_AMOUNT', 'Amount exceeds supported bounds.');
+
     return {
       sku: item.sku, quantity: item.quantity, unitAmount: product.price.unitAmount,
       lineSubtotal, productVersion: product.version,
@@ -96,7 +110,9 @@ export const calculateQuote = async (context: DatabaseContext, input: z.infer<ty
   });
 
   const subtotal = items.reduce((sum, item) => sum + item.lineSubtotal, 0);
+
   if (!Number.isSafeInteger(subtotal)) fail(400, 'INVALID_AMOUNT', 'Amount exceeds supported bounds.');
+
   return {
     items, currency: 'USD',
     pricing: { state: 'estimated', subtotal, discount: 0, shipping: null, tax: null, total: null },

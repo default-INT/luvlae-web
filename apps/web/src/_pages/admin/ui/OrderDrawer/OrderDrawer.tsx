@@ -11,6 +11,7 @@ import styles from './styles.module.scss';
 import type { AdminCopy, OrderDetail } from '../../model/types';
 
 interface Props { id: string | null; copy: AdminCopy; onClose: () => void; onChanged: () => Promise<void> }
+
 export const OrderDrawer = (props: Props) => {
   const { id, copy, onClose, onChanged } = props;
   const resource = useAdminResource<OrderDetail>(id ? `/orders/${id}` : null, copy);
@@ -20,9 +21,13 @@ export const OrderDrawer = (props: Props) => {
   const open = !!id;
   useEffect(() => {
     const element = dialog.current;
+
     if (!element) return;
+
     if (!open) { element.close(); return; }
+
     if (!element.open) element.showModal();
+
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = previous; };
@@ -38,6 +43,7 @@ export const OrderDrawer = (props: Props) => {
       onCancel={event => { if (saving) event.preventDefault(); else onClose(); }}
       onPointerDown={event => {
         const bounds = event.currentTarget.getBoundingClientRect();
+
         if (!saving && (event.clientX < bounds.left || event.clientX > bounds.right
           || event.clientY < bounds.top || event.clientY > bounds.bottom)) onClose();
       }}>

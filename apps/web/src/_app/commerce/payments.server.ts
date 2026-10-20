@@ -20,7 +20,7 @@ const transactionSchema = z.strictObject({
   amount: integerSchema, currency: z.literal('USD'), livemode: z.boolean(), occurredAt: z.date(),
 });
 
-// Internal-only. The future verified provider processor must call this in the same transaction
+// Internal-only. The verified provider processor calls this in the same transaction
 // as the order/payment/inventory change and event completion. Never accept financial facts from a browser.
 export const appendPaymentTransaction = async (
   db: Db, session: ClientSession, input: Omit<PaymentTransaction, '_id' | 'schemaVersion' | 'recordedAt'>,
@@ -57,8 +57,10 @@ export const appendPaymentTransaction = async (
     if (fingerprint(previous) !== fingerprint(value)) {
       fail(409, 'IDEMPOTENCY_CONFLICT', 'A financial operation cannot be rewritten.');
     }
+
     return _id;
   }
+
   const document = { ...value, _id: new ObjectId(), schemaVersion: 1, recordedAt: new Date() };
   await transactions.insertOne(document, { session });
   return document._id;

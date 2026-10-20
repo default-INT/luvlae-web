@@ -17,13 +17,16 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>, o
 
   const run = async (path: string, body: Record<string, unknown>, method = 'POST') => {
     if (locked.current) return;
+
     locked.current = true;
     setBusy(true);
     onBusyChange?.(true);
     setError('');
     setSaved(false);
     const signature = JSON.stringify({ path, body, method });
+
     if (pending.current?.signature !== signature) pending.current = { signature, operationId: crypto.randomUUID() };
+
     try {
       await adminRequest(path, { ...body, operationId: pending.current.operationId }, method);
       pending.current = null;
@@ -32,13 +35,18 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>, o
       return true;
     } catch (failure) {
       const code = failure instanceof AdminApiError ? failure.code : '';
+
       if (failure instanceof AdminApiError && failure.status === 401) {
         router.replace('/admin/login');
       }
+
       const errors = copy.errors as Record<string, string>;
       setError(errors[code] ?? copy.requestError);
+
       if (failure instanceof AdminApiError && failure.status < 500 && code !== 'CONFLICT') pending.current = null;
+
       if (code === 'VERSION_CONFLICT') await reload().catch(() => {});
+
       return false;
     } finally {
       locked.current = false;

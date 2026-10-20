@@ -29,3 +29,7 @@ Add focused notes here when the project gains durable architecture, development 
 - [SEO requirements for Luvlae.com](seo-requirements.md)
 
 - [Commerce server implementation and API runbook](../apps/web/docs/commerce-api.md)
+
+- [Stripe sandbox webhook and local testing](../apps/web/docs/stripe-local.md)
+
+- [Embedded Stripe Checkout integration plan and agent assignments](stripe-checkout-integration.md)

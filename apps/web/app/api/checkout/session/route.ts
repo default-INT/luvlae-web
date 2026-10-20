@@ -1,3 +1,3 @@
 export const dynamic = 'force-dynamic';
 
-export { checkoutUnavailable as POST } from '@/_app/commerce/handlers.server';
+export { checkoutSession as POST } from '@/_app/commerce/handlers.server';

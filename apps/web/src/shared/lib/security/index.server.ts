@@ -18,8 +18,10 @@ export const hashPassword = async (password: string) => {
 
 export const verifyPassword = async (password: string, stored: string) => {
   const [algorithm, count, salt, expected, ...extra] = stored.split('$');
+
   if (extra.length || algorithm !== 'pbkdf2-sha256' || count !== String(iterations)
     || !/^[a-f0-9]{32}$/.test(salt ?? '') || !/^[a-f0-9]{64}$/.test(expected ?? '')) return false;
+
   const actual = await derive(password, salt, iterations, 32, 'sha256');
   return timingSafeEqual(actual, Buffer.from(expected, 'hex'));
 };

@@ -7,6 +7,8 @@ export const commerceRequest = async <T>(path: string, body?: unknown, token?: s
   });
 
   const result = await response.json() as { data: T; error?: { code: string } };
+
   if (!response.ok) throw new Error(result.error?.code ?? 'REQUEST_FAILED');
+
   return result.data as T;
 };
