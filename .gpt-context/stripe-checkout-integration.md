@@ -51,7 +51,7 @@ Implement final pricing, 24h reservation, server Stripe Session creation with in
 Store session association before returning. Call Stripe outside transactions. Recover failures with the same
 Stripe idempotency key and immutable request parameters; concurrent creation cannot double-reserve.
 Export getGuestCheckout as specified. Preserve existing internal reserveOrder test behavior for other callers.
-Fail closed when STRIPE_CHECKOUT_ENABLED is not true. Use createStripeClient/runtime mode helpers from shared Stripe.
+Block new/resumed checkout only when STRIPE_CHEKOUT_DISABLED is true. Use createStripeClient/runtime mode helpers from shared Stripe.
 Terminal retries must not create a second payable Session; stock release needs confirmed provider state.
 
 ### Frontend agent
@@ -68,7 +68,7 @@ The public service/view contract above is fixed; coordinate changes with the roo
 
 Own shared/lib/stripe, stripe-checkout-policy.server.ts, environment gate in stripe-webhook.server.ts,
 cloudflare.config.ts, .env.example, focused new mode tests and live readiness runbook.
-STRIPE_MODE=test|live defaults test; STRIPE_CHECKOUT_ENABLED defaults disabled.
+STRIPE_MODE=test|live defaults test; STRIPE_CHEKOUT_DISABLED defaults false (checkout available with valid keys).
 Runtime STRIPE_PUBLISHABLE_KEY is returned only to the owned checkout view (no NEXT_PUBLIC build key needed).
 Match secret/publishable key prefixes, event/session/intent/attempt livemode to configured mode.
 Live mode must require production environment; stage/local must reject live configuration. Preserve default

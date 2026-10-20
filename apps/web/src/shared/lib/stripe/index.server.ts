@@ -45,7 +45,7 @@ const requireStripeWebhookSecret = () => {
 };
 
 export const requireStripeCheckoutConfiguration = () => {
-  if (process.env.STRIPE_CHECKOUT_ENABLED !== 'true') {
+  if (process.env.STRIPE_CHEKOUT_DISABLED === 'true') {
     return fail(503, 'CHECKOUT_UNAVAILABLE', 'Checkout is temporarily unavailable.');
   }
 

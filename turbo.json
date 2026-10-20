@@ -27,7 +27,7 @@
         "NEXT_PUBLIC_APP_ENV",
         "DEPLOY_ENV",
         "STRIPE_MODE",
-        "STRIPE_CHECKOUT_ENABLED"
+        "STRIPE_CHEKOUT_DISABLED"
       ]
     },
     "dev": {
@@ -55,7 +55,7 @@
       "env": [
         "DEPLOY_ENV",
         "STRIPE_MODE",
-        "STRIPE_CHECKOUT_ENABLED"
+        "STRIPE_CHEKOUT_DISABLED"
       ],
       "cache": false,
       "persistent": true
@@ -67,7 +67,7 @@
         "NEXT_PUBLIC_APP_ENV",
         "DEPLOY_ENV",
         "STRIPE_MODE",
-        "STRIPE_CHECKOUT_ENABLED"
+        "STRIPE_CHEKOUT_DISABLED"
       ],
       "passThroughEnv": [
         "CLOUDFLARE_API_TOKEN",

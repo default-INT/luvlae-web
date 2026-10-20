@@ -23,7 +23,7 @@ import type { DatabaseContext } from '../src/shared/lib/mongodb/index.server';
 let replica: MongoMemoryReplSet;
 let context: DatabaseContext;
 
-const envKeys = ['STRIPE_MODE', 'STRIPE_CHECKOUT_ENABLED', 'STRIPE_SECRET_KEY', 'STRIPE_PUBLISHABLE_KEY',
+const envKeys = ['STRIPE_MODE', 'STRIPE_CHEKOUT_DISABLED', 'STRIPE_SECRET_KEY', 'STRIPE_PUBLISHABLE_KEY',
   'STRIPE_WEBHOOK_SECRET'] as const;
 
 const oldEnvironment = Object.fromEntries(envKeys.map(key => [key, process.env[key]]));
@@ -32,7 +32,7 @@ const hasCode = (code: string) => (error: unknown) => error instanceof ApiError 
 
 before(async () => {
   process.env.STRIPE_MODE = 'test';
-  process.env.STRIPE_CHECKOUT_ENABLED = 'true';
+  process.env.STRIPE_CHEKOUT_DISABLED = 'false';
   process.env.STRIPE_SECRET_KEY = 'sk_test_synthetic';
   process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_synthetic';
   process.env.STRIPE_WEBHOOK_SECRET = 'whsec_synthetic';
@@ -280,7 +280,7 @@ test('disabled checkout and wrong-origin route reject before database access', a
     method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: '{}',
   });
 
-  process.env.STRIPE_CHECKOUT_ENABLED = 'false';
+  process.env.STRIPE_CHEKOUT_DISABLED = 'true';
 
   try {
     const response = await POST(request());
@@ -288,7 +288,7 @@ test('disabled checkout and wrong-origin route reject before database access', a
     assert.equal(response.headers.get('cache-control'), 'no-store');
     assert.equal((await POST(request('https://attacker.test'))).status, 403);
   } finally {
-    process.env.STRIPE_CHECKOUT_ENABLED = 'true';
+    process.env.STRIPE_CHEKOUT_DISABLED = 'false';
   }
 });
 

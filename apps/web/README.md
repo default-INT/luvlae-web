@@ -65,6 +65,6 @@ Use Node >=22. Database commands are app-local: `pnpm --filter @luvlae/web db:mi
 `pnpm --filter @luvlae/web test:server` runs synthetic MongoDB replica-set integration tests.
 
 Prices and stock are supplied by an administrator; there are no production product seeds.
-Embedded Checkout, protected result pages and signed webhook settlement are implemented. Checkout defaults disabled; see [local Stripe testing](docs/stripe-local.md) and [test/live activation](docs/stripe-live-readiness.md).
+Embedded Checkout, protected result pages and signed webhook settlement are implemented. Checkout defaults available with valid keys; set STRIPE_CHEKOUT_DISABLED=true to pause it; see [local Stripe testing](docs/stripe-local.md) and [test/live activation](docs/stripe-live-readiness.md).
 Stage Atlas migration and transaction rollback check are verified after granting `dbAdmin`.
 Missing/mismatched `DB_CONFIRM_NAME` reports `DB_CONFIRMATION_REQUIRED` before connecting.

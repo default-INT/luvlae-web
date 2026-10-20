@@ -32,7 +32,7 @@ Implemented 2026-10-18 following user approval of a temporary paid-order simulat
   then offers manual status refresh. onComplete navigates only and cannot mark a payment paid.
 - Stripe client secrets are server-rendered only for an owned payable Session; not stored in URLs or browser storage.
   Locale is English; Link is disabled for newly created card-only Sessions. Returning to shopping preserves the pending checkout.
-- Creation defaults disabled; local test mode is enabled in ignored configuration. Runtime test/live keys, production
+- Creation defaults available with valid keys; STRIPE_CHEKOUT_DISABLED=true pauses checkout. Runtime test/live keys, production
   environment gates, deployment artifact isolation and outstanding live setup are in [live readiness](../apps/web/docs/stripe-live-readiness.md).
 - Browser sandbox verification completed the actual CartDrawer -> Embedded Checkout -> signed webhook -> paid order
   flow with synthetic contacts. Atlas verified one observation/committed reservation; no real live payment was made.

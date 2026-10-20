@@ -9,10 +9,10 @@ export const getDeployment = (environment = 'production', settings = {}) => {
   }
 
   const stripeMode = settings.STRIPE_MODE ?? 'test';
-  const checkoutEnabled = settings.STRIPE_CHECKOUT_ENABLED ?? 'false';
+  const checkoutDisabled = settings.STRIPE_CHEKOUT_DISABLED ?? 'false';
 
-  if (!['test', 'live'].includes(stripeMode) || !['true', 'false'].includes(checkoutEnabled)) {
-    throw new Error('Invalid Stripe deployment settings. Use STRIPE_MODE=test|live and STRIPE_CHECKOUT_ENABLED=true|false.');
+  if (!['test', 'live'].includes(stripeMode) || !['true', 'false'].includes(checkoutDisabled)) {
+    throw new Error('Invalid Stripe deployment settings. Use STRIPE_MODE=test|live and STRIPE_CHEKOUT_DISABLED=true|false.');
   }
   if (environment === 'stage' && stripeMode === 'live') {
     throw new Error('Stage must use Stripe test mode.');
@@ -20,7 +20,7 @@ export const getDeployment = (environment = 'production', settings = {}) => {
 
   return {
     environment, worker: environment === 'stage' ? 'luvlae-web-stage' : 'luvlae-web',
-    stripe: { mode: stripeMode, enabled: checkoutEnabled },
+    stripe: { mode: stripeMode, disabled: checkoutDisabled },
   };
 };
 
@@ -35,9 +35,9 @@ export const verifyArtifact = (root, deployment) => {
 
   const stripeMatches = [
     manifest.stripe?.mode === deployment.stripe.mode,
-    manifest.stripe?.enabled === deployment.stripe.enabled,
+    manifest.stripe?.disabled === deployment.stripe.disabled,
     config.env?.STRIPE_MODE?.value === deployment.stripe.mode,
-    config.env?.STRIPE_CHECKOUT_ENABLED?.value === deployment.stripe.enabled,
+    config.env?.STRIPE_CHEKOUT_DISABLED?.value === deployment.stripe.disabled,
   ].every(Boolean);
 
   if (!stripeMatches) {
@@ -68,7 +68,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     ...process.env,
     NEXT_PUBLIC_APP_ENV: deployment.environment,
     STRIPE_MODE: deployment.stripe.mode,
-    STRIPE_CHECKOUT_ENABLED: deployment.stripe.enabled,
+    STRIPE_CHEKOUT_DISABLED: deployment.stripe.disabled,
     ...(deployment.environment === 'stage' ? { NEXT_PUBLIC_GA_MEASUREMENT_ID: '' } : {}),
   };
   const run = (args) => {

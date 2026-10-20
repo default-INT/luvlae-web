@@ -1,6 +1,6 @@
 # Embedded Checkout environments and launch preparation
 
-Updated 2026-10-19. Code/configuration preparation is not evidence of deployed live readiness.
+Updated 2026-10-20. Code/configuration preparation is not evidence of deployed live readiness.
 No live credentials, remote endpoint or actual charge was provisioned or verified by this change.
 The integration plan is [here](../../../.gpt-context/stripe-checkout-integration.md).
 
@@ -8,7 +8,7 @@ The integration plan is [here](../../../.gpt-context/stripe-checkout-integration
 
 | Setting | Default / required value |
 | --- | --- |
-| `STRIPE_CHECKOUT_ENABLED` | `false`; exact `true` permits creating/resuming the embedded form |
+| `STRIPE_CHEKOUT_DISABLED` | `false`; only exact `true` blocks creating/resuming the embedded form |
 | `STRIPE_MODE` | `test`; only `test` or `live` accepted |
 | `STRIPE_SECRET_KEY` | Server-only `sk_test_…` / `sk_live_…` matching mode |
 | `STRIPE_PUBLISHABLE_KEY` | Runtime `pk_test_…` / `pk_live_…` matching mode; returned to the protected checkout view |
@@ -20,7 +20,7 @@ Keep the API and signing secrets out of browser bundles. The publishable key is 
 must belong to the same Stripe account/sandbox. Prefix checks verify mode, not ownership of a publishable key.
 The existing CLI wrapper deliberately accepts test keys and localhost forwarding only.
 
-The enable switch blocks checkout creation/form access; it does **not** block webhook intake. Keep live
+The disable switch blocks checkout creation/form access; it does **not** block webhook intake. Keep live
 webhook processing active when pausing new sales so existing payable Sessions can finish safely.
 The webhook, retrieved Session, expanded PaymentIntent and stored payment attempt must agree with configured
 mode. Connect-account events are unsupported. A received payment transaction inherits the validated attempt mode.
@@ -31,7 +31,7 @@ In ignored `apps/web/.env.local`, set the matching sandbox API and publishable k
 
 ```dotenv
 STRIPE_MODE=test
-STRIPE_CHECKOUT_ENABLED=true
+STRIPE_CHEKOUT_DISABLED=false
 APP_ENV=development
 ```
 
@@ -42,21 +42,24 @@ Never use the CLI signing secret for a remote stage/production endpoint.
 
 ## Cloudflare build and activation inputs
 
-`apps/web/cloudflare.config.ts` reads `STRIPE_MODE` and `STRIPE_CHECKOUT_ENABLED` when constructing Worker
+`apps/web/cloudflare.config.ts` reads `STRIPE_MODE` and `STRIPE_CHEKOUT_DISABLED` when constructing Worker
 configuration. It writes their values as runtime text bindings and writes `APP_ENV` from the selected mode.
 These are explicit **build/deploy inputs**: a Dashboard-only variable change can be overwritten on the next
 deployment. Persist the desired non-secret values in the authorized release environment/workflow.
 Never put secret key values in those build inputs or source control.
-The build wrapper passes the explicit shell inputs (default test/disabled), preventing ignored local `.env`
-entries from activating a release. Its deployment manifest records mode/activation and refuses to deploy an
+The build wrapper passes the explicit shell inputs (default test/available), preventing ignored local `.env`
+entries from changing a release setting. Its deployment manifest records mode/activation and refuses to deploy an
 artifact whose Worker bindings or manifest differ from the requested values. Turborepo includes both inputs
-in task hashing. GitHub Actions uses the exact `true` repository variables `STRIPE_STAGE_CHECKOUT_ENABLED`
-and `STRIPE_PRODUCTION_CHECKOUT_ENABLED`; pull-request checkout remains disabled. Production mode is
-selected independently with `STRIPE_PRODUCTION_MODE=live` (otherwise test). Preserve live mode while
-disabling production checkout after launch, so outstanding live payments can still settle.
+in task hashing. GitHub Actions reads the single optional repository variable `STRIPE_CHEKOUT_DISABLED`:
+exact `true` disables checkout in stage and production; absent/false leaves it available with valid keys.
+Pull-request checkout remains disabled. The spelling `CHEKOUT` is intentional in this configuration contract.
+The former stage/production enable variables are no longer read. Production mode is selected independently
+with `STRIPE_PRODUCTION_MODE=live` (otherwise test). Preserve live mode while disabling production checkout
+after launch, so outstanding live payments can still settle.
 
-Disabled production with default test mode does not declare new Stripe secrets as mandatory, preserving
-the existing disabled deployment path. Stage continues to declare its API/signing secrets. Enabled checkout
+Checkout now defaults available in all environments, including production; deployments therefore require all
+three Stripe secrets unless explicitly disabled. Disabled production with default test mode does not declare
+Stripe secrets as mandatory. Stage continues to declare its API/signing secrets. Enabled checkout
 declares all three Stripe runtime keys. Production live mode retains API/signing declarations even when
 checkout is disabled, so pausing sales preserves webhook requirements. The installed `cf` binding API has
 no optional secret declaration: required secrets must already exist before a corresponding deployment.
@@ -64,20 +67,20 @@ no optional secret declaration: required secrets must already exist before a cor
 For a sandbox stage artifact:
 
 ```sh
-DEPLOY_ENV=stage STRIPE_MODE=test STRIPE_CHECKOUT_ENABLED=true pnpm build:cloudflare
+DEPLOY_ENV=stage STRIPE_MODE=test STRIPE_CHEKOUT_DISABLED=false pnpm build:cloudflare
 ```
 
 For an explicitly authorized production activation artifact, after runtime secrets/settings are ready:
 
 ```sh
-DEPLOY_ENV=production STRIPE_MODE=live STRIPE_CHECKOUT_ENABLED=true pnpm build:cloudflare
+DEPLOY_ENV=production STRIPE_MODE=live STRIPE_CHEKOUT_DISABLED=false pnpm build:cloudflare
 ```
 
 Building does not upload secrets, register endpoints or deploy. The eventual deployment must use the same
 environment/configuration values. Stage/development configurations reject live mode before deployment;
 the server also rejects live mode without both production markers.
 
-To pause new live checkout, prepare/deploy production with `STRIPE_MODE=live STRIPE_CHECKOUT_ENABLED=false`.
+To pause new live checkout, prepare/deploy production with `STRIPE_MODE=live STRIPE_CHEKOUT_DISABLED=true`.
 Keep API/signing secrets, live endpoint subscriptions and order/database records available. Do not switch
 to test mode while existing live Sessions still need settlement. Existing forms may still complete at Stripe;
 disabling new checkout is not cancellation of existing payments.

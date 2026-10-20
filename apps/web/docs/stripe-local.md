@@ -61,7 +61,7 @@ The endpoint checks the raw body with Stripe's async Web Crypto verifier, a 300-
 and a 256 KiB body limit before opening MongoDB. Only events matching the configured mode, without a Connect account, are accepted.
 The SDK uses Fetch for compatibility with Workers. Both Stripe secrets and the commerce database migration
 are required. Configured test/live mode is enforced; live also requires production build/runtime markers.
-Checkout creation defaults disabled. See the live runbook for activation inputs.
+Checkout creation is available with valid keys unless STRIPE_CHEKOUT_DISABLED=true. See the live runbook for activation inputs.
 
 The Session creator persists these values before a webhook can settle a payment:
 

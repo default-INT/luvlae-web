@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
   }
 
   const stripeMode = process.env.STRIPE_MODE ?? 'test';
-  const checkoutEnabled = process.env.STRIPE_CHECKOUT_ENABLED === 'true';
+  const checkoutDisabled = process.env.STRIPE_CHEKOUT_DISABLED === 'true';
   const production = mode === 'production';
   const environment = ['stage', 'production'].includes(mode ?? '') ? mode! : 'development';
 
@@ -30,16 +30,16 @@ export default defineConfig(({ mode }) => {
         APP_ENV: bindings.text(environment),
         MOCK_CHECKOUT_ENABLED: bindings.text(mode === 'stage' ? 'true' : 'false'),
         STRIPE_MODE: bindings.text(stripeMode),
-        STRIPE_CHECKOUT_ENABLED: bindings.text(checkoutEnabled ? 'true' : 'false'),
+        STRIPE_CHEKOUT_DISABLED: bindings.text(checkoutDisabled ? 'true' : 'false'),
         NEXT_MONGODB_USERNAME: bindings.secret(),
         NEXT_MONGODB_PASSWORD: bindings.secret(),
         NEXT_MONGODB_URI: bindings.secret(),
         NEXT_MONGODB_DB_NAME: bindings.secret(),
-        ...(mode === 'stage' || checkoutEnabled || stripeMode === 'live' ? {
+        ...(mode === 'stage' || !checkoutDisabled || stripeMode === 'live' ? {
           STRIPE_SECRET_KEY: bindings.secret(),
           STRIPE_WEBHOOK_SECRET: bindings.secret(),
         } : {}),
-        ...(checkoutEnabled ? { STRIPE_PUBLISHABLE_KEY: bindings.secret() } : {}),
+        ...(!checkoutDisabled ? { STRIPE_PUBLISHABLE_KEY: bindings.secret() } : {}),
       },
     }),
   };

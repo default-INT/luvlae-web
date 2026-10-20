@@ -24,7 +24,7 @@ import type { CheckoutAttempt, Order } from '../src/_app/commerce/models';
 import type { DatabaseContext } from '../src/shared/lib/mongodb/index.server';
 
 const environmentNames = [
-  'STRIPE_MODE', 'STRIPE_CHECKOUT_ENABLED', 'STRIPE_SECRET_KEY', 'STRIPE_PUBLISHABLE_KEY',
+  'STRIPE_MODE', 'STRIPE_CHEKOUT_DISABLED', 'STRIPE_SECRET_KEY', 'STRIPE_PUBLISHABLE_KEY',
   'STRIPE_WEBHOOK_SECRET', 'NEXT_PUBLIC_APP_ENV', 'APP_ENV',
 ] as const;
 
@@ -46,7 +46,7 @@ const hasCode = (code: string) => (error: unknown) => error instanceof ApiError 
 
 const configure = (mode: 'test' | 'live') => {
   process.env.STRIPE_MODE = mode;
-  process.env.STRIPE_CHECKOUT_ENABLED = 'true';
+  process.env.STRIPE_CHEKOUT_DISABLED = 'false';
   process.env.STRIPE_SECRET_KEY = `sk_${mode}_synthetic`;
   process.env.STRIPE_PUBLISHABLE_KEY = `pk_${mode}_synthetic`;
   process.env.STRIPE_WEBHOOK_SECRET = 'whsec_synthetic';
@@ -54,12 +54,21 @@ const configure = (mode: 'test' | 'live') => {
   process.env.APP_ENV = mode === 'live' ? 'production' : 'stage';
 };
 
-test('checkout defaults disabled while the sandbox webhook client needs no publishable key', () => {
-  process.env.STRIPE_SECRET_KEY = 'sk_test_synthetic';
-  assert.equal(getStripeMode(), 'test');
-  assert.ok(createStripeClient());
+test('checkout defaults available with valid keys; only exact true disables it without blocking webhooks', () => {
+  configure('test');
+  delete process.env.STRIPE_CHEKOUT_DISABLED;
+  assert.equal(requireStripeCheckoutConfiguration().mode, 'test');
+
+  for (const value of ['false', '', 'TRUE']) {
+    process.env.STRIPE_CHEKOUT_DISABLED = value;
+    assert.equal(requireStripeCheckoutConfiguration().mode, 'test');
+  }
+
+  process.env.STRIPE_CHEKOUT_DISABLED = 'true';
   assert.throws(requireStripeCheckoutConfiguration, hasCode('CHECKOUT_UNAVAILABLE'));
-  process.env.STRIPE_CHECKOUT_ENABLED = 'true';
+  delete process.env.STRIPE_PUBLISHABLE_KEY;
+  assert.ok(createStripeClient());
+  process.env.STRIPE_CHEKOUT_DISABLED = 'false';
   assert.throws(requireStripeCheckoutConfiguration, hasCode('STRIPE_NOT_CONFIGURED'));
 });
 
