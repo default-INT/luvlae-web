@@ -123,3 +123,33 @@ If on-site payment is approved, begin with server-side operations and Route Hand
 - Embedded Checkout creates Sessions with valid keys unless STRIPE_CHEKOUT_DISABLED=true. Webhook processing validates test/live mode and provider state and atomically updates orders, inventory and payment observations. Migration004 stores immutable provider parameters/API version before network calls; applied to local stage Atlas. An operator reconciliation CLI repairs associations/replays real events with cursor pagination. See [integration plan](stripe-checkout-integration.md) and [live readiness](../apps/web/docs/stripe-live-readiness.md). Scheduled reconciliation and refund/dispute workflows remain pending. Email dispatch and commerce UI remain pending. Existing frontend and Amazon conversion are unchanged.
 - Stage build and local replica-set tests pass. Local workerd can reach stage Atlas. Password hashing now uses PBKDF2-HMAC-SHA256/100,000 with a random salt to respect the deployed Workers cap; the original local 600,000 check missed that limit. Per the user, administrator accounts will be recreated/reset; legacy hashes are rejected. See [admin authentication](admin-ui.md). The initial `collMod` permission issue was resolved by the user granting `dbAdmin`; migration and rollback checks completed on stage. No remote production actions were performed. CLI confirmation failures now report `DB_CONFIRMATION_REQUIRED` explicitly.
 - Commands, endpoint contracts, operational permissions, test coverage and limitations: [commerce API runbook](../apps/web/docs/commerce-api.md). Migration commands are app-local and deliberately excluded from build/deploy.
+
+## Contact page (2026-10-21)
+
+- `/contact` is a statically rendered, indexable support page included in the sitemap, with its own title/description/canonical and visible breadcrumbs matching BreadcrumbList data. Composition lives in `apps/web/src/_pages/contact/`; English copy is in `src/shared/config/i18n/messages/en.yaml`.
+- User-supplied contact details: `luvlae.care@gmail.com`, a typical response time of 1–2 business days, operator EverMotion Parts LLC, and business mailing address 308 S Bolivar Ave, Cleveland, MS 38732, United States. These were supplied for publication, not independently verified. The page states that physical returns are not accepted and products must not be sent to the business address or fulfillment warehouse.
+- The shared footer links to `/contact`; a small accessible `mailto:` envelope icon without a circular outline sits next to the copyright. Contact-page email links use the same dictionary email value. All four Helpful Links now point to implemented policy pages; no missing policy routes are linked.
+
+## Shipping policy (2026-10-21)
+
+- `/shipping` statically renders the user-supplied Shipping Policy, with page metadata, canonical, BreadcrumbList matching visible breadcrumbs, and a sitemap entry. Page composition: `apps/web/src/_pages/shipping/`; copy: `shippingPage` in the English YAML dictionary.
+- Shipping Policy is linked from the shared footer and Contact Us Helpful Links. Both in-copy Contact Us references link to `/contact`. No development notes or status badges are displayed.
+- Published policy states contiguous-US delivery only, 1–2 business days of processing, typical delivery 3–7 business days after shipping, shipping included in product cost, and emailed tracking. These are user-supplied policy statements; implementing this page does not verify or change checkout delivery restrictions, fulfillment, or email dispatch.
+
+## Returns and cancellation policy (2026-10-21)
+
+- `/returns` statically renders the user-supplied Returns & Refunds Policy and Cancellation Policy, with one H1, H2 refund sections and cancellation heading, and H3 cancellation subsections. Includes metadata/canonical, matching visible/schema breadcrumbs, and sitemap entry. Composition is in `apps/web/src/_pages/returns/`; English YAML copy is under `returnsPage`.
+- Linked from the shared footer and both the Contact Us returns paragraph and Helpful Links. In-copy Contact Us links point to `/contact`; website links use HTTPS; the cancellation reference links to `/returns`.
+- Policy states a 30-day guarantee for eligible first direct purchases, no physical returns, approved refunds processed within 5 business days, and cancellation only before fulfillment. Contact Us’s earlier return-address instructions were aligned with the supplied no-physical-returns policy. These are published user-supplied policies; automated refund/cancellation processing is not implemented by this content change.
+
+## Terms of Service (2026-10-21)
+
+- `/terms` statically renders the supplied Terms of Service with the supplied update date October 21, 2026, one H1, 11 numbered sections, metadata/canonical, visible/schema breadcrumbs, and a sitemap entry. Composition: `apps/web/src/_pages/terms/`; English YAML: `termsPage`.
+- Terms are linked in the shared footer and Contact Us Helpful Links. Related policies link to `/shipping`, `/returns`, and `/returns#cancellation-policy`; Cancellation Policy also has a direct footer link. Privacy Policy now links to `/privacy`. Website links use HTTPS and the support email uses `mailto:`.
+- Published terms are user-supplied content, not independently verified legal or operational behavior. This change does not alter order acceptance, checkout consent, payment, or refund logic.
+
+## Privacy Policy (2026-10-21)
+
+- `/privacy` statically renders the user-supplied privacy text with its supplied update date October 20, 2026. Descriptive section headings organize the original paragraphs/lists; support-email placeholders resolve to the established `luvlae.care@gmail.com`. No development notes are displayed.
+- Composition: `apps/web/src/_pages/privacy/`; English YAML: `privacyPage`. Includes page metadata/canonical, visible/schema breadcrumbs, and sitemap entry. Contact Us Helpful Links, Terms Related Policies, and the footer all link to `/privacy`. Website and Stripe privacy links use HTTPS; support links use `mailto:`.
+- Policy copy is user-supplied, not an independent audit of privacy practices. This content change does not enable analytics, advertising, marketing subscriptions, cookie consent, or privacy-request automation.

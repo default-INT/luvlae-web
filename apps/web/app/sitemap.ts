@@ -6,7 +6,13 @@ import type { MetadataRoute } from 'next';
 export default function sitemap(): MetadataRoute.Sitemap {
   if (isStage) return [];
 
-  return ['/', '/about-product', '/products/berberine-patches', '/ingredients', ...indexableInformationPaths].map(path => ({
+  const paths = [
+    '/', '/contact', '/shipping', '/returns', '/terms', '/privacy', '/about-product',
+    '/products/berberine-patches', '/ingredients',
+    ...indexableInformationPaths,
+  ];
+
+  return paths.map(path => ({
     url: `https://luvlae.com${path}`,
   }));
 }

@@ -2,6 +2,8 @@
 
 ## Project context
 
+- Do not leave development notes, implementation comments, or status labels (such as “Coming soon”) in customer-facing page content. Keep internal notes in code or `.gpt-context/`.
+
 - Before making project changes, read `.gpt-context/README.md` and the relevant notes it links to.
 - For architecture, tooling, rendering, data flow, or deployment work, read `.gpt-context/architecture.md`.
 - Before adding or reorganizing application code, read `.gpt-context/fsd-rules.md` and follow its FSD boundaries.

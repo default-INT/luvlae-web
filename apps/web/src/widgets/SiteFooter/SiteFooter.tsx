@@ -37,6 +37,12 @@ export const SiteFooter = (props: SiteFooterProps) => {
       title: siteFooter.exploreGroup,
       links: [
         { label: siteFooter.about, href: '/about' },
+        { label: siteFooter.contact, href: '/contact' },
+        { label: siteFooter.shipping, href: '/shipping' },
+        { label: siteFooter.returns, href: '/returns' },
+        { label: dictionary.returnsPage.cancellation.title, href: '/returns#cancellation-policy' },
+        { label: siteFooter.terms, href: '/terms' },
+        { label: siteFooter.privacy, href: '/privacy' },
         { label: siteFooter.shopOnAmazon, href: product.path },
       ],
     },
@@ -64,7 +70,23 @@ export const SiteFooter = (props: SiteFooterProps) => {
           ))}
         </div>
         <div className={styles.bottom}>
-          <span>{interpolate(siteFooter.copyright, { year: new Date().getFullYear() })}</span>
+          <div className={styles.copyright}>
+            <span>{interpolate(siteFooter.copyright, { year: new Date().getFullYear() })}</span>
+            <a
+              className={styles.emailLink}
+              href={`mailto:${dictionary.contactPage.email}`}
+              aria-label={siteFooter.emailLabel}
+              title={dictionary.contactPage.email}
+            >
+              <svg
+                width='16' height='16' viewBox='0 0 24 24' fill='none'
+                stroke='currentColor' strokeWidth='1.5' aria-hidden='true'
+              >
+                <rect x='3' y='5' width='18' height='14' rx='3'/>
+                <path d='m4 7 8 6 8-6'/>
+              </svg>
+            </a>
+          </div>
           <span>{siteFooter.tagline}</span>
         </div>
       </div>

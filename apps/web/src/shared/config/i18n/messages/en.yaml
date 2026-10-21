@@ -262,6 +262,12 @@ siteFooter:
   exploreGroup: Explore
   aboutProduct: About Product
   about: About Luvlae
+  contact: Contact Us
+  shipping: Shipping Policy
+  returns: Returns & Refunds Policy
+  terms: Terms of Service
+  privacy: Privacy Policy
+  emailLabel: Email Luvlae customer support
   shopOnAmazon: View product
   copyright: '© {{year}} Luvlae. All rights reserved.'
   tagline: Simple wellness, one patch at a time.
@@ -677,3 +683,343 @@ admin:
     RESTOCK_BLOCKED: This order is not eligible for restocking.
     RESTOCK_LIMIT: The selected quantity exceeds the items available for restocking.
     INVALID_INPUT: Check the form fields and try again.
+
+contactPage:
+  title: Contact Us
+  description: Contact Luvlae customer support for questions about products, orders, shipping, returns, and refunds.
+  eyebrow: Here to help
+  lead: Have a question about Luvlae products, your order, shipping, or returns? Please contact our customer support team.
+  supportTitle: Customer Support
+  emailLabel: Email
+  email: luvlae.care@gmail.com
+  responseLabel: Response time
+  responseTime: We typically respond within 1–2 business days.
+  orderHelp: For questions about an existing order, please include your order number and the email address used at checkout. Please do not send your full payment card details.
+  businessTitle: Business Information
+  operatedBy: Luvlae is operated by
+  businessName: EverMotion Parts LLC
+  legalNameLabel: Legal business name
+  addressLabel: Business mailing address
+  address: 308 S Bolivar Ave, Cleveland, MS 38732, United States
+  websiteLabel: Website
+  website: https://www.luvlae.com
+  returnsTitle: Returns & Refunds
+  returnsIntro: To request a refund, please contact us at
+  returnsPolicyIntro: See our
+  returnsPolicyEnd: for eligibility requirements and instructions.
+  returnAddressNotice: We do not accept physical product returns. Please do not send products to our business address or fulfillment warehouse.
+  helpfulTitle: Helpful Links
+  shippingPolicy: Shipping Policy
+  returnsPolicy: Returns & Refunds Policy
+  privacyPolicy: Privacy Policy
+  terms: Terms of Service
+
+shippingPage:
+  title: Shipping Policy
+  description: Learn about Luvlae shipping areas, order processing, delivery times, shipping costs, tracking, and help with delivery issues.
+  lead: At Luvlae, we aim to make shipping straightforward. Below you’ll find information about our delivery areas, processing times, and order tracking.
+  contactLinkLabel: Contact Us
+  sections:
+    section1:
+      title: Where We Ship
+      paragraphs:
+        paragraph1: We currently ship within the contiguous United States.
+        paragraph2: We do not ship to Alaska, Hawaii, Puerto Rico, other U.S. territories, or international destinations.
+    section2:
+      title: Order Processing
+      paragraphs:
+        paragraph1: Orders are typically processed within 1–2 business days after payment is confirmed. Orders are not processed on weekends or public holidays.
+        paragraph2: During holidays or periods of high demand, processing may take longer. If a significant delay affects your order, we will contact you using the email address provided at checkout.
+    section3:
+      title: Delivery Times
+      paragraphs:
+        paragraph1: Standard delivery typically takes 3–7 business days after your order has shipped.
+        paragraph2: Delivery estimates do not include order processing time and are not guaranteed. Weather, carrier disruptions, holidays, and other circumstances may affect delivery.
+    section4:
+      title: Shipping Rates
+      paragraphs:
+        paragraph1: Shipping charges, including any applicable free shipping offers, are included in product cost.
+    section5:
+      title: Order Tracking
+      paragraphs:
+        paragraph1: Once your order ships, you will receive a shipping confirmation email with tracking information. Please allow up to 48 hours for tracking updates to appear.
+        paragraph2: Orders may be fulfilled by third-party fulfillment partners and delivered by different carriers.
+    section6:
+      title: Shipping Address Changes
+      paragraphs:
+        paragraph1: Please check your shipping address carefully before placing an order.
+        paragraph2: If you need to make a correction, contact us as soon as possible through our Contact Us page. Once an order has entered fulfillment, we may be unable to change the address or cancel the shipment.
+    section7:
+      title: Delayed, Missing, or Damaged Deliveries
+      paragraphs:
+        paragraph1: If your order is delayed, arrives damaged, or is marked as delivered but cannot be located, please contact us through our Contact Us page with your order number and a description of the issue.
+        paragraph2: For damaged items, please include photos of the product and packaging, if available. We will investigate and help arrange an appropriate resolution, which may include a replacement or refund.
+    section8:
+      title: Returned or Undeliverable Packages
+      paragraphs:
+        paragraph1: If a package is returned to us because of an incorrect address, failed delivery, or refusal, we will contact you to discuss the next steps. Any applicable reshipping charges will be explained before a replacement shipment is arranged.
+
+returnsPage:
+  title: Returns & Refunds Policy
+  description: Read Luvlae’s 30-Day Money-Back Guarantee, refund eligibility, refund processing times, and order cancellation policy for direct purchases.
+  lead: At Luvlae, we want you to feel confident about your purchase. We offer a 30-Day Money-Back Guarantee on eligible first-time purchases made directly through www.luvlae.com.
+  links:
+    contact:
+      label: Contact Us
+      href: /contact
+    website:
+      label: www.luvlae.com
+      href: https://www.luvlae.com/
+    returns:
+      label: Returns & Refunds Policy
+      href: /returns
+  sections:
+    guarantee:
+      title: 30-Day Money-Back Guarantee
+      paragraphs:
+        first: If you are not satisfied with your first purchase of a Luvlae product, contact us within 30 days of delivery to request a refund. Opened or partially used products are eligible.
+        second: The guarantee applies once per customer or household, to one unit of each product in your first order. Additional units purchased in the same order and repeat purchases are not covered by the satisfaction guarantee.
+        third: You do not need to continue using a product that causes irritation or discomfort. Stop using it and contact our support team.
+    request:
+      title: How to Request a Refund
+      paragraphs:
+        first: 'Please contact us through our Contact Us page and include:'
+        second: We may request reasonable supporting information to locate your order or understand the issue. Proof of product use is not required for dissatisfaction requests.
+      items:
+        order: Your order number.
+        email: The email address used at checkout.
+        explanation: A brief explanation of your request.
+    physicalReturns:
+      title: No Physical Returns
+      paragraphs:
+        first: We do not accept physical product returns. Please do not send products to our business address or fulfillment warehouse.
+        second: Eligible refunds are processed without requiring you to return the product.
+    issues:
+      title: Damaged, Defective, Incorrect, or Missing Items
+      paragraphs:
+        first: If your order arrives damaged, contains the wrong product, or has missing or defective items, please contact us promptly with your order number and details of the issue. Photos may help us resolve problems involving damaged or incorrect products.
+        second: We will investigate and arrange an appropriate resolution, such as a replacement or refund. These remedies are separate from our first-purchase satisfaction guarantee and are not limited to one claim per household.
+    processing:
+      title: Refund Amounts and Processing
+      paragraphs:
+        first: For approved satisfaction-guarantee requests, we refund the amount paid for the eligible product, including applicable product taxes. Original shipping charges are non-refundable unless the refund results from our error or applicable law requires otherwise.
+        second: Refunds are issued to the original payment method. We process approved refunds within 5 business days. Your bank or payment provider may require additional time to post the credit.
+    retailers:
+      title: Purchases From Other Retailers
+      paragraphs:
+        first: This policy applies only to purchases made through www.luvlae.com. For purchases made through Amazon or another retailer, please contact that retailer and follow its return and refund process.
+    rights:
+      title: Your Consumer Rights
+      paragraphs:
+        first: Nothing in this policy limits any rights or remedies available to you under applicable consumer protection laws.
+  cancellation:
+    title: Cancellation Policy
+    sections:
+      cancel:
+        title: Canceling an Order
+        paragraphs:
+          first: If you would like to cancel your order, contact us as soon as possible through our Contact Us page. Include your order number and the email address used at checkout.
+          second: We can cancel an order only if it has not entered fulfillment. Because order processing may begin shortly after purchase, cancellation is not guaranteed, even if your order has not yet been marked as shipped.
+          third: A cancellation request does not confirm that your order has been canceled. We will email you to confirm whether cancellation was possible.
+      refunds:
+        title: Refunds for Canceled Orders
+        paragraphs:
+          first: If we successfully cancel your entire order before fulfillment, we will refund the full amount paid, including shipping charges and applicable taxes, to your original payment method.
+          second: We process approved refunds within 5 business days. Your bank or payment provider may require additional time to post the credit.
+      fulfilled:
+        title: Orders Already in Fulfillment or Shipped
+        paragraphs:
+          first: Once an order has entered fulfillment or shipped, we may be unable to cancel it or change its contents or delivery address.
+          second: If cancellation is no longer possible, please refer to our Returns & Refunds Policy for available options. Refusing delivery does not automatically cancel your order or initiate a refund.
+
+termsPage:
+  title: Terms of Service
+  description: Read the Terms of Service for using Luvlae’s website and making purchases, including orders, payments, related policies, and consumer rights.
+  updatedLabel: Last updated
+  updatedDate: October 21, 2026
+  introduction:
+    first: These Terms of Service (“Terms”) govern your use of www.luvlae.com and purchases made through the website.
+    second: The website is operated by EverMotion Parts LLC under the Luvlae brand (“we,” “us,” or “our”).
+    third: By using our website or placing an order, you agree to these Terms.
+  relatedPolicies:
+    shipping:
+      label: Shipping Policy
+      description: delivery areas, processing, shipping, and tracking.
+      href: /shipping
+    returns:
+      label: Returns & Refunds Policy
+      description: refund eligibility, guarantees, and resolution of product or order issues.
+      href: /returns
+    cancellation:
+      label: Cancellation Policy
+      description: order cancellation and change requests.
+      href: /returns#cancellation-policy
+    privacy:
+      label: Privacy Policy
+      href: /privacy
+      description: collection, use, and sharing of personal information.
+  sections:
+    eligibility:
+      title: 1. Eligibility
+      paragraphs:
+        first: You must be at least 18 years old and legally able to enter into a binding agreement to place an order.
+        second: You agree to provide accurate billing, shipping, and contact information and to use only payment methods you are authorized to use.
+    products:
+      title: 2. Products and Website Information
+      paragraphs:
+        first: We aim to provide accurate product descriptions, images, and prices. Minor differences in screen appearance or packaging may occur without materially changing the product ordered.
+        second: Please read the product’s instructions and warnings before use. Information on this website is for general informational purposes and does not replace professional medical advice.
+        third: We may update our product selection, website content, and prices for future purchases.
+    orders:
+      title: 3. Orders and Payments
+      paragraphs:
+        first: An order confirmation acknowledges receipt of your order. We accept your order when we send a shipping confirmation.
+        second: We may decline or cancel an order for a legitimate reason, including unavailable stock, payment verification issues, suspected fraud, an unsupported delivery address, or a material pricing error. If payment has been collected for a canceled order, we will refund the applicable amount.
+        third: The total price, currency, taxes, shipping charges, and any discounts are displayed at checkout before payment. Purchases are one-time transactions unless recurring payment terms are expressly disclosed and accepted at checkout.
+    policies:
+      title: 4. Related Policies
+      paragraphs:
+        first: 'The following policies explain additional terms applicable to your purchase and use of the website:'
+        second: These policies are available through the links in our website footer. For matters specifically addressed by a policy, that policy controls if it conflicts with these Terms.
+    promotions:
+      title: 5. Promotions
+      paragraphs:
+        first: Promotions are subject to the conditions displayed with each offer. Discounts cannot be combined or applied retroactively unless expressly stated.
+        second: Changes to promotions do not affect valid discounts applied to orders we have already accepted.
+    acceptableUse:
+      title: 6. Acceptable Use and Intellectual Property
+      paragraphs:
+        first: You may use this website for lawful shopping and informational purposes. You must not interfere with its operation, attempt unauthorized access, introduce malicious software, or submit fraudulent information.
+        second: Website content, including branding, text, images, and graphics, belongs to us or our licensors. You may not reproduce or commercially exploit it without permission, except as permitted by law.
+    reviews:
+      title: 7. Reviews and Feedback
+      paragraphs:
+        first: Reviews must reflect an honest experience and must not contain unlawful, misleading, or infringing content.
+        second: If you submit a review for publication, you permit us to display it on our website and format it without changing its meaning. We may remove content that violates these Terms, but honest negative feedback is permitted.
+    thirdParty:
+      title: 8. Third-Party Services and Website Availability
+      paragraphs:
+        first: Our website may use third-party services or contain links to other websites. Those providers have their own terms and privacy practices.
+        second: We take reasonable steps to maintain the website, but uninterrupted or error-free access cannot be guaranteed. Our use of service providers does not remove our responsibilities as the seller.
+    rights:
+      title: 9. Consumer Rights and Liability
+      paragraphs:
+        first: Nothing in these Terms limits consumer rights, statutory warranties, or remedies that cannot be excluded under applicable law.
+        second: We do not exclude liability for fraud, willful misconduct, injury caused by our negligence, or any other liability that cannot legally be excluded.
+    changes:
+      title: 10. Changes to These Terms
+      paragraphs:
+        first: We may update these Terms by publishing a revised version on this page.
+        second: Changes apply to future website use and purchases. Existing orders remain subject to the Terms in effect when the order was placed, unless otherwise required by law or agreed with you.
+    contact:
+      title: 11. Contact
+      paragraphs:
+        first: For questions about these Terms, email luvlae.care@gmail.com.
+
+privacyPage:
+  title: "Privacy Policy"
+  description: "Learn how Luvlae and EverMotion Parts LLC collect, use, share, and protect personal information, and how to contact us about your privacy rights."
+  updatedLabel: "Last updated"
+  updatedDate: "October 20, 2026"
+  introduction: "This Privacy Policy explains how EverMotion Parts LLC, the company operating Luvlae (“Luvlae,” “we,” “us,” or “our”), collects, uses, and shares personal information when you visit www.luvlae.com, make a purchase, or contact us."
+  sections:
+    information:
+      title: "Information We Collect"
+      before:
+        item1: "Depending on how you interact with us, we may collect:"
+      items:
+        item1: "Contact information: Your name, email address, telephone number, and billing and shipping addresses."
+        item2: "Order information: Products purchased, order history, payment status, and delivery details."
+        item3: "Payment-related information: Transaction identifiers and limited payment details provided by our payment processors, such as card type and the last four digits of a card."
+        item4: "Communications: Information you provide when contacting customer support or submitting feedback."
+        item5: "Device and usage information: Your IP address, browser type, device information, pages viewed, and interactions with our website, collected through cookies or similar technologies where enabled."
+        item6: "Marketing preferences: Your subscription status and communication preferences."
+      after:
+        item1: "Please do not send full payment card details or sensitive medical information by email."
+    use:
+      title: "How We Use Information"
+      before:
+        item1: "We use personal information to:"
+      items:
+        item1: "Process payments and fulfill orders."
+        item2: "Send order confirmations, shipping updates, and other service communications."
+        item3: "Provide customer support and handle cancellations, replacements, and refunds."
+        item4: "Maintain, secure, and improve our website."
+        item5: "Detect and prevent fraud or unauthorized activity."
+        item6: "Send marketing communications where permitted and in accordance with your preferences."
+        item7: "Meet legal, tax, accounting, and recordkeeping obligations."
+      after: {}
+    sharing:
+      title: "How We Share Information"
+      before:
+        item1: "We share relevant personal information with service providers as necessary to operate our business, including:"
+      items:
+        item1: "Website hosting and e-commerce service providers."
+        item2: "Payment processors, including Stripe when you pay through Stripe."
+        item3: "Shipping carriers and delivery services."
+        item4: "Customer support and email service providers."
+        item5: "Analytics and advertising providers, where those tools are enabled and subject to applicable consent requirements."
+      after:
+        item1: "For example, we may provide your name, shipping address, and necessary order details to a fulfillment provider so it can deliver your purchase."
+        item2: "We may also disclose information when required by law, to protect rights and prevent fraud, or in connection with a merger, acquisition, or transfer of our business."
+    payments:
+      title: "Payment Information"
+      before:
+        item1: "Payments are processed by third-party payment providers. When you pay through Stripe, your payment information is handled according to Stripe’s privacy policy, available at https://stripe.com/privacy."
+        item2: "We do not receive or store your full payment card number or security code when payment is processed through our hosted payment provider."
+      items: {}
+      after: {}
+    cookies:
+      title: "Cookies and Similar Technologies"
+      before:
+        item1: "Our website may use cookies and similar technologies to support essential functions, remember preferences, understand website activity, and support marketing where enabled."
+        item2: "Where required by applicable law, we request consent before using non-essential cookies or similar technologies. You can manage cookies through your browser settings and, where available, our website’s cookie preference controls."
+        item3: "Disabling certain cookies may affect website functionality."
+      items: {}
+      after: {}
+    marketing:
+      title: "Marketing Communications"
+      before:
+        item1: "If you subscribe to marketing emails, you can unsubscribe at any time using the link in an email or by contacting us at luvlae.care@gmail.com."
+        item2: "Opting out of marketing does not prevent us from sending necessary communications about your orders, payments, or customer support requests."
+      items: {}
+      after: {}
+    retention:
+      title: "Data Retention"
+      before:
+        item1: "We retain personal information for as long as reasonably necessary to fulfill the purposes described in this policy, including processing orders, providing support, resolving disputes, and meeting legal, tax, and accounting obligations."
+        item2: "Retention periods depend on the type of information and the reason it was collected."
+      items: {}
+      after: {}
+    security:
+      title: "Data Security"
+      before:
+        item1: "We use reasonable technical and organizational safeguards designed to protect personal information. Our website uses HTTPS to help protect information transmitted through the site."
+        item2: "No method of transmission or storage is completely secure, and we cannot guarantee absolute security."
+      items: {}
+      after: {}
+    rights:
+      title: "Your Privacy Rights"
+      before:
+        item1: "Depending on where you live and which laws apply, you may have rights to:"
+      items:
+        item1: "Request access to personal information we hold about you."
+        item2: "Request correction or deletion of personal information."
+        item3: "Obtain a copy of your information."
+        item4: "Object to or restrict certain uses of your information."
+        item5: "Withdraw consent where processing is based on consent."
+        item6: "Opt out of certain advertising-related uses or disclosures."
+      after:
+        item1: "To submit a request, email luvlae.care@gmail.com. We may need to verify your identity before completing your request. Some information may be retained where required or permitted by law."
+    thirdParty:
+      title: "Third-Party Websites"
+      before:
+        item1: "Our website may contain links to third-party websites. Their privacy practices are governed by their own policies, which we encourage you to review."
+      items: {}
+      after: {}
+    updates:
+      title: "Changes to This Policy"
+      before:
+        item1: "We may update this Privacy Policy as our business or practices change. Updates will be published on this page with a revised “Last updated” date. Where required by law, we will provide additional notice."
+      items: {}
+      after: {}

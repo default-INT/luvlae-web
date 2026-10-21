@@ -103,3 +103,23 @@
     flex-direction: column;
   }
 }
+
+.copyright {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.emailLink {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--color-text);
+
+  &:hover {
+    color: var(--color-blue);
+  }
+}
