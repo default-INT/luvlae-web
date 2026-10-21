@@ -10,6 +10,7 @@ import { findGuestOrder, guestOrderCookie } from '@/entities/order/index.server'
 
 import { login, logout, requireAdmin, requireSessionCookie, sessionCookie } from './auth.server';
 import { collections } from './collections.server';
+import { cancelGuestCheckout } from './checkout-cancellation.server';
 import { checkoutSessionSchema, createCheckoutSession } from './checkout-session.server';
 import {
   cancellationSchema, createProductSchema, fulfillmentSchema, idSchema,
@@ -18,6 +19,8 @@ import {
 import { createMockOrder, mockCheckoutSchema, requireMockCheckout } from './mock-checkout.server';
 import { cancelOrder, orderDetailDto, orderSummaryDto, restockOrder, updateFulfillment } from './orders.server';
 import { orderListFilter } from './order-filters.server';
+import { refundDetailDto } from './refund-dto.server';
+import { refundOrder } from './refunds.server';
 import { readPage } from './pagination.server';
 import { calculateQuote, createProduct, productDto, updateProduct } from './products.server';
 
@@ -112,7 +115,7 @@ export const getAdminOrder = (request: Request, route: RouteParams) => admin(req
 
   if (!order) return fail(404, 'NOT_FOUND', 'Order not found.');
 
-  return json(orderDetailDto(order));
+  return json({ ...orderDetailDto(order), ...await refundDetailDto(db, order) });
 });
 
 export const patchFulfillment = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
@@ -125,6 +128,12 @@ export const postCancellation = (request: Request, route: RouteParams) => admin(
   const id = new ObjectId(idSchema.parse((await route.params).id));
   const input = await readJson(request, cancellationSchema);
   return json(await cancelOrder(context, adminId, id, input));
+});
+
+export const postRefund = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
+  const id = new ObjectId(idSchema.parse((await route.params).id));
+  const input = await readJson(request, cancellationSchema);
+  return json(await refundOrder(context, adminId, id, input));
 });
 
 export const postRestock = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
@@ -220,4 +229,17 @@ export const restoreGuestAccess = (request: Request, route: RouteParams) => hand
 
     return json({ authenticated: true }, 200, { 'Set-Cookie': guestOrderCookie(id, token, request.url) });
   });
+})();
+
+export const cancelCheckoutSession = (request: Request, route: RouteParams) => handle(async () => {
+  requireOrigin(request);
+  const id = idSchema.parse((await route.params).id);
+  const authorization = request.headers.get('authorization');
+
+  if (!authorization || !/^Bearer [A-Za-z0-9_-]{43}$/.test(authorization)) {
+    return fail(404, 'NOT_FOUND', 'Checkout not found.');
+  }
+
+  await readJson(request, z.strictObject({}));
+  return withDatabase(async context => json(await cancelGuestCheckout(context, id, authorization.slice(7))));
 })();

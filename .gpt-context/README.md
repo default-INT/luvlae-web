@@ -33,3 +33,5 @@ Add focused notes here when the project gains durable architecture, development 
 - [Stripe sandbox webhook and local testing](../apps/web/docs/stripe-local.md)
 
 - [Embedded Stripe Checkout integration plan and agent assignments](stripe-checkout-integration.md)
+
+- [Refund workflows and admin interaction work](refund-implementation.md)

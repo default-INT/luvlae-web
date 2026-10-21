@@ -2,6 +2,7 @@ import nextEnv from '@next/env';
 import { ObjectId } from 'mongodb';
 
 import { associateRecoveredCheckoutSession } from '../src/_app/commerce/checkout-session.server';
+import { reconcileRefundBatch } from '../src/_app/commerce/refund-recovery.server';
 import { collections } from '../src/_app/commerce/collections.server';
 import { processStripeEvent } from '../src/_app/commerce/stripe-webhook.server';
 import { ApiError } from '../src/shared/lib/api/index.server';
@@ -41,8 +42,10 @@ const run = async () => {
     throw new ApiError(400, 'DB_CONFIRMATION_REQUIRED', 'Set DB_CONFIRM_NAME to the exact configured database name.');
   }
 
-  const limit = Number(process.argv[2] ?? 20);
-  const cursor = process.argv[3];
+  const refundMode = process.argv[2] === '--refunds';
+  const offset = refundMode ? 3 : 2;
+  const limit = Number(process.argv[offset] ?? 20);
+  const cursor = process.argv[offset + 1];
 
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
     throw new ApiError(400, 'INVALID_LIMIT', 'Use a batch limit between 1 and 100.');
@@ -53,6 +56,16 @@ const run = async () => {
   }
 
   const stripe = createStripeClient();
+
+  if (refundMode) {
+    const result = await withDatabase(context => reconcileRefundBatch(context, stripe, limit, cursor));
+    console.log('Stripe refund reconciliation completed.', result);
+
+    if (result.unresolved) process.exitCode = 1;
+
+    return;
+  }
+
   const summary = { inspected: 0, associationsRecovered: 0, eventsReplayed: 0, awaitingProviderEvent: 0, unresolved: 0 };
   let nextCursor: string | null = null;
 

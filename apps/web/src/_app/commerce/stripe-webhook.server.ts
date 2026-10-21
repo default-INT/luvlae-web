@@ -6,6 +6,8 @@ import { ApiError, fail, handle, json } from '@/shared/lib/api/index.server';
 import { inTransaction, withDatabase } from '@/shared/lib/mongodb/index.server';
 import { createStripeClient, validateStripeEventEnvironment, verifyStripeEvent } from '@/shared/lib/stripe/index.server';
 
+import { applyProviderRefund } from './refund-persistence.server';
+import { checkEarlyRefundAssociation, listProviderRefunds } from './refund-provider.server';
 import { collections } from './collections.server';
 import { applyCheckoutTransition } from './stripe-checkout-persistence.server';
 import { planCheckoutTransition, validateCheckoutAssociation, validateCheckoutSession } from './stripe-checkout-policy.server';
@@ -114,6 +116,30 @@ export const processStripeEvent = async (database: DatabaseContext, event: Strip
   await collections(database.db).events.updateOne({ _id: inbox._id }, { $inc: { processingAttempts: 1 } });
 
   try {
+    if (['refund.created', 'refund.updated', 'refund.failed'].includes(event.type)) {
+      const refund = await stripe.refunds.retrieve(providerObjectId(event));
+      await checkEarlyRefundAssociation(database, stripe, refund);
+      const result = await applyProviderRefund(database, refund, event);
+      return await inTransaction(database, session => finishEvent(database.db, session, inbox._id,
+        result.ignored ? 'ignored' : 'processed'));
+    }
+
+    if (event.type === 'charge.refunded') {
+      const charge = await stripe.charges.retrieve(providerObjectId(event));
+      const intentId = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
+
+      if (!intentId) return await inTransaction(database, session => finishEvent(database.db, session, inbox._id, 'ignored'));
+
+      const refunds = await listProviderRefunds(stripe, intentId);
+
+      for (const refund of refunds) {
+        await checkEarlyRefundAssociation(database, stripe, refund);
+        await applyProviderRefund(database, refund, event);
+      }
+
+      return await inTransaction(database, session => finishEvent(database.db, session, inbox._id, 'processed'));
+    }
+
     // Retrieve outside the transaction: stale events must not release a now-paid reservation.
     const checkout = checkoutEvents.has(event.type)
       ? await stripe.checkout.sessions.retrieve(providerObjectId(event), { expand: ['payment_intent'] })

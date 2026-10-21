@@ -56,7 +56,8 @@ After the Workers password-cost change, recreate administrators with `db:admin:c
 | GET | `/api/admin/orders` | Filters: `orderStatus`, `paymentStatus`, `fulfillmentStatus` |
 | GET | `/api/admin/orders/:id` | Order snapshot, customer/address and fulfillment |
 | PATCH | `/api/admin/orders/:id/fulfillment` | Validated processing → shipped → delivered transitions |
-| POST | `/api/admin/orders/:id/cancel` | Explicit cancellation; does not refund or restock |
+| POST | `/api/admin/orders/:id/cancel` | Cancel before shipment; full remaining refund, stock restored after success |
+| POST | `/api/admin/orders/:id/refund` | Full remaining refund after shipment; stock and fulfillment preserved |
 | POST | `/api/admin/orders/:id/restock` | Explicit eligible restocking, bounded by purchased quantity |
 | GET | `/api/admin/transactions` | Financial history; filters: `orderId`, `type`, `status` |
 
@@ -82,7 +83,7 @@ Quote body: `{ "items": [{ "sku": "TEST-SKU", "quantity": 1 }] }`, up to 20 dist
 
 Fulfillment body: `{version,operationId,status,carrier?,trackingNumber?}`. Carrier/tracking are required only for `shipped`. Only paid, open, fully addressed, undisputed orders without reconciliation holds can advance. Partially refunded orders remain blocked until a separate review flow exists. Shipping appends one pending outbox job atomically; no email sender is implemented.
 
-Cancellation body: `{version,operationId,reason}`. Active/processing payments must be reconciled first. Already shipped fulfillment is preserved. Restock body: `{version,operationId,reason,returnedAndSellable,items:[{sku,quantity}]}`. Paid unshipped orders must first be cancelled; shipped goods require confirmation of a sellable return. Cumulative restocks cannot exceed purchased quantities. Repeating the same operation cannot increase stock twice.
+Cancellation/refund body: `{version,operationId,reason}` with required free-text reason. Cancellation is restricted to unfulfilled/processing orders. It immediately persists a fulfillment hold, reconciles/expires active unpaid Checkout, refunds any settled remaining payment, then atomically cancels and restores only committed units not previously restocked. Pending/unknown/failed payment outcomes retain the hold. Refund is available after shipment and for legacy cancelled orders with a remaining payment; it preserves fulfillment/inventory. Restock body: `{version,operationId,reason,returnedAndSellable,items:[{sku,quantity}]}`. Paid unshipped orders must first be cancelled; shipped goods require confirmation of a sellable return. Cumulative restocks cannot exceed purchased quantities. Repeating the same operation cannot increase stock twice.
 
 Guest tokens are 32 random bytes encoded as base64url; the DB stores only their hash and expiry. Invalid/expired tokens and missing orders all return 404. IDs/order numbers grant no access. No token is accepted in a query string.
 
@@ -90,18 +91,18 @@ Guest tokens are 32 random bytes encoded as base64url; the DB stores only their 
 
 `paymentTransactions` stores immutable financial observations for payment, refund and dispute operations, including pending/succeeded/failed/cancelled outcomes, amount/currency, provider IDs, event ID, order/attempt IDs, environment and timestamps. New outcomes are new records, never edits to a successful record. Do not sum every observation as revenue: several observations may describe one provider operation. This is a transaction history, not a double-entry accounting system or a complete Stripe balance/fee/payout ledger.
 
-`appendPaymentTransaction` checks order/attempt/event association, environment and idempotency, and requires a caller-supplied MongoDB session. A future verified provider processor must call it in the same transaction as order/inventory updates and event completion. There is no browser or admin API to invent financial facts, edit transactions or delete history. Failed Checkout creation attempts also belong to `checkoutAttempts`; verified provider messages belong to `paymentEvents`. Card details and full provider payloads are not stored.
+`appendPaymentTransaction` checks order/attempt/event association, environment and idempotency, and requires a caller-supplied MongoDB session. The verified provider processor calls it in the same transaction as order/inventory updates and event completion. There is no browser or admin API to invent financial facts, edit transactions or delete history. Failed Checkout creation attempts also belong to `checkoutAttempts`; verified provider messages belong to `paymentEvents`. Card details and full provider payloads are not stored.
 
 `reserveOrder` is an internal server operation that transactionally checks the confirmed product versions, reserves all items, and inserts the order, active attempt and audit. It accepts server-selected expiry/policies and guest-scoped hashes. It is not exposed as a standalone order-creation API. No stock is released merely because a timer elapsed.
 
-The following routes are declared but deliberately unavailable:
+Current Checkout/provider routes:
 
 | Method | Path | Response |
 | --- | --- | --- |
 | POST | `/api/checkout/session` | Embedded Session creation when enabled; `{data:{id,replayed}}`, sets guest cookie |
-| POST | `/api/webhooks/stripe` | Signed sandbox Checkout events; [contract and local testing](stripe-local.md) |
+| POST | `/api/webhooks/stripe` | Signed Checkout/refund events; [contract and local testing](stripe-local.md) |
 
-Stripe session creation, signed event ingestion, reconciliation, reservation commit/release, refunds synchronization and financial journal population from Stripe are not implemented in this stage. These routes neither create payable orders nor acknowledge unverified events. Shipping/tax policies, reservation/payment-method policy, email delivery and retention remain integration decisions. No sales are enabled by this change.
+Historical foundation limitation (superseded by the Checkout and refund updates below): Stripe integration was originally deferred. Checkout creation, signed event ingestion, explicit reconciliation, reservation transitions, refund synchronization and provider-event financial observations are now implemented. Shipping/tax policies, reservation/payment-method policy, email delivery and retention remain integration decisions. No sales are enabled by this change.
 
 ## Verification and current environment status
 
@@ -136,7 +137,7 @@ The cart now uses Zustand, no Context. A browser-only shared store and per-SSR-c
 
 The admin UI is reachable only by direct `/admin` URL, with `/admin/login` and client-loaded order/product lists and details. Session, data and mutation requests use fetch to the existing authorized `/api/admin/**` endpoints, with loading/error/retry feedback, stale-read cancellation and login redirect on 401. Orders open/edit in a modal right Drawer at `/admin/orders?order=:id`; legacy `/admin/orders/:id` redirects there. Selection preserves filters, saves refresh details/list through API, and native History API changes do not reload the server shell. Admin SSR database loaders have been removed; public product/customer order SSR is unchanged. Session cookie `luvlae_admin_v2` uses root path; old API-only cookies require signing in again. Public storefront navigation has no admin links. Private pages are noindex and excluded from sitemap; explicit private/no-store and CDN no-store headers are configured.
 
-Order list filters: `q` (literal case-insensitive order-number substring, max 100), `from`/`to` (YYYY-MM-DD, inclusive UTC days), `orderStatus`, `paymentStatus`, `fulfillmentStatus`, cursor/limit. Empty filters are ignored; invalid dates/ranges/statuses return 400. All three statuses display as tags. Order UI supports the existing fulfillment, cancellation and bounded restocking APIs. Product UI edits name/description, integer-cent USD price, stock and sales availability using versioned audited updates. No payment-status override, refund provider integration, shipping/email provider, or public admin registration was added.
+Order list filters: `q` (literal case-insensitive order-number substring, max 100), `from`/`to` (YYYY-MM-DD, inclusive UTC days), `orderStatus`, `paymentStatus`, `fulfillmentStatus`, cursor/limit. Empty filters are ignored; invalid dates/ranges/statuses return 400. All three statuses display as tags. Order UI supports the existing fulfillment, cancellation and bounded restocking APIs. Product UI edits name/description, integer-cent USD price, stock and sales availability using versioned audited updates. No arbitrary payment-status override, shipping/email provider, or public admin registration is provided. Refund integration is described below.
 
 
 ## Embedded Checkout — 2026-10-19
@@ -144,10 +145,39 @@ Order list filters: `q` (literal case-insensitive order-number substring, max 10
 `POST /api/checkout/session` accepts the existing operationId/guestToken/items request and creates or resumes
 one embedded Session. Returns 201 initial/200 replay and the guest HttpOnly cookie; client navigates to
 `/orders/:id/checkout`. No client-supplied totals. Final USD total equals subtotal (delivery/tax included),
-with a 24-hour deadline. App supports checkout totals 50 through 99,999,999 cents.
+with a 30-minute deadline for new checkouts. App supports checkout totals 50 through 99,999,999 cents.
 Migration 004-stripe-request-snapshot must run before creating a Session. It stores exact provider request
 parameters and API version atomically before contacting Stripe; retries preserve both. Existing bound legacy
 Sessions resume; ambiguous unbound legacy attempts require operator recovery. Migration 004 was applied to the
 configured stage Atlas on 2026-10-19; production migration remains unverified.
 See [integration plan](../../../.gpt-context/stripe-checkout-integration.md), [sandbox testing](stripe-local.md)
-and [live operation/recovery](stripe-live-readiness.md). Refund/dispute app workflows and emails remain pending.
+and [live operation/recovery](stripe-live-readiness.md). Refund/cancellation workflows are implemented below; disputes and email delivery remain pending.
+
+
+## Admin refunds and cancellation — 2026-10-21
+
+Apply migration `005-refunds` explicitly with `db:migrate` before enabling these endpoints. Runtime refuses refund work without the migration marker; it never provisions collections or indexes. The migration extends orders with cancellation intent and creates separate, validated refund records with unique operation/provider IDs and a partial unique active-local-operation index. Existing applied migrations are unchanged.
+
+The admin exposes full remaining refunds only; provider synchronization supports partial refunds. Money uses integer USD cents. Refund records own current provider status and local free-text reason separately from Stripe's limited reason enum; only correlation IDs are sent as Stripe metadata. `requires_action` maps to pending and is retained in `providerStatus`. The order aggregates successful unique refund records, never every transaction observation. External Dashboard refunds update finance/history only and never cancel or restock. A local cancellation can still be explicitly requested after an external full refund without creating another financial refund.
+
+Provider calls run outside transactions. Local intent, original amount, idempotency key and first provider-call time persist across retries. A two-minute compare-and-set lease serializes request execution; crashed processes are recoverable after lease expiry. Repeating operation ID with the same order/action/reason resumes safely across authorized administrators; the original initiating actor remains in the audit. Version applies to admission, not replay. A terminal failed refund can be retried as a fresh operation; pending cancellation remains a shipment hold. If an external refund changes the remaining amount before any local provider call starts, the local request safely fails with `REFUND_AMOUNT_CHANGED`, enabling a new full-remaining request. After an ambiguous call, the request remains unknown until correlated to Stripe; no new operation may bypass it. Never replay creation after the first call's 23-hour safety window. Exhaustive provider listing, webhook replay and operator inspection must resolve aged ambiguity; no automatic key replacement exists.
+
+Signed `refund.created`, `refund.updated`, `refund.failed`, and `charge.refunded` ingest current provider objects. Individual refund inbox completion, immutable financial observation, aggregate update and cancellation/restock commit atomically. Charge events may cover multiple refunds; deterministic observation keys permit partial batch recovery. Provider association and test/live isolation are checked. Early own-checkout refunds retry until Checkout settlement is bound, including metadata-free Dashboard refunds through PaymentIntent metadata. A later provider failure after success recalculates finance and places a reconciliation hold without undoing or repeating inventory movement.
+
+The existing explicit recovery command supports two modes (run from `apps/web`, with `DB_CONFIRM_NAME` equal to the configured DB):
+
+```sh
+pnpm stripe:reconcile 20
+pnpm stripe:reconcile --refunds 20
+pnpm stripe:reconcile --refunds 20 <nextCursor>
+```
+
+Checkout mode should run first to recover unbound/paid Checkout associations. Refund mode scans settled orders and pending cancellations in bounded order-ID batches, reconciles each PaymentIntent's refund list, reads the account event feed once per batch, replays authentic events and unresolved inbox entries, and resumes persisted local operations. Continue with returned `nextCursor` until empty. Nonzero unresolved counts exit unsuccessfully and need inspection. Event queries are limited to Stripe's recent event retention (29-day lookback); older provider refunds still update current financial state, but missing historical observations are not fabricated. Provider history/event caps of 1,000 stop or report unresolved rather than silently claiming complete recovery. This command is runnable tooling, not a deployed scheduler.
+
+Update every Stripe endpoint's subscribed event types before launch; local `stripe:listen` includes refund events. No remote migration, Stripe endpoint modification, live refund, email sender or scheduled recovery job was executed by this implementation. Validation uses synthetic Stripe objects and a local MongoDB replica set; live account and sandbox end-to-end verification remain operational steps.
+
+### Guest checkout cancellation — 2026-10-21
+
+`POST /api/orders/:id/checkout/cancel` accepts `{}` and `Authorization: Bearer <guestToken>` with a same-origin request. It returns `{data:{cancelled:true}}` only after Stripe confirms unpaid expiry and a transaction releases the reservation and marks the order/fulfillment cancelled. Guest ownership expires after the existing 30-day access period. No refund or financial observation is created. A completed/processing/paid Session returns `CHECKOUT_CANNOT_CANCEL`; an open Session after a failed expiration returns `CHECKOUT_CANCEL_FAILED`. Retry cancellation after uncertain network outcomes. New-checkout pause does not block cancellation of a known Session.
+
+Cart edits/removal cancel any pending Session first, preserving the selected quantities if cancellation fails. If the creation response was lost, the browser resolves the exact creation request to recover its order ID before calling cancellation. Successful cancellation keeps the cart items and clears only its pending request; the next checkout gets a fresh operation/token.

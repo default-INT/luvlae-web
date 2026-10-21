@@ -11,6 +11,7 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>, o
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [uncertain, setUncertain] = useState(false);
   const [saved, setSaved] = useState(false);
   const locked = useRef(false);
   const pending = useRef<{ signature: string; operationId: string } | null>(null);
@@ -22,10 +23,14 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>, o
     setBusy(true);
     onBusyChange?.(true);
     setError('');
+    setUncertain(false);
     setSaved(false);
     const signature = JSON.stringify({ path, body, method });
 
-    if (pending.current?.signature !== signature) pending.current = { signature, operationId: crypto.randomUUID() };
+    if (pending.current?.signature !== signature) {
+      pending.current = { signature,
+        operationId: typeof body.operationId === 'string' ? body.operationId : crypto.randomUUID() };
+    }
 
     try {
       await adminRequest(path, { ...body, operationId: pending.current.operationId }, method);
@@ -35,6 +40,7 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>, o
       return true;
     } catch (failure) {
       const code = failure instanceof AdminApiError ? failure.code : '';
+      setUncertain(!(failure instanceof AdminApiError) || failure.status >= 500 || code === 'CONFLICT');
 
       if (failure instanceof AdminApiError && failure.status === 401) {
         router.replace('/admin/login');
@@ -55,5 +61,5 @@ export const useAdminMutation = (copy: AdminCopy, reload: () => Promise<void>, o
     }
   };
 
-  return { busy, error, saved, run };
+  return { busy, error, uncertain, saved, run };
 };

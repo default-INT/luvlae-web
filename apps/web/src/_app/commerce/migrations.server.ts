@@ -2,6 +2,7 @@ import 'server-only';
 
 import { ObjectId } from 'mongodb';
 
+import { migrateRefunds } from './refund-migration.server';
 import { migrateMockOrders } from './mock-migration.server';
 import { migrateStripeRequests } from './stripe-request-migration.server';
 
@@ -226,4 +227,5 @@ export const migrateCommerce = async (db: Db) => {
   await migrateFoundation(db);
   await migrateMockOrders(db);
   await migrateStripeRequests(db);
+  await migrateRefunds(db);
 };

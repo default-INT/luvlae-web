@@ -51,6 +51,7 @@ export interface Order {
     carrier?: string; trackingNumber?: string; processingAt?: Date; shippedAt?: Date; deliveredAt?: Date;
   };
   cancellation?: { reason: string; cancelledAt: Date; cancelledBy: ObjectId };
+  cancellationRequest?: { status: 'pending' | 'succeeded'; reason: string; operationId: string; adminId: ObjectId };
   restockedQuantities: Record<string, number>;
   notifications: { key: string; type: string; status: 'pending' | 'sent'; attempts: number; nextAttemptAt: Date }[];
   createdAt: Date;
@@ -107,4 +108,16 @@ export interface AuditEntry {
   actor: { type: 'admin' | 'system' | 'stripe'; id?: ObjectId };
   entityType: 'product' | 'order' | 'checkoutAttempt'; entityId: ObjectId; action: string;
   changes: Record<string, unknown>; reason?: string; createdAt: Date;
+}
+
+export interface Refund {
+  _id: ObjectId; schemaVersion: number; orderId: ObjectId; attemptId?: ObjectId;
+  operationId: string; requestHash: string; requestedVersion: number;
+  source: 'admin' | 'stripe' | 'mock'; kind: 'cancel' | 'refund';
+  amount: number; currency: 'USD';
+  status: 'requested' | 'pending' | 'succeeded' | 'failed' | 'cancelled' | 'unknown';
+  active: boolean; reason?: string; providerReason?: string; failureReason?: string;
+  adminId?: ObjectId; providerRefundId?: string; stripePaymentIntentId?: string;
+  providerRequestStartedAt?: Date; stripeApiVersion?: string; providerStatus?: string; leaseToken?: string; leaseUntil?: Date;
+  livemode: boolean; createdAt: Date; updatedAt: Date;
 }

@@ -1,0 +1,6 @@
+.spinner { display: inline-block; width: 22px; height: 22px; flex-shrink: 0; vertical-align: middle;
+  border: 2px solid #154f9a29; border-top-color: currentColor; border-radius: 50%; animation: spin .7s linear infinite; }
+.label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; border-style: dotted; } }

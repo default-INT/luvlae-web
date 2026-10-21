@@ -9,13 +9,15 @@ import type { Dictionary } from '@/shared/config/i18n';
 
 interface CartState {
   items: CartItem[]; offers: Record<string, Offer>; offerErrors: Record<string, string>;
-  settledOrders: string[]; ready: boolean; open: boolean; busy: boolean; pending: PendingCheckout | null; error: string;
+  settledOrders: string[]; ready: boolean; open: boolean; busy: boolean; cancelling: boolean;
+  pending: PendingCheckout | null; error: string;
   restore: (items: CartItem[], offers: Record<string, Offer>, pending: PendingCheckout | null, settledOrders?: string[]) => void;
   setOpen: (open: boolean) => void;
   add: (offer: Offer, quantity: number) => void;
   update: (sku: string, quantity: number) => void;
   remove: (sku: string) => void;
   checkout: (copy: Dictionary['commerce']) => Promise<string | null>;
+  cancelCheckout: (copy: Dictionary['commerce']) => Promise<boolean>;
   confirmPaidOrder: (id: string, purchased: CartItem[]) => void;
   releaseExpiredCheckout: (id: string) => void;
 }
@@ -32,7 +34,8 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
   const persistent = dependencies.persistent ?? (() => localStorage);
 
   return createStore<CartState>()((set, get) => ({
-    items: [], offers: {}, offerErrors: {}, settledOrders: [], ready: false, open: false, busy: false, pending: null, error: '',
+    items: [], offers: {}, offerErrors: {}, settledOrders: [], ready: false, open: false, busy: false,
+    cancelling: false, pending: null, error: '',
     restore: (items, offers, pending, settledOrders = []) => set({ items, offers, pending, settledOrders, ready: true }),
     setOpen: open => set({ open }),
     add: (offer, quantity) => {
@@ -99,6 +102,41 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
       catch { /* Keep the exact request locked if browser storage cannot record its release. */ return; }
 
       set({ pending: null, error: '' });
+    },
+    cancelCheckout: async copy => {
+      const state = get();
+
+      if (state.busy) return false;
+
+      if (!state.pending) return true;
+
+      set({ busy: true, cancelling: true, error: '' });
+
+      try {
+        let pending = state.pending;
+
+        if (!pending.orderId) {
+          // A lost creation response may hide a payable Session. Resolve the exact request before cancelling it.
+          const result = await request<{ id: string }>('/api/checkout/session', {
+            operationId: pending.operationId, guestToken: pending.guestToken, items: pending.items,
+          });
+
+          pending = { ...pending, orderId: result.id };
+          session().setItem(pendingKey, JSON.stringify(pending));
+          set({ pending });
+        }
+
+        await request(`/api/orders/${pending.orderId}/checkout/cancel`, {}, pending.guestToken);
+        session().removeItem(pendingKey);
+        set({ pending: null });
+        return true;
+      } catch (failure) {
+        const code = failure instanceof Error ? failure.message : '';
+        set({ error: code === 'CHECKOUT_CANNOT_CANCEL' ? copy.checkoutCannotCancel : copy.cancelCheckoutError });
+        return false;
+      } finally {
+        set({ busy: false, cancelling: false });
+      }
     },
     checkout: async copy => {
       const state = get();

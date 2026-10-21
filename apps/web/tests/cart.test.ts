@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { randomUUID } from 'node:crypto';
 
 import { createCartStore } from '../src/features/shopping-cart/model/store';
 import {
@@ -255,4 +256,84 @@ test('only a matching confirmed expired checkout unlocks the cart without removi
   assert.deepEqual(store.getState().items, items);
   store.getState().update(offer.sku, 2);
   assert.equal(store.getState().items[0].quantity, 2);
+});
+
+test('cancelling checkout authenticates the request and unlocks editing without losing cart items', async () => {
+  const session = memorySession();
+  const calls: { path: string; token?: string }[] = [];
+
+  const pending = { operationId: randomUUID(), guestToken: 'a'.repeat(43),
+    orderId: '000000000000000000000001', items: [{ sku: offer.sku, quantity: 1, productVersion: 1 }] };
+
+  const request: typeof commerceRequest = async <T>(path: string, _body?: unknown, token?: string): Promise<T> => {
+    calls.push({ path, token });
+    return { cancelled: true } as T;
+  };
+
+  const store = createCartStore({ request, session: () => session });
+  session.setItem(pendingKey, JSON.stringify(pending));
+  store.getState().restore([{ sku: offer.sku, quantity: 1 }], { [offer.sku]: offer }, pending);
+  assert.equal(await store.getState().cancelCheckout(copy), true);
+  assert.deepEqual(calls, [{ path: `/api/orders/${pending.orderId}/checkout/cancel`, token: pending.guestToken }]);
+  assert.equal(store.getState().pending, null);
+  assert.equal(session.getItem(pendingKey), null);
+  assert.equal(store.getState().items[0].quantity, 1);
+  store.getState().update(offer.sku, 3);
+  assert.equal(store.getState().items[0].quantity, 3);
+});
+
+test('uncertain creation is resolved before cancellation and errors keep the exact request locked', async () => {
+  const session = memorySession();
+
+  const pending = { operationId: randomUUID(), guestToken: 'b'.repeat(43),
+    items: [{ sku: offer.sku, quantity: 1, productVersion: 1 }] };
+
+  const calls: string[] = [];
+  let fail = true;
+
+  const request: typeof commerceRequest = async <T>(path: string, body?: unknown): Promise<T> => {
+    calls.push(path);
+
+    if (path === '/api/checkout/session') {
+      assert.deepEqual(body, pending);
+      return { id: '000000000000000000000002' } as T;
+    }
+
+    if (fail) throw new Error('CHECKOUT_CANNOT_CANCEL');
+
+    return { cancelled: true } as T;
+  };
+
+  const store = createCartStore({ request, session: () => session });
+  store.getState().restore([{ sku: offer.sku, quantity: 1 }], { [offer.sku]: offer }, pending);
+  assert.equal(await store.getState().cancelCheckout(copy), false);
+  assert.equal(store.getState().error, copy.checkoutCannotCancel);
+  assert.equal(store.getState().pending?.orderId, '000000000000000000000002');
+  store.getState().update(offer.sku, 3);
+  assert.equal(store.getState().items[0].quantity, 1);
+  fail = false;
+  assert.equal(await store.getState().cancelCheckout(copy), true);
+  assert.equal(calls.filter(path => path === '/api/checkout/session').length, 1);
+});
+
+test('pending cancellation blocks competing checkout and edits until provider confirmation', async () => {
+  const session = memorySession();
+  let complete: () => void = () => {};
+  const waiting = new Promise<void>(resolve => { complete = resolve; });
+
+  const pending = { operationId: randomUUID(), guestToken: 'c'.repeat(43),
+    orderId: '000000000000000000000003', items: [{ sku: offer.sku, quantity: 1, productVersion: 1 }] };
+
+  const request: typeof commerceRequest = async <T>(): Promise<T> => { await waiting; return {} as T; };
+  const store = createCartStore({ request, session: () => session });
+  store.getState().restore([{ sku: offer.sku, quantity: 1 }], { [offer.sku]: offer }, pending);
+  const cancelling = store.getState().cancelCheckout(copy);
+  assert.equal(store.getState().busy, true);
+  assert.equal(await store.getState().cancelCheckout(copy), false);
+  assert.equal(await store.getState().checkout(copy), null);
+  store.getState().remove(offer.sku);
+  assert.equal(store.getState().items.length, 1);
+  complete();
+  assert.equal(await cancelling, true);
+  assert.equal(store.getState().busy, false);
 });

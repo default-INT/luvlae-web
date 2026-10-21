@@ -2,9 +2,9 @@
 
 Updated 2026-10-19. The storefront now creates embedded Checkout Sessions when enabled.
 Delivery and tax are included in the item price; no separate surcharge is added. Cards and US shipping
-address collection are enabled; the payable Session/reservation lasts 24 hours.
+address collection are enabled; the payable Session/reservation lasts 30 minutes for new checkouts.
 See [the integration plan](../../../.gpt-context/stripe-checkout-integration.md) and
-[live configuration/readiness](stripe-live-readiness.md). Refund/dispute application workflows and scheduled
+[live configuration/readiness](stripe-live-readiness.md). Refund/cancellation application workflows are implemented. Disputes and scheduled
 reconciliation remain separate work. The guarded operator reconciliation command is available.
 
 ## Dependencies and local workflow
@@ -75,7 +75,7 @@ The Session creator persists these values before a webhook can settle a payment:
 
 The approved current policy is shipping/tax included, so shipping=0, tax=0, discount=0, total=subtotal.
 The finalized server quote is stored before creating the Session; the webhook never adopts arbitrary
-Stripe totals as the expected quote. The 24-hour deadline is preserved across retries.
+Stripe totals as the expected quote. The original deadline is preserved across retries, including older 24-hour Sessions.
 
 The handler retrieves the latest Session with expanded PaymentIntent **outside** the MongoDB transaction.
 A completed but unpaid Session holds stock and sets payment to processing. Verified payment consumes held
@@ -107,7 +107,7 @@ The inbox stores identifiers, status and safe error codes, never full Stripe pay
 remain retryable and return non-2xx; Stripe delivery retries provide recovery. `nextAttemptAt` is diagnostic
 state: no background inbox worker/reconciler is installed yet. The local CLI does not replace durable
 stage retries; trigger another fixture or resend a failed sandbox event after fixing local problems.
-Refund/dispute events are ignored until their dedicated implementation; do not subscribe to them yet.
+Dispute events are ignored until their dedicated implementation; do not subscribe to them yet.
 
 ## Verification
 
@@ -139,3 +139,10 @@ The Embedded Checkout layout was also checked at 390px without horizontal overfl
 An unpaid final-configuration Session was explicitly expired in the sandbox. The real expired event returned 200;
 Atlas confirmed payment expired, reservation released and no financial entry. The page showed expiration and
 unlocked the retained cart. Migration 004 request snapshots were present on both final-configuration attempts.
+
+
+## Refund verification
+
+Local `stripe:listen` now subscribes to refund.created, refund.updated, refund.failed and charge.refunded in addition to Checkout events. Configure the same types on deployed Stripe endpoints. Required schema: explicit migration 005-refunds. In the sandbox, cancel an unshipped paid order and verify one refund plus one restock; refund a shipped order and verify no stock change; create partial/full refunds in Dashboard and verify finance-only synchronization. Verify pending/failure holds and resume the same operation after a transport timeout. These external sandbox checks have not been performed by the synthetic automated suite.
+
+See [refund runbook](commerce-api.md#admin-refunds-and-cancellation--2026-10-21) for `stripe:reconcile --refunds [limit] [cursor]`, recovery ordering, safe key age, event retention and unresolved operator cases. No email delivery is added.

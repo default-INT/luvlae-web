@@ -34,7 +34,8 @@ export const ProductsPage = (props: Props) => {
           {copy.refresh}
         </button>
       </div>
-      <DataStatus loading={resource.loading} error={resource.error} copy={copy} onRetry={() => { void resource.reload(); }}/>
+      <DataStatus skeleton loading={resource.loading && !resource.data} error={resource.error} copy={copy}
+        onRetry={() => { void resource.reload(); }}/>
       <div className={`${styles.card} ${styles.tableWrap}`} aria-busy={resource.loading}>
         <table className={styles.table}>
           <thead><tr><th>{copy.name}</th><th>{copy.price}</th><th>{copy.stock}</th><th>{copy.reserved}</th>

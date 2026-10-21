@@ -105,7 +105,7 @@ disabling new checkout is not cancellation of existing payments.
    persist exact creation parameters/API version with inventory before contacting Stripe; legacy unbound attempts
    without a request snapshot require metadata recovery rather than guessed retries.
    Investigate provider state before releasing held stock. Assign manual fulfillment/support and
-   Stripe Dashboard refund/dispute handling until dedicated application workflows exist.
+   application refund/cancellation workflow after migration 005 and sandbox verification; retain Stripe Dashboard dispute handling. Subscribe deployed webhooks to refund.created/refund.updated/refund.failed/charge.refunded and run explicit Checkout/refund reconciliation recovery as documented in commerce-api.md.
 6. Confirm the user's current no-surcharge pricing policy is approved for launch: delivery and tax are included
    in item prices; this integration does not calculate tax obligations. Record verification of the required
    commercial/legal configuration outside this code change.

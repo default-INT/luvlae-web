@@ -6,7 +6,7 @@ Date: 2026-10-18. Status: server foundation implemented; the full payment lifecy
 
 Confirmed requirements: USA/USD sales, MongoDB Atlas, an existing Stripe account, manual order processing/shipping by a manager, admin product editing and stock management, rejection of checkout when requested quantity exceeds available stock, admin email/password authentication without email verification, and a cart/checkout/payment flow. See [commerce-plan.md](commerce-plan.md).
 
-Proposed MVP assumptions: one SKU initially, guest checkout, one shipment per order, one admin permission level, browser-persisted cart, Stripe-hosted Checkout, and refunds initiated in Stripe Dashboard. These assumptions are not additional confirmed user requirements.
+Initial MVP assumptions were one SKU, guest checkout, one shipment per order, one admin permission level and browser-persisted cart. Embedded Stripe Checkout is now implemented. The user approved full remaining refunds from `/admin` and synchronization of partial/full external Stripe refunds on 2026-10-21; see [refund work](refund-implementation.md).
 
 Use the same schema in separate stage and production databases. Local development targets stage. Do not mix environments using a document-level environment flag. Stripe `livemode` is still validated against the application environment.
 
@@ -65,6 +65,7 @@ The main aggregate, sufficient for the manager's order detail view without readi
 | `payment` | `{ status, activeAttemptId?, settledAttemptId?, amountPaid, amountRefunded, paidAt?, disputed, reconciliationRequired }` |
 | `fulfillment` | `{ status, carrier?, trackingNumber?, processingAt?, shippedAt?, deliveredAt? }` |
 | `cancellation` | Optional `{ reason, cancelledAt, cancelledBy }` |
+| `cancellationRequest` | Optional `{ status: 'pending' \| 'succeeded', reason, operationId, adminId }`; pending intent blocks fulfillment before external refund completion |
 | `notifications[]` | Small bounded outbox of logical confirmation/manager/shipping notifications |
 | `createdAt`, `updatedAt`, `completedAt?` | Lifecycle timestamps |
 
@@ -81,7 +82,7 @@ Rules:
 - `activeAttemptId` is the current payment reservation; `settledAttemptId` identifies the successful payment. A late success from another attempt is flagged for reconciliation rather than replacing the settled payment or shipping twice.
 - `failed` describes a terminal attempt result, not an individual declined card interaction while a Checkout Session is still usable.
 - `completed` means delivered under the manual workflow. Cancelling an order never implies that a refund succeeded. Preserve actual shipment state when a shipped order is cancelled/refunded.
-- Fulfillment requires confirmed payment, complete shipping data, an open order, and no reconciliation/dispute hold. Block fully refunded orders; partially refunded orders require explicit manager review before fulfillment.
+- Fulfillment requires confirmed payment, complete shipping data, an open order, and no cancellation intent or reconciliation/dispute hold. Block fully refunded orders; partially refunded orders remain blocked until a separate review flow exists.
 - Bounded outbox entries include a stable `key`, `type`, `status`, `attempts`, `nextAttemptAt`, `leaseUntil?`, `leaseToken?`, `providerMessageId?`, `sentAt?`, and a sanitized `lastErrorCode?`. Atomically add logical jobs with the corresponding order transition. Retry by updating the same entry, not appending attempts. Repeated shipment corrections do not append unlimited jobs.
 
 Initial indexes:
@@ -156,6 +157,15 @@ Indexes: unique `{ operationId: 1 }` for one audit record per logical mutation; 
 
 Write audit records in the same transaction as the corresponding admin mutation. Retention and stronger storage-level immutability, if needed, remain decisions; an application-only append policy is not tamper-proof against privileged DB access.
 
+### `refunds` — added by migration `005-refunds`
+
+- Applied to configured Atlas `luvlae_stage` on 2026-10-21; strict validators, all named indexes, released migration lock and transaction rollback were verified. Production application remains unverified. See [migration evidence](refund-implementation.md#stage-migration--2026-10-21).
+- Separate mutable refund/request state: order/attempt references, operation identity/fingerprint, requested version, source (`admin`, `stripe`, `mock`), kind (`cancel`, `refund`), amount/currency, status, local/provider reason and timestamps. Provider request timing/lease fields support safe resumption; see the [current model](../apps/web/src/_app/commerce/models.ts).
+- Status is `requested`, `unknown`, `pending`, `succeeded`, `failed` or `cancelled`. Preserve the original provider status separately, including `requires_action`. Financial transaction observations remain immutable and distinct from this mutable state.
+- Unique operation ID and provider Refund ID; at most one active local operation per order. Order/history and recovery indexes are migration-owned. Runtime writers require migration005 before touching Stripe or refund records.
+- Recompute `amountRefunded` from unique successful refund records, never by summing every journal observation. Authentic Stripe events alone append Stripe financial observations. API reads may reconcile refund state without inventing events.
+- A later failed refund corrects finance and places the order on reconciliation hold if needed; already completed cancellation/restocking is not repeated or silently reversed.
+
 ## Consistency and lifecycle
 
 1. **Deduplicate order creation:** look up the unique guest-scoped creation key. A retry with identical contents returns the existing order; a different request fingerprint with the same key is rejected. For a new request, proceed to the atomic stock reservation and order creation below.
@@ -172,7 +182,7 @@ Write audit records in the same transaction as the corresponding admin mutation.
 - For cancellation/expiration, first expire or reconcile the Stripe Session outside the DB transaction. Release stock only after confirming there is no successful or still-processing payment. In one transaction change `held` to `released`, decrement reserved quantities, and record the transition. Duplicate events do not release twice.
 - A reservation deadline schedules a recovery job. Delayed/async payment methods keep their reservations until terminal reconciliation; their maximum hold policy and supported payment methods must be selected before launch. Do not arbitrarily free stock on a timer while a payment can still succeed.
 - If an exceptional payment arrives after release, place the order on reconciliation hold; do not deduct unavailable stock or fulfill automatically. A manager resolves fulfillment or refund.
-- Shipping does not deduct stock again. Refunds do not automatically restock products. Paid unshipped cancellations and physically returned sellable goods use an explicit admin restock operation with an order reference, validated per-item cumulative quantities, and a unique audit operation ID. Atomically track cumulative restocked quantities on the order, increase product stock, and audit; retries cannot restock twice. Restocking shipped goods requires confirmation that goods were returned and are sellable.
+- Shipping does not deduct stock again. External refunds and shipped-order refunds do not restock products. Admin cancellation before shipment blocks fulfillment immediately and automatically restores the remaining committed quantities after successful full repayment. Atomically track cumulative `restockedQuantities`, increase product stock and audit; retries cannot restock twice. The existing explicit restock operation remains bounded by purchased quantities; shipped goods require confirmation that goods were returned and are sellable.
 
 MongoDB guarantees atomic writes within a single document; the cross-collection operations above require transactions. Transaction support and behavior in the selected Atlas tier/driver/Workers runtime must be validated before implementation. If it fails, revise the model explicitly rather than silently omitting consistency guarantees.
 

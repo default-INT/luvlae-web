@@ -12,7 +12,8 @@ export const ProductPage = (props: Props) => {
   const { sku, copy } = props;
   const resource = useAdminResource<AdminProduct>(`/products/${encodeURIComponent(sku)}`, copy);
   return <>
-    <DataStatus loading={resource.loading} error={resource.error} copy={copy} onRetry={() => { void resource.reload(); }}/>
+    <DataStatus skeleton loading={resource.loading && !resource.data} error={resource.error} copy={copy}
+      onRetry={() => { void resource.reload(); }}/>
     {resource.data && <ProductEditor initialProduct={resource.data} copy={copy} key={sku}/>}
   </>;
 };

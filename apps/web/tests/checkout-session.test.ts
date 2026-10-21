@@ -9,6 +9,7 @@ import Stripe from 'stripe';
 import {
   associateRecoveredCheckoutSession, checkoutSessionParameters, createCheckoutSession, findGuestCheckout, getGuestCheckout,
 } from '../src/_app/commerce/checkout-session.server';
+import { cancelGuestCheckout } from '../src/_app/commerce/checkout-cancellation.server';
 import { collections } from '../src/_app/commerce/collections.server';
 import { createProductSchema } from '../src/_app/commerce/contracts';
 import { migrateCommerce } from '../src/_app/commerce/migrations.server';
@@ -111,11 +112,19 @@ const fixture = async (sku: string, quantity = 1, stock = 5) => {
     return checkout as Stripe.Response<Stripe.Checkout.Session>;
   };
 
+  stripe.checkout.sessions.expire = async id => {
+    const checkout = [...sessions.values()].find(item => item.id === id);
+    assert.ok(checkout);
+    assert.equal(checkout.status, 'open');
+    checkout.status = 'expired';
+    return checkout as Stripe.Response<Stripe.Checkout.Session>;
+  };
+
   return { input, stripe, requests, sessions, timeout: () => { timeoutAfterCreation = true; },
     stats: () => ({ creates, retrieves }) };
 };
 
-test('embedded checkout reserves once with exact server quote, card-only US form and 24-hour expiry', async () => {
+test('embedded checkout reserves once with exact server quote, card-only US form and 30-minute expiry', async () => {
   const { input, stripe, requests, stats } = await fixture('CHECKOUT-CONTRACT', 2);
   const before = Date.now();
   const result = await createCheckoutSession(context, input, stripe);
@@ -132,7 +141,8 @@ test('embedded checkout reserves once with exact server quote, card-only US form
   assert.deepEqual(order?.pricing, { state: 'final', subtotal: 5198, total: 5198, discount: 0, shipping: 0, tax: 0 });
   assert.deepEqual(attempt.quoteSnapshot.pricing, order?.pricing);
   assert.equal(attempt.inventoryReservation.state, 'held');
-  assert.ok(attempt.inventoryReservation.expiresAt.getTime() - before >= 86400000 - 1000);
+  assert.ok(attempt.inventoryReservation.expiresAt.getTime() - before >= 30 * 60 * 1000 - 1000);
+  assert.ok(attempt.inventoryReservation.expiresAt.getTime() - before <= 30 * 60 * 1000);
   assert.equal((await products.findOne({ sku: input.items[0].sku }))?.inventory.reservedQuantity, 2);
   assert.equal((await products.findOne({ sku: input.items[0].sku }))?.inventory.stockQuantity, 5);
   const parameters = requests[0].parameters;
@@ -365,4 +375,80 @@ test('missing request snapshot migration blocks checkout before reserving stock'
   } finally {
     await migrations.insertOne(migration);
   }
+});
+
+test('guest cancellation closes Stripe, releases stock once and preserves the original order on retry', async () => {
+  const { input, stripe, sessions } = await fixture('CHECKOUT-CANCEL', 2);
+  const { id } = await createCheckoutSession(context, input, stripe);
+  const { orders, attempts, products, transactions } = collections(context.db);
+  await Promise.all([cancelGuestCheckout(context, id, input.guestToken, stripe),
+    cancelGuestCheckout(context, id, input.guestToken, stripe)]);
+  await cancelGuestCheckout(context, id, input.guestToken, stripe);
+  assert.equal([...sessions.values()][0].status, 'expired');
+  const order = await orders.findOne({ _id: new ObjectId(id) });
+  assert.equal(order?.orderStatus, 'cancelled');
+  assert.equal(order?.payment.status, 'expired');
+  assert.equal(order?.payment.activeAttemptId, undefined);
+  assert.equal((await attempts.findOne({ orderId: order!._id }))?.inventoryReservation.state, 'released');
+  const product = await products.findOne({ sku: input.items[0].sku });
+  assert.equal(product?.inventory.reservedQuantity, 0);
+  assert.equal(product?.inventory.stockQuantity, 5);
+  assert.equal(await transactions.countDocuments({ orderId: order!._id }), 0);
+  const replacement = await createCheckoutSession(context, { ...input, operationId: randomUUID() }, stripe);
+  assert.notEqual(replacement.id, id);
+});
+
+test('cancellation authenticates ownership before contacting the provider, including expired access', async () => {
+  const { input, stripe, stats } = await fixture('CHECKOUT-CANCEL-AUTH');
+  const { id } = await createCheckoutSession(context, input, stripe);
+  const calls = stats().retrieves;
+  await assert.rejects(cancelGuestCheckout(context, id, randomToken(), stripe), hasCode('NOT_FOUND'));
+  await assert.rejects(cancelGuestCheckout(context, 'invalid', input.guestToken, stripe), hasCode('NOT_FOUND'));
+  await collections(context.db).orders.updateOne({ _id: new ObjectId(id) }, {
+    $set: { 'guestAccess.expiresAt': new Date(0) },
+  });
+  await assert.rejects(cancelGuestCheckout(context, id, input.guestToken, stripe), hasCode('NOT_FOUND'));
+  assert.equal(stats().retrieves, calls);
+});
+
+test('failed provider expiration leaves the checkout and reservation intact for retry', async () => {
+  const { input, stripe } = await fixture('CHECKOUT-CANCEL-FAILURE');
+  const { id } = await createCheckoutSession(context, input, stripe);
+  stripe.checkout.sessions.expire = async () => { throw new Error('Synthetic network failure'); };
+  await assert.rejects(cancelGuestCheckout(context, id, input.guestToken, stripe), hasCode('CHECKOUT_CANCEL_FAILED'));
+  const attempt = await collections(context.db).attempts.findOne({ orderId: new ObjectId(id) });
+  assert.equal(attempt?.active, true);
+  assert.equal(attempt?.inventoryReservation.state, 'held');
+  assert.equal((await collections(context.db).products.findOne({ sku: input.items[0].sku }))?.inventory.reservedQuantity, 1);
+});
+
+test('payment completion racing cancellation cannot release stock or cancel the order', async () => {
+  const { input, stripe, sessions } = await fixture('CHECKOUT-CANCEL-PAID');
+  const { id } = await createCheckoutSession(context, input, stripe);
+
+  stripe.checkout.sessions.expire = async () => {
+    const checkout = [...sessions.values()][0];
+    checkout.status = 'complete';
+    checkout.payment_status = 'paid';
+    throw new Error('Payment won the race');
+  };
+
+  await assert.rejects(cancelGuestCheckout(context, id, input.guestToken, stripe), hasCode('CHECKOUT_CANNOT_CANCEL'));
+  const order = await collections(context.db).orders.findOne({ _id: new ObjectId(id) });
+  assert.equal(order?.orderStatus, 'open');
+  assert.equal((await collections(context.db).attempts.findOne({ orderId: order!._id }))?.inventoryReservation.state, 'held');
+});
+
+test('guest cancellation route rejects cross-origin requests and missing credentials before accessing the database', async () => {
+  const { POST } = await import('../app/api/orders/[id]/checkout/cancel/route');
+  const route = { params: Promise.resolve({ id: new ObjectId().toHexString() }) };
+
+  const request = (origin: string) => new Request('https://test.local/api/orders/id/checkout/cancel', {
+    method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: '{}',
+  });
+
+  const rejected = await POST(request('https://attacker.test'), route);
+  assert.equal(rejected.status, 403);
+  assert.equal(rejected.headers.get('cache-control'), 'no-store');
+  assert.equal((await POST(request('https://test.local'), route)).status, 404);
 });

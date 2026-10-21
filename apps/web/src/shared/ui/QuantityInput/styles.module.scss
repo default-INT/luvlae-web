@@ -1,0 +1,15 @@
+.quantity { display: grid; gap: 6px; width: fit-content; max-width: 100%;
+  > label { font-size: 0.7rem; color: var(--color-text); } }
+.control { display: flex; width: 140px; max-width: 100%; overflow: hidden; border: 1px solid var(--color-border);
+  border-radius: 12px; background: white;
+  &:focus-within { outline: 2px solid var(--color-blue); outline-offset: 2px; }
+  button, input { min-height: 44px; padding: 0; border: 0; background: transparent;
+    color: var(--color-navy); font-family: var(--font-sans); }
+  button { flex: 0 0 44px; font-size: 1.25rem; cursor: pointer;
+    &:hover:not(:disabled) { background: var(--color-background, #f3f6fa); }
+    &:focus-visible { outline: 2px solid var(--color-blue); outline-offset: -3px; }
+    &:disabled { cursor: default; opacity: 0.4; } }
+  input { width: 0; min-width: 0; flex: 1; text-align: center; font-size: 1rem;
+    &:focus-visible { outline: none; } }
+  &:has(input:disabled) { opacity: 0.6; }
+}

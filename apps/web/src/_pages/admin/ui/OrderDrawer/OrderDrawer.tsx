@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+
+import { Drawer } from '@/shared/ui/Drawer';
 
 import { useAdminResource } from '../../model/useAdminResource';
 import { DataStatus } from '../DataStatus';
@@ -14,24 +16,14 @@ interface Props { id: string | null; copy: AdminCopy; onClose: () => void; onCha
 
 export const OrderDrawer = (props: Props) => {
   const { id, copy, onClose, onChanged } = props;
-  const resource = useAdminResource<OrderDetail>(id ? `/orders/${id}` : null, copy);
+  const [retainedId, setRetainedId] = useState(id);
   const [savingOrders, setSavingOrders] = useState<Record<string, boolean>>({});
-  const saving = !!id && !!savingOrders[id];
-  const dialog = useRef<HTMLDialogElement>(null);
-  const open = !!id;
-  useEffect(() => {
-    const element = dialog.current;
+  const saving = !!retainedId && !!savingOrders[retainedId];
 
-    if (!element) return;
+  if (id && id !== retainedId && !saving) setRetainedId(id);
 
-    if (!open) { element.close(); return; }
-
-    if (!element.open) element.showModal();
-
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previous; };
-  }, [open]);
+  const displayedId = saving ? retainedId : id ?? retainedId;
+  const resource = useAdminResource<OrderDetail>(displayedId ? `/orders/${displayedId}` : null, copy);
 
   const reload = async () => {
     await resource.reload();
@@ -39,24 +31,20 @@ export const OrderDrawer = (props: Props) => {
   };
 
   return (
-    <dialog ref={dialog} className={styles.drawer} aria-labelledby='admin-order-title'
-      onCancel={event => { if (saving) event.preventDefault(); else onClose(); }}
-      onPointerDown={event => {
-        const bounds = event.currentTarget.getBoundingClientRect();
-
-        if (!saving && (event.clientX < bounds.left || event.clientX > bounds.right
-          || event.clientY < bounds.top || event.clientY > bounds.bottom)) onClose();
-      }}>
+    <Drawer open={!!id || saving} onClose={onClose} onAfterClose={() => setRetainedId(null)} closeDisabled={saving}
+      className={styles.drawer} labelledBy='admin-order-title'>
       <header className={styles.header}>
         <div><p>{copy.orderNumber}</p><h2 id='admin-order-title'>{resource.data?.orderNumber ?? copy.view}</h2></div>
         <button type='button' className={styles.close} disabled={saving} onClick={onClose} aria-label={copy.closeOrder}>×</button>
       </header>
       <div className={styles.content} aria-busy={resource.loading || saving}>
-        <DataStatus loading={resource.loading && !resource.data} error={resource.error} copy={copy}
+        <DataStatus loading={resource.loading && !resource.data} error={resource.error} copy={copy} skeleton
           onRetry={() => { void resource.reload(); }}/>
         {resource.data && <OrderDetails order={resource.data} copy={copy} reload={reload}
-          onBusyChange={busy => { if (id) setSavingOrders(previous => ({ ...previous, [id]: busy })); }} key={id}/>}
+          onBusyChange={busy => {
+            if (displayedId) setSavingOrders(previous => ({ ...previous, [displayedId]: busy }));
+          }} key={displayedId}/>}
       </div>
-    </dialog>
+    </Drawer>
   );
 };

@@ -15,6 +15,7 @@ const shim = fileURLToPath(new URL('bin/shim.js', `file://${require.resolve('@st
 const events = [
   'checkout.session.completed', 'checkout.session.async_payment_succeeded',
   'checkout.session.async_payment_failed', 'checkout.session.expired',
+  'refund.created', 'refund.updated', 'refund.failed', 'charge.refunded',
 ].join(',');
 
 const run = args => spawn(process.execPath, [shim, ...args], {

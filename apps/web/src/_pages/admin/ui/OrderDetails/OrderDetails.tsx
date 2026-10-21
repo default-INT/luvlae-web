@@ -3,7 +3,10 @@
 import { money } from '@/shared/lib/money';
 
 import { dateTime } from '../../model/types';
+import { refundNeedsRefresh } from '../../model/order-refunds';
+import { useOrderPaymentPolling } from '../../model/useOrderPaymentPolling';
 import { OrderActions } from '../OrderActions';
+import { OrderRefundHistory } from '../OrderRefundHistory';
 import { StatusTag } from '../StatusTag';
 import styles from '../styles.module.scss';
 
@@ -14,6 +17,7 @@ interface Props { order: OrderDetail; copy: AdminCopy; reload: () => Promise<voi
 export const OrderDetails = (props: Props) => {
   const { order, copy, reload, onBusyChange } = props;
   const address = order.shippingAddress;
+  useOrderPaymentPolling(refundNeedsRefresh(order), reload);
 
   const totals = [
     { label: copy.subtotal, value: order.pricing.subtotal }, { label: copy.discount, value: order.pricing.discount },
@@ -46,6 +50,7 @@ export const OrderDetails = (props: Props) => {
               <span>{total.label}</span><strong>{total.value === null ? '—' : money(total.value)}</strong>
             </div>)}</div>
           </section>
+          <OrderRefundHistory order={order} copy={copy}/>
           <section className={styles.card}>
             <h2>{copy.customer}</h2>
             <div className={styles.address}>{order.customer ? <>

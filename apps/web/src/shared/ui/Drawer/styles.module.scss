@@ -1,0 +1,18 @@
+.drawer {
+  position: fixed; inset: 0 0 0 auto; width: min(100%, var(--drawer-width, 480px)); height: 100dvh; max-height: 100dvh;
+  max-width: 100%; margin: 0 0 0 auto; padding: 0; border: 0; background: var(--color-background);
+  color: var(--color-navy); box-shadow: -16px 0 64px #001a4026;
+  &[open] { display: flex; flex-direction: column; }
+  &[data-state='open'] { animation: enter 220ms ease-out both; }
+  &[data-state='closing'] { animation: leave 180ms ease-in both; }
+  &::backdrop { background: #001a4066; backdrop-filter: blur(3px); }
+  &[data-state='open']::backdrop { animation: fade-in 220ms ease-out both; }
+  &[data-state='closing']::backdrop { animation: fade-out 180ms ease-in both; }
+}
+@keyframes enter { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes leave { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .drawer[data-state], .drawer[data-state]::backdrop { animation: none; }
+}

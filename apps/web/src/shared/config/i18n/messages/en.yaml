@@ -549,7 +549,13 @@ commerce:
 
   total: Total
   checkoutUnavailable: Checkout is temporarily unavailable. Your selection is saved. Please try again later.
-  pendingCheckout: Your selection is reserved for checkout. Resume payment to complete your order or check its status.
+  pendingCheckout: Your selection is reserved for checkout. Changing quantities or removing an item will cancel this checkout so you can start again.
+  cancelCheckout: Cancel checkout
+  cancellingCheckout: Cancelling checkout…
+  cancelCheckoutError: We could not cancel checkout. Your selection is saved. Please try again.
+  checkoutCannotCancel: Payment may already be in progress or completed. Resume checkout to check your order before making changes.
+  decreaseQuantity: Decrease quantity
+  increaseQuantity: Increase quantity
   resumeCheckout: Resume checkout
   checkoutEyebrow: SECURE CHECKOUT
   checkoutTitle: Complete your order
@@ -637,7 +643,38 @@ admin:
   manageOrder: Manage order
   fulfillmentBlocked: This order is not ready for fulfillment.
   cancellation: Cancel order
-  cancellationNote: Cancellation does not refund payments or return items to inventory.
+  cancellationNote: Shipping is blocked as soon as cancellation begins. The remaining payment is refunded, and items return to inventory only after the refund succeeds. Unpaid orders release their reserved inventory after payment verification.
+  refund: Refund
+  refundNote: Refund the full remaining payment to the original payment method. Fulfillment and inventory stay unchanged.
+  refundAmount: Amount to refund
+  confirmCancellation: I confirm this cancellation, payment refund and inventory restoration after success.
+  confirmRefund: I confirm this refund without returning items to inventory.
+  cancelWithoutRefund: No additional payment will be refunded. Payment is verified before cancellation and inventory release.
+  reasonRequired: Enter a reason before continuing.
+  paymentRequestAccepted: Request accepted. Review its current state in the refund history.
+  cancellationPending: Cancellation is in progress. Shipping remains blocked; inventory will be restored after the payment operation succeeds.
+  refundPending: The refund is processing. Status updates automatically for two minutes; refresh to check again later.
+  refundUncertain: The result is awaiting confirmation. Check or resume the existing operation before starting another refund.
+  resumePaymentOperation: Check or resume operation
+  retryCancellation: Retry cancellation
+  refundHistory: Refund history
+  amountPaid: Amount paid
+  amountRefunded: Amount refunded
+  refundableAmount: Remaining refundable amount
+  noRefunds: No refunds have been requested.
+  stripeReason: Stripe reason
+  refundReference: Stripe refund reference
+  refundFailure: Failure
+  mockRefundNote: This is a mock payment. The refund updates this test order without sending a payment request to Stripe.
+  refundSources:
+    admin: Admin
+    stripe: Stripe
+    mock: Mock payment
+  stripeRefundReasons:
+    duplicate: Duplicate payment
+    fraudulent: Fraudulent payment
+    requested_by_customer: Requested by customer
+    expired_uncaptured_charge: Expired uncaptured charge
   reason: Reason for change
   restock: Return items to inventory
   returned: I confirm the returned items are sellable.
@@ -668,6 +705,9 @@ admin:
     expired: Expired
     partially_refunded: Partially refunded
     refunded: Refunded
+    requested: Requested
+    succeeded: Succeeded
+    unknown: Awaiting confirmation
     unfulfilled: Unfulfilled
     shipped: Shipped
     delivered: Delivered
@@ -680,6 +720,17 @@ admin:
     INVALID_TRANSITION: The requested status change is not available.
     TRACKING_REQUIRED: Enter the carrier and tracking number.
     PAYMENT_RECONCILIATION_REQUIRED: Resolve the active payment before cancelling this order.
+    REFUND_BLOCKED: This order is not eligible for a refund.
+    REFUND_IN_PROGRESS: A refund operation already exists. Refresh and review its status.
+    REFUND_FAILED: The refund failed. Review its status before retrying.
+    REFUND_RECONCILIATION_REQUIRED: The payment result needs reconciliation. Refresh to check the latest status.
+    STRIPE_UNAVAILABLE: Stripe is temporarily unavailable. Check or resume the existing operation.
+    CANCELLATION_IN_PROGRESS: Cancellation is already in progress. Refresh to review its status.
+    CANCELLATION_BLOCKED: Cancellation needs payment or inventory reconciliation. Shipping remains blocked.
+    IDEMPOTENCY_CONFLICT: This operation belongs to another request. Refresh to review the latest order.
+    REFUND_NOT_READY: Payment association is awaiting confirmation. Check the existing operation again.
+    PAYMENT_ASSOCIATION_MISMATCH: Payment information needs reconciliation before this operation can continue.
+    PAYMENT_AMOUNT_MISMATCH: Payment totals need reconciliation before this operation can continue.
     RESTOCK_BLOCKED: This order is not eligible for restocking.
     RESTOCK_LIMIT: The selected quantity exceeds the items available for restocking.
     INVALID_INPUT: Check the form fields and try again.

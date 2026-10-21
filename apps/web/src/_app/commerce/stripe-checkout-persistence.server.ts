@@ -12,7 +12,7 @@ import type { CheckoutContext, CheckoutTransition } from './stripe-checkout-poli
 interface CheckoutOperation {
   db: Db;
   session: ClientSession;
-  event: Stripe.Event;
+  event?: Stripe.Event;
   context: CheckoutContext;
   transition: CheckoutTransition;
   now: Date;
@@ -87,6 +87,8 @@ const updateOrder = async ({ db, session, context, transition, now }: CheckoutOp
 
 const recordPayment = async ({ db, session, context, transition, event }: CheckoutOperation) => {
   if (!transition.observation) return;
+
+  if (!event) return fail(409, 'PAYMENT_EVENT_REQUIRED', 'Financial observations require a provider event.');
 
   await appendPaymentTransaction(db, session, {
     operationId: `stripe-${event.id}`, orderId: context.order._id, attemptId: context.attempt._id, provider: 'stripe',

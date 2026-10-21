@@ -2,7 +2,7 @@ import 'server-only';
 
 import type { Db } from 'mongodb';
 import type {
-  AdminSession, AdminUser, AuditEntry, CheckoutAttempt, Order, PaymentEvent, PaymentTransaction, Product,
+  AdminSession, AdminUser, AuditEntry, CheckoutAttempt, Order, PaymentEvent, PaymentTransaction, Product, Refund,
 } from './models';
 
 export const collections = (db: Db) => ({
@@ -11,6 +11,7 @@ export const collections = (db: Db) => ({
   attempts: db.collection<CheckoutAttempt>('checkoutAttempts'),
   events: db.collection<PaymentEvent>('paymentEvents'),
   transactions: db.collection<PaymentTransaction>('paymentTransactions'),
+  refunds: db.collection<Refund>('refunds'),
   users: db.collection<AdminUser>('adminUsers'),
   sessions: db.collection<AdminSession>('adminSessions'),
   audit: db.collection<AuditEntry>('auditLog'),

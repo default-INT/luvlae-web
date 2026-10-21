@@ -38,7 +38,9 @@ export const checkoutSessionParameters = (attempt: CheckoutAttempt): Stripe.Chec
   wallet_options: { link: { display: 'never' } },
   name_collection: { individual: { enabled: true, optional: false } },
   shipping_address_collection: { allowed_countries: ['US'] },
-  customer_creation: 'if_required', automatic_tax: { enabled: false }, allow_promotion_codes: false,
+  customer_creation: 'if_required',
+  automatic_tax: { enabled: true },
+  allow_promotion_codes: false,
   client_reference_id: attempt.orderId.toHexString(),
   metadata: { orderId: attempt.orderId.toHexString(), attemptId: attempt._id.toHexString() },
   payment_intent_data: { metadata: { orderId: attempt.orderId.toHexString(), attemptId: attempt._id.toHexString() } },
@@ -144,7 +146,7 @@ export const createCheckoutSession = async (
   const reserved = await reserveOrder(context, {
     creationKeyHash: hashToken(`stripe:${value.guestToken}:${value.operationId}`),
     guestTokenHash: hashToken(value.guestToken), guestAccessExpiresAt: new Date(now + 30 * dayMilliseconds),
-    expiresAt: new Date(now + dayMilliseconds), checkoutMode: 'stripe', livemode: configuration.livemode,
+    expiresAt: new Date(now + 30 * 60 * 1000), checkoutMode: 'stripe', livemode: configuration.livemode,
     pricingPolicy, items: value.items,
   }, { createStripeRequest: attempt => ({ apiVersion: Stripe.API_VERSION, parameters: checkoutSessionParameters(attempt) }) });
 

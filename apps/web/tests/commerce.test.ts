@@ -11,7 +11,7 @@ import {
   createProductSchema, fulfillmentSchema, quoteSchema, restockSchema, updateProductSchema,
 } from '../src/_app/commerce/contracts';
 import { migrateCommerce } from '../src/_app/commerce/migrations.server';
-import { cancelOrder, restockOrder, updateFulfillment } from '../src/_app/commerce/orders.server';
+import { restockOrder, updateFulfillment } from '../src/_app/commerce/orders.server';
 import { appendPaymentTransaction } from '../src/_app/commerce/payments.server';
 import { calculateQuote, createProduct, updateProduct } from '../src/_app/commerce/products.server';
 import { reserveOrder } from '../src/_app/commerce/reservations.server';
@@ -210,17 +210,18 @@ test('fulfillment enforces transitions and creates a single shipping notificatio
 
 test('restocking is explicit, idempotent, and bounded by purchased quantity', async () => {
   const order = await paidOrder('RESTOCK');
-  await cancelOrder(context, adminId, order.orderId, { version: 1, operationId: randomUUID(), reason: 'Test cancellation' });
+  // A received sellable return is the explicit restock path; cancellations restock automatically.
+  await collections(context.db).orders.updateOne({ _id: order.orderId }, { $set: { 'fulfillment.status': 'delivered' } });
 
   const input = restockSchema.parse({
-    version: 2, operationId: randomUUID(), reason: 'Cancelled before shipment', returnedAndSellable: false,
+    version: 1, operationId: randomUUID(), reason: 'Returned sellable goods', returnedAndSellable: true,
     items: [{ sku: 'RESTOCK', quantity: 1 }],
   });
 
   await restockOrder(context, adminId, order.orderId, input);
   await restockOrder(context, adminId, order.orderId, input);
   await assert.rejects(restockOrder(context, adminId, order.orderId, {
-    ...input, version: 3, operationId: randomUUID(),
+    ...input, version: 2, operationId: randomUUID(),
   }), hasCode('RESTOCK_LIMIT'));
   assert.equal((await collections(context.db).products.findOne({ sku: 'RESTOCK' }))?.inventory.stockQuantity, 1);
 });

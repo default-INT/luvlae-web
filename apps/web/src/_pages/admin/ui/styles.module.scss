@@ -68,3 +68,7 @@
   font: 700 .84rem var(--font-sans); text-align: left; cursor: pointer;
   &:hover { color: var(--color-blue); text-decoration: underline; } }
 .pageHeader > button { margin-top: 18px; }
+.refundEntry { border-top: 1px solid var(--color-border); padding-top: 20px; margin-top: 20px;
+  > p { font-size: .85rem; line-height: 1.6; } }
+.refundReason { white-space: pre-wrap; overflow-wrap: anywhere; }
+.refundReference { overflow-wrap: anywhere; color: var(--color-text); }

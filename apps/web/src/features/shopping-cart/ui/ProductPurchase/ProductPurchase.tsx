@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { product } from '@/entities/product';
 import { money } from '@/shared/lib/money';
+import { QuantityInput } from '@/shared/ui/QuantityInput';
 
 import { useCart } from '../../model/useCart';
 
@@ -27,15 +28,9 @@ export const ProductPurchase = (props: Props) => {
       {!offer && <p role='alert'>{copy.offerError} <a href={product.path}>{copy.retry}</a></p>}
       {offer && <p className={styles.availability}>{offer.availableQuantity > 0 ? copy.inStock : copy.soldOut}</p>}
       <div className={styles.actions}>
-        <label className={styles.quantity}>{copy.quantity}
-          <input type='number' min='1' max={Math.max(1, max)} value={selected}
-            disabled={busy || !!pending || max < 1}
-            onChange={event => {
-              const value = Number(event.target.value);
-
-              if (Number.isInteger(value)) setQuantity(Math.min(Math.max(1, value), Math.max(1, max)));
-            }}/>
-        </label>
+        <QuantityInput label={copy.quantity} value={selected} max={Math.max(1, max)}
+          decreaseLabel={copy.decreaseQuantity} increaseLabel={copy.increaseQuantity}
+          disabled={busy || !!pending || max < 1} onChange={setQuantity}/>
         <button className={styles.add} disabled={busy || !!pending || max < 1}
           onClick={() => { if (offer) add(offer, selected); }}>{copy.addToCart}</button>
       </div>

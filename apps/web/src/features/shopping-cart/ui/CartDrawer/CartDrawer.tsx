@@ -2,11 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { product } from '@/entities/product';
 import { money } from '@/shared/lib/money';
+import { Drawer } from '@/shared/ui/Drawer';
+import { QuantityInput } from '@/shared/ui/QuantityInput';
 
 import { useCart } from '../../model/useCart';
 
@@ -18,32 +19,19 @@ interface Props { copy: Dictionary['commerce'] }
 
 export const CartDrawer = (props: Props) => {
   const { copy } = props;
-  const { open, setOpen, items, offers, offerErrors, update, remove, busy, pending, error, checkout } = useCart();
+
+  const {
+    open, setOpen, items, offers, offerErrors, update, remove, busy, cancelling, pending, error, checkout, cancelCheckout,
+  } = useCart();
+
   const router = useRouter();
-  const dialog = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const element = dialog.current;
-
-    if (!element) return;
-
-    if (open && !element.open) element.showModal();
-
-    if (!open && element.open) element.close();
-
-    if (!open) return;
-
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previous; };
-  }, [open]);
-
   const knownPrices = items.every(item => offers[item.sku]);
   const subtotal = items.reduce((sum, item) => sum + (offers[item.sku]?.price.unitAmount ?? 0) * item.quantity, 0);
   const checkoutLabel = pending ? copy.resumeCheckout : copy.checkout;
+  const busyLabel = cancelling ? copy.cancellingCheckout : copy.creatingOrder;
 
   return (
-    <dialog ref={dialog} className={styles.drawer} aria-labelledby='cart-title' onCancel={() => setOpen(false)}>
+    <Drawer open={open} onClose={() => setOpen(false)} className={styles.drawer} labelledBy='cart-title'>
       <div className={styles.heading}>
         <div><p className={styles.eyebrow}>{copy.yourSelection}</p><h2 id='cart-title'>{copy.cart}</h2></div>
         <button className={styles.close} onClick={() => setOpen(false)} aria-label={copy.close}>×</button>
@@ -55,7 +43,6 @@ export const CartDrawer = (props: Props) => {
         </div>}
         {items.map(item => {
           const offer = offers[item.sku];
-          const max = 99;
 
           return (
             <article className={styles.item} key={item.sku}>
@@ -66,12 +53,14 @@ export const CartDrawer = (props: Props) => {
                 {offerErrors[item.sku] && <p role='alert'>{offerErrors[item.sku]}</p>}
                 {offer && item.quantity > offer.availableQuantity && <p role='alert'>{copy.stockError}</p>}
                 <div className={styles.controls}>
-                  <label>{copy.quantity}
-                    <input type='number' min='1' max={Math.max(1, max)} value={item.quantity}
-                      disabled={busy || !!pending}
-                      onChange={event => update(item.sku, Number(event.target.value))}/>
-                  </label>
-                  <button disabled={busy || !!pending} onClick={() => remove(item.sku)}>{copy.remove}</button>
+                  <QuantityInput label={copy.quantity} value={item.quantity} disabled={busy}
+                    decreaseLabel={copy.decreaseQuantity} increaseLabel={copy.increaseQuantity}
+                    onChange={async quantity => {
+                      if (await cancelCheckout(copy)) update(item.sku, quantity);
+                    }}/>
+                  <button className={styles.remove} disabled={busy} onClick={async () => {
+                    if (await cancelCheckout(copy)) remove(item.sku);
+                  }}>{copy.remove}</button>
                 </div>
                 {offer && <strong>{money(offer.price.unitAmount * item.quantity)}</strong>}
               </div>
@@ -88,9 +77,11 @@ export const CartDrawer = (props: Props) => {
             const id = await checkout(copy);
 
             if (id) router.push(`/orders/${id}/checkout`);
-          }}>{busy ? copy.creatingOrder : checkoutLabel}</button>
+          }}>{busy ? busyLabel : checkoutLabel}</button>
+        {pending && <button className={styles.cancel} disabled={busy}
+          onClick={() => void cancelCheckout(copy)}>{cancelling ? copy.cancellingCheckout : copy.cancelCheckout}</button>}
         <button className={styles.continue} onClick={() => setOpen(false)}>{copy.continueShopping}</button>
       </div>}
-    </dialog>
+    </Drawer>
   );
 };

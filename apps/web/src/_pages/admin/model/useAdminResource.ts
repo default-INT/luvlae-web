@@ -45,7 +45,8 @@ export const useAdminResource = <T>(path: string | null, copy: AdminCopy) => {
 
       const errors = copy.errors as Record<string, string>;
       const message = failure instanceof AdminApiError ? errors[failure.code] : undefined;
-      setState({ path, data: null, loading: false, error: message ?? copy.requestError });
+      setState(previous => ({ path, data: previous.path === path ? previous.data : null,
+        loading: false, error: message ?? copy.requestError }));
       return null;
     }
   }, [path, copy.errors, copy.requestError, router]);

@@ -24,7 +24,7 @@ Implemented 2026-10-18 following user approval of a temporary paid-order simulat
 - CartDrawer now calls `/api/checkout/session` and navigates to the protected `/orders/:id/checkout` SSR route,
   within the existing per-order HttpOnly cookie path. Embedded Stripe.js collects card, contact and US shipping details.
 - Prices remain Atlas-owned. Shipping/tax are included with zero additional surcharge, no discounts or automatic tax.
-  A new Stripe reservation stores final totals and lasts 24 hours; server copies preserve the original deadline on retry.
+  A new Stripe reservation stores final totals and lasts 30 minutes for new checkouts (revised 2026-10-21); server copies preserve the original deadline on retry.
 - Cart quantities and the exact pending request remain until a server-confirmed paid order. Paid cleanup writes an
   atomic localStorage receipt with updated quantities, preventing repeated subtraction on refresh. The receipt list
   is bounded to 50 orders. Expired/failed attempts unlock editing only after server confirmation; clock expiry alone does not.
@@ -36,3 +36,15 @@ Implemented 2026-10-18 following user approval of a temporary paid-order simulat
   environment gates, deployment artifact isolation and outstanding live setup are in [live readiness](../apps/web/docs/stripe-live-readiness.md).
 - Browser sandbox verification completed the actual CartDrawer -> Embedded Checkout -> signed webhook -> paid order
   flow with synthetic contacts. Atlas verified one observation/committed reservation; no real live payment was made.
+
+## Shared Drawer revision — 2026-10-21
+
+- CartDrawer and the admin OrderDrawer use `src/shared/ui/Drawer` for native modality, focus restoration, scroll locking and entrance/exit animations. Contents unmount after exit; cart data/runtime stay in Zustand. Reduced-motion users skip animation, and rapid reopen cancels the pending exit. Order-only saving restrictions remain outside the shared component.
+
+## Guest checkout cancellation and cart controls — 2026-10-21
+
+- New Stripe Sessions/reservations last 30 minutes. Stripe's native expiry minimum is 30 minutes; the user selected this instead of adding a scheduler for 10 minutes. Existing immutable requests keep their original deadlines.
+- CartDrawer has an explicit Cancel checkout action. Quantity changes/removal first cancel an existing Session, then apply the edit. Items stay in the cart; the next checkout uses a new operation/token. During cancellation, competing checkout/edits are blocked.
+- `POST /api/orders/:id/checkout/cancel` requires same-origin JSON and the guest Bearer token. The server authenticates ownership, expires an open Stripe Session, retrieves its current state, and releases held stock transactionally only after confirmed unpaid expiry. It marks the order/fulfillment cancelled and writes one guest-cancellation audit. Repeated cancellation/webhooks cannot release stock twice; completed/processing/paid payments keep the cart locked for status recovery. Cancellation can run while new checkout creation is paused.
+- An uncertain creation response is resolved through the original exact request before cancellation. Network/storage failures retain the pending request for retry.
+- Shared `QuantityInput` is used by CartDrawer and ProductPurchase on the product page. It uses 44px minus/plus buttons, editable numeric text and keyboard controls; the product selector retains its stock-minus-cart cap, up to 99. Cart controls wrap on small screens; the summary has an explicit 18px gap.
