@@ -10,6 +10,7 @@ import { appendAudit } from './audit.server';
 import { collections } from './collections.server';
 import { requireRefundSchema } from './refund-migration.server';
 import { appendPaymentTransaction } from './payments.server';
+import { enqueueOrderNotification, suppressInvalidRefundNotifications } from './notifications.server';
 
 import type { ClientSession, Db } from 'mongodb';
 import type Stripe from 'stripe';
@@ -67,6 +68,10 @@ export const finishCancellation = async (db: Db, session: ClientSession, order: 
     actor: { type: 'system' }, entityType: 'order', entityId: order._id,
     action: 'order.cancel.completed', reason: request.reason, changes: { restockedQuantities: restocked },
   });
+  await enqueueOrderNotification(db, session, { ...order, orderStatus: 'cancelled',
+    cancellation: { reason: request.reason, cancelledAt: now, cancelledBy: request.adminId },
+    fulfillment: { ...order.fulfillment, status: 'cancelled' } }, 'order.cancelled', 'order.cancelled',
+  order.payment.amountRefunded > 0 ? order.payment.amountRefunded : undefined);
 };
 
 const objectId = (value: string | { id: string } | null) => typeof value === 'string' ? value : value?.id;
@@ -198,6 +203,15 @@ export const applyProviderRefund = async (
   if (record.kind === 'cancel' && record.source === 'admin' && status === 'succeeded'
     && order.cancellationRequest?.operationId === record.operationId) {
     await finishCancellation(db, session, { ...order, payment: { ...order.payment, amountRefunded: total } });
+  }
+
+  if (status === 'succeeded' && local?.status !== 'succeeded' && record.kind !== 'cancel') {
+    await enqueueOrderNotification(db, session, { ...order, payment: { ...order.payment, amountRefunded: total } },
+      'refund.succeeded', provider.id, provider.amount);
+  }
+
+  if (status === 'failed' && local?.status === 'succeeded') {
+    await suppressInvalidRefundNotifications(db, session, order._id, provider.id);
   }
 
   if (event && event.type !== 'charge.refunded') {

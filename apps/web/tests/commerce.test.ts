@@ -190,7 +190,7 @@ test('financial observations are immutable, deduplicated, associated, and rolled
   })), hasCode('PAYMENT_ASSOCIATION_MISMATCH'));
 });
 
-test('fulfillment enforces transitions and creates a single shipping notification', async () => {
+test('fulfillment enforces transitions and retires the legacy embedded notification writer', async () => {
   const order = await paidOrder('SHIP');
   await assert.rejects(updateFulfillment(context, adminId, order.orderId, fulfillmentSchema.parse({
     version: 1, operationId: randomUUID(), status: 'shipped', carrier: 'Test carrier', trackingNumber: 'TEST',
@@ -205,7 +205,7 @@ test('fulfillment enforces transitions and creates a single shipping notificatio
 
   await updateFulfillment(context, adminId, order.orderId, shipping);
   await updateFulfillment(context, adminId, order.orderId, shipping);
-  assert.equal((await collections(context.db).orders.findOne({ _id: order.orderId }))?.notifications.length, 1);
+  assert.equal((await collections(context.db).orders.findOne({ _id: order.orderId }))?.notifications.length, 0);
 });
 
 test('restocking is explicit, idempotent, and bounded by purchased quantity', async () => {
@@ -235,6 +235,7 @@ test('passwords and sessions enforce expiration/revocation without relying on TT
 
   const user = {
     _id: adminId, schemaVersion: 1, email: 'admin@example.test', emailNormalized: 'admin@example.test',
+    notify: { orders: false },
     passwordHash, status: 'active' as const, sessionVersion: 1, passwordChangedAt: now, createdAt: now, updatedAt: now,
   };
 

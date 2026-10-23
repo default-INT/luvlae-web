@@ -12,6 +12,7 @@ import { collections } from './collections.server';
 import { requireRefundSchema } from './refund-migration.server';
 import { finishCancellation } from './refund-persistence.server';
 import { executeProviderRefund, reconcileUnpaidCancellation } from './refund-provider.server';
+import { enqueueOrderNotification } from './notifications.server';
 
 import type { z } from 'zod';
 import type { cancellationSchema } from './contracts';
@@ -127,6 +128,11 @@ const finishLocalOperation = async (context: DatabaseContext, request: Refund) =
 
   if (request.kind === 'cancel') {
     await finishCancellation(context.db, session, { ...order, payment: { ...order.payment, amountRefunded } });
+  }
+
+  if (request.source === 'mock' && request.kind === 'refund') {
+    await enqueueOrderNotification(context.db, session, { ...order, payment: { ...order.payment, amountRefunded } },
+      'refund.succeeded', request.operationId, request.amount);
   }
 });
 

@@ -726,6 +726,36 @@
       "resumePaymentOperation": "Check or resume operation",
       "retryCancellation": "Retry cancellation",
       "refundHistory": "Refund history",
+      "emailHistory": "Email notifications",
+      "noEmails": "No email notifications for this order.",
+      "emailAdmin": "Administrator",
+      "emailBuyer": "Customer",
+      "emailAttempts": "Attempts",
+      "emailRetry": "Retry delivery",
+      "emailNeedsReview": "The sending result is uncertain. Reconcile it before retrying.",
+      "emailEvents": {
+        "order.paid": "Order confirmation",
+        "admin.order-paid": "New paid order",
+        "order.processing": "Preparing order",
+        "order.shipped": "Shipment confirmation",
+        "order.delivered": "Delivery confirmation",
+        "order.cancelled": "Cancellation confirmation",
+        "refund.succeeded": "Refund confirmation"
+      },
+      "emailStates": {
+        "pending": "Queued",
+        "sending": "Sending",
+        "accepted": "Accepted by email service",
+        "failed": "Failed",
+        "unknown": "Awaiting confirmation",
+        "suppressed": "Sending blocked",
+        "cancelled": "Cancelled",
+        "unconfirmed": "Delivery not confirmed",
+        "delayed": "Delivery delayed",
+        "delivered": "Delivered",
+        "bounced": "Bounced",
+        "complained": "Marked as spam"
+      },
       "amountPaid": "Amount paid",
       "amountRefunded": "Amount refunded",
       "refundableAmount": "Remaining refundable amount",
@@ -804,7 +834,8 @@
         "PAYMENT_AMOUNT_MISMATCH": "Payment totals need reconciliation before this operation can continue.",
         "RESTOCK_BLOCKED": "This order is not eligible for restocking.",
         "RESTOCK_LIMIT": "The selected quantity exceeds the items available for restocking.",
-        "INVALID_INPUT": "Check the form fields and try again."
+        "INVALID_INPUT": "Check the form fields and try again.",
+        "NOTIFICATION_RETRY_BLOCKED": "This email cannot be retried. Review its delivery state and recipient settings."
       }
     },
     "contactPage": {

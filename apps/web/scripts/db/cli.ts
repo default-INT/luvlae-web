@@ -74,6 +74,7 @@ const run = async () => {
         if (command === 'admin:create') {
           await users.insertOne({
             _id: new ObjectId(), schemaVersion: 1, email, emailNormalized: email, passwordHash,
+            notify: { orders: false },
             status: 'active', sessionVersion: 1, passwordChangedAt: now, createdAt: now, updatedAt: now,
           });
         } else {

@@ -94,6 +94,7 @@ export interface PaymentTransaction {
 
 export interface AdminUser {
   _id: ObjectId; schemaVersion: number; email: string; emailNormalized: string; passwordHash: string;
+  notify: { orders: boolean };
   status: 'active' | 'disabled'; sessionVersion: number; passwordChangedAt: Date;
   lastLoginAt?: Date; createdAt: Date; updatedAt: Date;
 }

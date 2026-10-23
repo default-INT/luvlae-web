@@ -4,6 +4,7 @@ import { fail } from '@/shared/lib/api/index.server';
 
 import { collections } from './collections.server';
 import { appendPaymentTransaction } from './payments.server';
+import { enqueueOrderNotification } from './notifications.server';
 
 import type { ClientSession, Db } from 'mongodb';
 import type Stripe from 'stripe';
@@ -103,4 +104,14 @@ export const applyCheckoutTransition = async (operation: CheckoutOperation) => {
   await updateAttempt(operation);
   await updateOrder(operation);
   await recordPayment(operation);
+
+  if (operation.transition.paymentStatus === 'paid' && operation.transition.pricing) {
+    const { db, session, context } = operation;
+    const order = await collections(db).orders.findOne({ _id: context.order._id }, { session });
+
+    if (order) {
+      await enqueueOrderNotification(db, session, order, 'order.paid');
+      await enqueueOrderNotification(db, session, order, 'admin.order-paid');
+    }
+  }
 };

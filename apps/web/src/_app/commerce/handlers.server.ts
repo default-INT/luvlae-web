@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 
 import { fail, handle, json, readJson, requireOrigin } from '@/shared/lib/api/index.server';
-import { withDatabase } from '@/shared/lib/mongodb/index.server';
+import { inTransaction, withDatabase } from '@/shared/lib/mongodb/index.server';
 import { requireStripeCheckoutConfiguration } from '@/shared/lib/stripe/index.server';
 import { findGuestOrder, guestOrderCookie } from '@/entities/order/index.server';
 
@@ -22,6 +22,7 @@ import { orderListFilter } from './order-filters.server';
 import { refundDetailDto } from './refund-dto.server';
 import { refundOrder } from './refunds.server';
 import { readPage } from './pagination.server';
+import { listNotificationJobs, retryNotificationJob } from './notifications.server';
 import { calculateQuote, createProduct, productDto, updateProduct } from './products.server';
 
 import type { Document } from 'mongodb';
@@ -115,7 +116,27 @@ export const getAdminOrder = (request: Request, route: RouteParams) => admin(req
 
   if (!order) return fail(404, 'NOT_FOUND', 'Order not found.');
 
-  return json({ ...orderDetailDto(order), ...await refundDetailDto(db, order) });
+  return json({ ...orderDetailDto(order), ...await refundDetailDto(db, order),
+    emails: await listNotificationJobs(db, order._id) });
+});
+
+export const retryOrderEmail = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
+  const params = await route.params;
+  const orderId = new ObjectId(idSchema.parse(params.id));
+  const jobId = new ObjectId(idSchema.parse(params.notificationId));
+  const input = await readJson(request, z.strictObject({ operationId: z.uuid() }));
+
+  return inTransaction(context, async session => {
+    if (!await context.db.collection('notificationJobs').findOne({ _id: jobId, orderId }, { session })) {
+      return fail(404, 'NOT_FOUND', 'Notification not found.');
+    }
+
+    if (!await retryNotificationJob(context.db, session, jobId, adminId, input.operationId)) {
+      return fail(409, 'NOTIFICATION_RETRY_BLOCKED', 'This notification cannot be retried.');
+    }
+
+    return json({ queued: true });
+  });
 });
 
 export const patchFulfillment = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {

@@ -13,6 +13,7 @@ export interface AdminOrder {
   reconciliationRequired: boolean; disputed: boolean;
 }
 export interface OrderDetail extends AdminOrder {
+  emails?: OrderEmail[];
   payment: { provider: 'stripe' | 'mock'; status: string; amountPaid: number; amountRefunded: number };
   refundableAmount: number;
   canCancel: boolean;
@@ -26,6 +27,17 @@ export interface OrderDetail extends AdminOrder {
   fulfillment: { status: string; carrier?: string; trackingNumber?: string };
   cancellation?: { reason: string; cancelledAt: string };
   restockedQuantities: Record<string, number>;
+}
+export interface OrderEmail {
+  id: string;
+  type: string;
+  audience: 'buyer' | 'admin';
+  status: string;
+  delivery: string;
+  attempts: number;
+  createdAt: string;
+  acceptedAt?: string;
+  lastErrorCode?: string;
 }
 export interface OrderRefund {
   id: string;

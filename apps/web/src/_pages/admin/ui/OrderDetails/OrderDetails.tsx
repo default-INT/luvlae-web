@@ -7,6 +7,7 @@ import { refundNeedsRefresh } from '../../model/order-refunds';
 import { useOrderPaymentPolling } from '../../model/useOrderPaymentPolling';
 import { OrderActions } from '../OrderActions';
 import { OrderRefundHistory } from '../OrderRefundHistory';
+import { OrderEmailHistory } from '../OrderEmailHistory';
 import { StatusTag } from '../StatusTag';
 import styles from '../styles.module.scss';
 
@@ -51,6 +52,7 @@ export const OrderDetails = (props: Props) => {
             </div>)}</div>
           </section>
           <OrderRefundHistory order={order} copy={copy}/>
+          <OrderEmailHistory order={order} copy={copy} reload={reload} onBusyChange={onBusyChange}/>
           <section className={styles.card}>
             <h2>{copy.customer}</h2>
             <div className={styles.address}>{order.customer ? <>

@@ -35,3 +35,5 @@ Add focused notes here when the project gains durable architecture, development 
 - [Embedded Stripe Checkout integration plan and agent assignments](stripe-checkout-integration.md)
 
 - [Refund workflows and admin interaction work](refund-implementation.md)
+- [Transactional email research and integration proposal](email-integration.md)
+- [Resend implementation stages and acceptance criteria](email-implementation-plan.md)

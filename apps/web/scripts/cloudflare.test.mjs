@@ -12,6 +12,10 @@ test('stage and production have distinct Workers; unknown environments fail clos
   assert.equal(getDeployment('production').worker, 'luvlae-web');
   assert.throws(() => getDeployment('stgae'), /Unsupported/);
   assert.throws(() => getDeployment(''), /Unsupported/);
+  assert.equal(getDeployment('stage').emailConfigured, false);
+  assert.equal(getDeployment('stage', { EMAIL_CONFIGURED: 'true' }).emailConfigured, true);
+  assert.equal(getDeployment('production', { EMAIL_CONFIGURED: 'true' }).emailConfigured, false);
+  assert.throws(() => getDeployment('stage', { EMAIL_CONFIGURED: 'yes' }), /EMAIL_CONFIGURED/);
 });
 
 test('refuses missing or mismatched deployment artifacts', () => {
@@ -26,6 +30,7 @@ test('refuses missing or mismatched deployment artifacts', () => {
     mkdirSync(path.join(output, 'assets'));
     writeFileSync(path.join(output, 'assets/_headers'), '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n');
     assert.equal(verifyArtifact(root, getDeployment('stage')), output);
+    assert.throws(() => verifyArtifact(root, getDeployment('stage', { EMAIL_CONFIGURED: 'true' })), /Email/);
     assert.throws(() => verifyArtifact(root, getDeployment('production')), /Rebuild/);
     writeFileSync(path.join(output, 'worker.config.json'), JSON.stringify({ name: 'luvlae-web', env: { STRIPE_MODE: { value: 'test' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' } } }));
     assert.throws(() => verifyArtifact(root, getDeployment('stage')), /Rebuild/);

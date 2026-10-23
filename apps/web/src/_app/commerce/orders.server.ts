@@ -7,6 +7,7 @@ import { inTransaction } from '@/shared/lib/mongodb/index.server';
 
 import { appendAudit, checkReplay, requestFingerprint } from './audit.server';
 import { collections } from './collections.server';
+import { enqueueOrderNotification } from './notifications.server';
 
 import type { z } from 'zod';
 import type { fulfillmentSchema, restockSchema } from './contracts';
@@ -88,12 +89,16 @@ export const updateFulfillment = async (
       ...(input.status === 'delivered' ? { orderStatus: 'completed' as const, completedAt: now } : {}),
     },
     $inc: { version: 1 },
-    ...(input.status === 'shipped' ? { $push: { notifications: {
-      key: 'shipping', type: 'shipping', status: 'pending' as const, attempts: 0, nextAttemptAt: now,
-    } } } : {}),
   }, { session });
 
   if (!result.modifiedCount) fail(409, 'VERSION_CONFLICT', 'Reload the order before editing.');
+
+  const notificationTypes = {
+    processing: 'order.processing', shipped: 'order.shipped', delivered: 'order.delivered',
+  } as const;
+
+  await enqueueOrderNotification(context.db, session, { ...order, fulfillment,
+    ...(input.status === 'delivered' ? { orderStatus: 'completed' as const } : {}) }, notificationTypes[input.status]);
 
   await appendAudit(context.db, session, {
     operationId: input.operationId, requestHash, actor: { type: 'admin', id: adminId },

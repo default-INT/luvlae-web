@@ -9,6 +9,7 @@ import { hashToken, randomToken } from '@/shared/lib/security/index.server';
 
 import { appendAudit, requestFingerprint } from './audit.server';
 import { collections } from './collections.server';
+import { enqueueOrderNotification } from './notifications.server';
 import { integerSchema, operationSchema, skuSchema, versionSchema } from './contracts';
 
 import type { Order } from './models';
@@ -94,6 +95,8 @@ export const createMockOrder = async (context: DatabaseContext, input: z.infer<t
     };
 
     await orders.insertOne(order, { session });
+    await enqueueOrderNotification(context.db, session, order, 'order.paid');
+    await enqueueOrderNotification(context.db, session, order, 'admin.order-paid');
     await attempts.insertOne({
       _id: attemptId, schemaVersion: 1, orderId, requestKeyHash: creationKeyHash, requestHash,
       stripeIdempotencyKey: `mock-only-${attemptId.toHexString()}`, state: 'succeeded', active: false,

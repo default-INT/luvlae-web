@@ -1,5 +1,13 @@
 # Luvlae.com architecture and technology
 
+## Transactional email implementation — 2026-10-23
+
+Resend is selected for initial up-to-10-orders/day usage. Implemented in `apps/web`: repository-owned email-compatible HTML/text templates using the website palette, transactional MongoDB notification jobs, payment/fulfillment/cancellation/refund hooks, leased dispatch with frozen provider payloads, signed delivery callbacks, suppression and authorized admin history/retry. The stage Worker has a minute scheduler; production activation is deferred. Native HTML rendering avoids a new React Email/runtime dependency. See [stage runbook](../apps/web/docs/email-stage.md) and [research](email-integration.md).
+
+Migrations `006-notifications` and `007-admin-notifications` are additive and must be applied explicitly. Administrator alerts query active `adminUsers` with nested `notify.orders=true` and recheck eligibility before sending; existing/new accounts default to false. Stage routes all mail to an explicit account-owned test inbox. Build gate `EMAIL_CONFIGURED` defaults false; when true it declares four required runtime secrets, including independent `EMAIL_ENABLED` pause switch. Public sender/reply/origin settings are text bindings tracked in Turbo hashes and sourced from stage CI variables. Stage artifact checks reject a mismatched gate. Credentials/recipient remain in ignored local settings or Worker secrets, never public configuration.
+
+A synthetic local message was accepted by Resend and a local disabled workerd scheduled invocation returned ok. Deployed stage secrets, migrations, webhook registration, scheduler/Stripe order journey and actual inbox rendering remain separate operational verification. Private order email links across devices still require an access-recovery feature; templates use order summaries and carrier links meanwhile.
+
 ## Latest commerce update — 2026-10-21
 
 The product route server-renders price/stock; the browser cart uses Zustand without Context, and protected guest orders render on the server. Admin loads private data through individually authorized client APIs. Embedded Stripe Checkout is implemented with included US delivery/tax and a 30-minute reservation for new sessions, isolated test/live configuration, and `STRIPE_CHEKOUT_DISABLED=true` as its pause switch. Stage also supports explicitly gated mock checkout.

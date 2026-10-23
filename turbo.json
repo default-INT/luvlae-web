@@ -27,7 +27,11 @@
         "NEXT_PUBLIC_APP_ENV",
         "DEPLOY_ENV",
         "STRIPE_MODE",
-        "STRIPE_CHEKOUT_DISABLED"
+        "STRIPE_CHEKOUT_DISABLED",
+        "EMAIL_CONFIGURED",
+        "EMAIL_FROM",
+        "EMAIL_REPLY_TO",
+        "APP_ORIGIN"
       ]
     },
     "dev": {
@@ -55,7 +59,11 @@
       "env": [
         "DEPLOY_ENV",
         "STRIPE_MODE",
-        "STRIPE_CHEKOUT_DISABLED"
+        "STRIPE_CHEKOUT_DISABLED",
+        "EMAIL_CONFIGURED",
+        "EMAIL_FROM",
+        "EMAIL_REPLY_TO",
+        "APP_ORIGIN"
       ],
       "cache": false,
       "persistent": true
@@ -67,7 +75,11 @@
         "NEXT_PUBLIC_APP_ENV",
         "DEPLOY_ENV",
         "STRIPE_MODE",
-        "STRIPE_CHEKOUT_DISABLED"
+        "STRIPE_CHEKOUT_DISABLED",
+        "EMAIL_CONFIGURED",
+        "EMAIL_FROM",
+        "EMAIL_REPLY_TO",
+        "APP_ORIGIN"
       ],
       "passThroughEnv": [
         "CLOUDFLARE_API_TOKEN",
