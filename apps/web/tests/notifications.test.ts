@@ -40,9 +40,7 @@ const makeOrder = (): Order => {
 };
 
 before(async () => {
-  process.env.APP_ENV = 'development';
-  process.env.EMAIL_ENABLED = 'true';
-  process.env.EMAIL_STAGE_RECIPIENT = 'stage@example.test';
+  process.env.APP_ENV = 'stage';
   process.env.RESEND_API_KEY = 'test-key';
   replica = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });
   const client = await new MongoClient(replica.getUri()).connect();
@@ -53,12 +51,10 @@ before(async () => {
 after(async () => {
   await context?.client.close();
   await replica?.stop();
-  delete process.env.EMAIL_ENABLED;
-  delete process.env.EMAIL_STAGE_RECIPIENT;
   delete process.env.RESEND_API_KEY;
 });
 
-test('enqueue rolls back with the order and deduplicates buyer/admin even at one stage inbox', async () => {
+test('enqueue rolls back with the order and deduplicates per buyer/admin recipient', async () => {
   const order = makeOrder();
   const adminId = new ObjectId();
   const now = new Date();
@@ -86,10 +82,12 @@ test('enqueue rolls back with the order and deduplicates buyer/admin even at one
   const jobs = await context.db.collection<NotificationJob>('notificationJobs').find({ orderId: order._id }).toArray();
   assert.equal(jobs.length, 2);
   assert.notEqual(jobs[0].key, jobs[1].key);
-  assert.deepEqual(new Set(jobs.map(job => job.recipientHash)), new Set([hashToken('stage@example.test')]));
+  assert.deepEqual(new Set(jobs.map(job => job.recipientHash)), new Set([
+    hashToken('buyer@example.test'), hashToken('admin@example.test'),
+  ]));
 });
 
-test('leased dispatch freezes the stage destination and accepts one send per job', async () => {
+test('leased stage dispatch sends to each job recipient and accepts one send per job', async () => {
   const originalFetch = globalThis.fetch;
   const requests: { to: string[]; subject: string }[] = [];
   globalThis.fetch = (async (_input, init) => {
@@ -108,11 +106,12 @@ test('leased dispatch freezes the stage destination and accepts one send per job
     assert.equal(first.accepted + second.accepted, 2,
       JSON.stringify({ first, second, states: states.map(job => ({ status: job.status, code: job.lastErrorCode })) }));
     assert.equal(requests.length, 2);
-    assert.ok(requests.every(request => request.to[0] === 'stage@example.test'));
+    assert.deepEqual(new Set(requests.map(request => request.to[0])), new Set(['buyer@example.test', 'admin@example.test']));
     assert.ok(requests.every(request => request.subject.startsWith('[STAGE] ')));
     const jobs = await context.db.collection<NotificationJob>('notificationJobs').find({ status: 'accepted' }).toArray();
     assert.equal(jobs.length, 2);
-    assert.ok(jobs.every(job => job.frozen?.to === 'stage@example.test' && job.frozen?.from));
+    assert.deepEqual(new Set(jobs.map(job => job.frozen?.to)), new Set(['buyer@example.test', 'admin@example.test']));
+    assert.ok(jobs.every(job => job.frozen?.from));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -204,7 +203,7 @@ test('a callback received before send response recovers the sending job', async 
   const now = new Date();
   await context.db.collection<NotificationJob>('notificationJobs').updateOne({ _id: job._id }, {
     $set: { status: 'sending', leaseToken: randomUUID(), leaseUntil: new Date(now.getTime() + 60000),
-      firstRequestAt: now, frozen: { to: 'stage@example.test', from: 'Luvlae Stage <onboarding@resend.dev>',
+      firstRequestAt: now, frozen: { to: 'stage@example.test', from: 'Luvlae <notify@luvlae.com>',
         subject: '[STAGE] Test', html: '<p>Test</p>', text: 'Test', idempotencyKey: job.key,
         jobId: job._id.toHexString() } },
   });
@@ -292,36 +291,6 @@ test('definite preflight failure does not leave a false request time', async () 
 
   assert.equal(job?.firstRequestAt, undefined);
   assert.equal(job?.outcomeUncertain, undefined);
-});
-
-test('a changed stage inbox fails before a provider request', async () => {
-  const order = makeOrder();
-
-  await inTransaction(context, async session => {
-    await context.db.collection<Order>('orders').insertOne(order, { session });
-    await enqueueOrderNotification(context.db, session, order, 'order.paid');
-  });
-
-  const originalRecipient = process.env.EMAIL_STAGE_RECIPIENT;
-  const originalFetch = globalThis.fetch;
-  let sends = 0;
-  process.env.EMAIL_STAGE_RECIPIENT = 'changed@example.test';
-  globalThis.fetch = (async () => {
-    sends += 1;
-    return Response.json({ id: randomUUID() });
-  }) as typeof fetch;
-
-  try {
-    const result = await dispatchNotificationBatch(context.db, 1);
-    assert.equal(result.failed, 1);
-    assert.equal(sends, 0);
-    const job = await context.db.collection<NotificationJob>('notificationJobs').findOne({ orderId: order._id });
-    assert.equal(job?.lastErrorCode, 'EMAIL_DESTINATION_CHANGED');
-    assert.equal(job?.frozen, undefined);
-  } finally {
-    process.env.EMAIL_STAGE_RECIPIENT = originalRecipient;
-    globalThis.fetch = originalFetch;
-  }
 });
 
 test('pending provider-only callbacks rotate so a later match can reconcile', async () => {

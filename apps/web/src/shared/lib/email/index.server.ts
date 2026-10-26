@@ -6,7 +6,6 @@ export interface EmailConfiguration {
   enabled: boolean;
   environment: 'stage' | 'development' | 'production';
   from: string;
-  stageRecipient?: string;
   replyTo?: string;
   appOrigin?: string;
 }
@@ -39,26 +38,19 @@ export class EmailDeliveryError extends Error {
 }
 
 const emailAddress = /^[^\s@,<>]+@[^\s@,<>]+\.[^\s@,<>]+$/;
-const stageSender = 'Luvlae Stage <onboarding@resend.dev>';
+const defaultSender = 'Luvlae <notify@luvlae.com>';
 const maxWebhookBytes = 64 * 1024;
 const validAddress = (value: string) => emailAddress.test(value) && !/[\r\n]/.test(value);
 const optional = (value: string | undefined) => value?.trim() || undefined;
 
 export const readEmailConfiguration = (): EmailConfiguration => {
   const environment = process.env.APP_ENV || 'development';
-  const flag = process.env.EMAIL_ENABLED || 'false';
-
   if (environment !== 'stage' && environment !== 'development' && environment !== 'production') {
     throw new EmailDeliveryError('EMAIL_ENVIRONMENT_INVALID');
   }
 
-  if (flag !== 'true' && flag !== 'false') {
-    throw new EmailDeliveryError('EMAIL_FLAG_INVALID');
-  }
-
-  const enabled = flag === 'true' && !(environment === 'stage' && process.env.EMAIL_CONFIGURED === 'false');
-  const from = optional(process.env.EMAIL_FROM) ?? (environment === 'production' ? '' : stageSender);
-  const stageRecipient = optional(process.env.EMAIL_STAGE_RECIPIENT);
+  const enabled = environment === 'stage';
+  const from = optional(process.env.EMAIL_FROM) ?? defaultSender;
   const replyTo = optional(process.env.EMAIL_REPLY_TO);
   const appOrigin = optional(process.env.APP_ORIGIN);
 
@@ -73,25 +65,16 @@ export const readEmailConfiguration = (): EmailConfiguration => {
       try {
         const url = new URL(appOrigin);
 
-        if ((url.protocol !== 'https:' && !(environment === 'development' && url.hostname === 'localhost')) ||
-          url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
+        if (url.protocol !== 'https:' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
           throw new Error('Invalid origin');
         }
       } catch {
         throw new EmailDeliveryError('EMAIL_APP_ORIGIN_INVALID');
       }
     }
-
-    if (environment === 'production') {
-      if (process.env.NEXT_PUBLIC_APP_ENV !== 'production' || /@resend\.dev\b/i.test(from) || stageRecipient) {
-        throw new EmailDeliveryError('EMAIL_PRODUCTION_CONFIGURATION_INVALID');
-      }
-    } else if (!stageRecipient || !validAddress(stageRecipient)) {
-      throw new EmailDeliveryError('EMAIL_STAGE_RECIPIENT_INVALID');
-    }
   }
 
-  return { enabled, environment, from, ...(stageRecipient ? { stageRecipient } : {}),
+  return { enabled, environment, from,
     ...(replyTo ? { replyTo } : {}), ...(appOrigin ? { appOrigin } : {}) };
 };
 
@@ -122,14 +105,7 @@ export const prepareTransactionalEmail = (input: TransactionalEmail): Transactio
   }
 
   const subject = input.subject.startsWith('[STAGE] ') ? input.subject : `[STAGE] ${input.subject}`;
-  const stageRecipient = configuration.stageRecipient!;
-
-  // An already prepared request is immutable: changing the configured inbox requires operator review.
-  if (input.subject.startsWith('[STAGE] ') && input.to !== stageRecipient) {
-    throw new EmailDeliveryError('EMAIL_STAGE_DESTINATION_CHANGED');
-  }
-
-  return { ...input, from: configuration.from, to: stageRecipient, subject, replyTo: configuration.replyTo };
+  return { ...input, from: configuration.from, subject, replyTo: configuration.replyTo };
 };
 
 const retryAfter = (value: string | null): number | undefined => {

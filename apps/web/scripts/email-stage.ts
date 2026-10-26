@@ -7,27 +7,29 @@ import { renderNotificationEmail } from '../src/_app/emails/index.server';
 
 nextEnv.loadEnvConfig(process.cwd(), true, { info: () => {}, error: () => {} });
 
-const command = process.argv[2] ?? '--check';
+const [command = '--check', recipient] = process.argv.slice(2);
 
-if (!['--check', '--send'].includes(command) || process.argv.length > 3) {
-  throw new Error('Usage: email-stage.ts [--check | --send]');
+if (!['--check', '--send'].includes(command) || (command === '--check' && recipient) ||
+  (command === '--send' && !recipient) || process.argv.length > (command === '--send' ? 4 : 3)) {
+  throw new Error('Usage: email-stage.ts --check | --send <recipient-email>');
 }
 
 const config = readEmailConfiguration();
+const targetAddress = command === '--send' ? recipient : undefined;
 
-if (config.environment === 'production') {
-  throw new Error('Stage diagnostic is unavailable in production.');
+if (config.environment !== 'stage') {
+  throw new Error('Set APP_ENV=stage to use the stage email diagnostic.');
 }
 
-if (!config.enabled || !config.stageRecipient) {
-  throw new Error('Stage email is disabled or missing its account-owned recipient.');
-}
+if (!config.enabled) throw new Error('Stage email configuration is invalid.');
 
 if (command === '--check') {
-  prepareTransactionalEmail({ to: config.stageRecipient, subject: 'Configuration check',
+  prepareTransactionalEmail({ to: 'diagnostic@example.invalid', subject: 'Configuration check',
     html: '<p>Check</p>', text: 'Check', idempotencyKey: 'email/config-check', jobId: 'config_check' });
   process.stdout.write('Stage email configuration is valid. No email was sent.\n');
 } else {
+  if (!targetAddress) throw new Error('Pass a recipient email address to --send.');
+
   const jobId = `diagnostic_${randomUUID().replaceAll('-', '')}`;
 
   const rendered = renderNotificationEmail({ type: 'order.paid', orderNumber: 'STAGE-PREVIEW',
@@ -35,11 +37,11 @@ if (command === '--check') {
     items: [{ name: 'Sample product', quantity: 1, unitAmount: 2500, lineSubtotal: 2500 }] });
 
   const result = await sendTransactionalEmail({
-    to: config.stageRecipient,
+    to: targetAddress,
     ...rendered,
     idempotencyKey: `email/${jobId}`,
     jobId,
   });
 
-  process.stdout.write(`Resend accepted stage diagnostic ${result.id}. Check the configured inbox.\n`);
+  process.stdout.write(`Resend accepted stage diagnostic ${result.id}. Check the recipient inbox.\n`);
 }

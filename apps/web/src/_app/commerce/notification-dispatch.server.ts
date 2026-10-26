@@ -4,8 +4,6 @@ import { randomUUID } from 'node:crypto';
 
 import { renderNotificationEmail } from '@/_app/emails/index.server';
 import { prepareTransactionalEmail, readEmailConfiguration, sendTransactionalEmail } from '@/shared/lib/email/index.server';
-import { hashToken } from '@/shared/lib/security/index.server';
-
 import { requireNotificationSchema } from './notification-migration.server';
 import { reconcilePendingEmailEvents } from './notification-webhook.server';
 
@@ -99,13 +97,6 @@ const eventStillRelevant = async (db: Db, job: NotificationJob) => {
 const frozenPayload = async (db: Db, job: NotificationJob) => {
   if (job.frozen) return job.frozen;
 
-  const config = readEmailConfiguration();
-  const destination = config.environment === 'production' ? job.recipient : config.stageRecipient;
-
-  if (!destination || hashToken(destination.toLowerCase()) !== job.recipientHash) {
-    throw new Error('EMAIL_DESTINATION_CHANGED');
-  }
-
   const rendered = await renderNotificationEmail(job.content);
 
   const { replyTo, ...prepared } = prepareTransactionalEmail({
@@ -168,10 +159,7 @@ const sendClaimed = async (db: Db, job: NotificationJob) => {
   } catch (error) {
     if ((error as Error).message === 'NOTIFICATION_LEASE_LOST') return 'deferred';
 
-    const code = (error as Error).message === 'EMAIL_DESTINATION_CHANGED'
-      ? 'EMAIL_DESTINATION_CHANGED' : 'EMAIL_RENDER_FAILED';
-
-    await abandonClaim(db, job, 'failed', code);
+    await abandonClaim(db, job, 'failed', 'EMAIL_RENDER_FAILED');
     return 'failed';
   }
 

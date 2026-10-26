@@ -2,6 +2,8 @@
 
 Date: 2026-10-22; implementation update 2026-10-23. The code below is implemented locally; remote rollout remains separate. A synthetic email was accepted by Resend using the ignored local key; stage runtime provisioning is unverified. Current operational instructions supersede proposed configuration names below: [stage runbook](../apps/web/docs/email-stage.md). Research and provider restrictions: [email integration](email-integration.md).
 
+User decision on 2026-10-26: stage sends directly to each actual buyer/admin address and is always enabled, with no stage recipient redirect/allowlist or `EMAIL_STAGE_RECIPIENT`, `EMAIL_ENABLED`, `EMAIL_STAGE_CONFIGURED`, or `EMAIL_CONFIGURED` switch. This supersedes the capture-mode recipient boundary and stage activation-gate requirements below. Use only team-controlled stage orders and inboxes. Production stays unconfigured until separately promoted.
+
 ## Agent subtasks and ownership
 
 | Subtask | Model | Result |
@@ -116,4 +118,4 @@ No customer-facing development labels. No new app/package merely for this integr
 
 ## Inputs still needed when executing
 
-Account-owned test recipient, where the key was provisioned (local runtime and/or deployed stage), stage application origin and optional Reply-To. Do not request the secret in chat. Real production admin recipients, domain and retention policy are later production inputs. These are configuration details, not blockers to writing the plan or implementing the disabled/capture-mode foundation.
+Provision a stage-scoped Resend API key and a Resend webhook signing secret directly in the `luvlae-web-stage` Worker. Confirm stage migrations are applied and use team-controlled inboxes for test orders. Do not request or share secret values in chat. Production credentials, administrator preferences, domain and retention policy remain later promotion inputs.

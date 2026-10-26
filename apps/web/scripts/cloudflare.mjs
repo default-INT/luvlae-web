@@ -10,12 +10,6 @@ export const getDeployment = (environment = 'production', settings = {}) => {
 
   const stripeMode = settings.STRIPE_MODE ?? 'test';
   const checkoutDisabled = settings.STRIPE_CHEKOUT_DISABLED ?? 'false';
-  const emailConfigured = settings.EMAIL_CONFIGURED ?? 'false';
-
-  if (!['true', 'false'].includes(emailConfigured)) {
-    throw new Error('Invalid EMAIL_CONFIGURED setting. Use true or false.');
-  }
-
   if (!['test', 'live'].includes(stripeMode) || !['true', 'false'].includes(checkoutDisabled)) {
     throw new Error('Invalid Stripe deployment settings. Use STRIPE_MODE=test|live and STRIPE_CHEKOUT_DISABLED=true|false.');
   }
@@ -25,7 +19,6 @@ export const getDeployment = (environment = 'production', settings = {}) => {
 
   return {
     environment, worker: environment === 'stage' ? 'luvlae-web-stage' : 'luvlae-web',
-    emailConfigured: environment === 'stage' && emailConfigured === 'true',
     stripe: { mode: stripeMode, disabled: checkoutDisabled },
   };
 };
@@ -37,11 +30,6 @@ export const verifyArtifact = (root, deployment) => {
 
   if (config.name !== deployment.worker || manifest.environment !== deployment.environment) {
     throw new Error(`Build does not target ${deployment.environment}/${deployment.worker}. Rebuild before deploying.`);
-  }
-
-  if (deployment.environment === 'stage' &&
-    (config.env?.EMAIL_CONFIGURED?.value ?? 'false') !== String(deployment.emailConfigured)) {
-    throw new Error('Email configuration differs from the stage artifact. Rebuild before deploying.');
   }
 
   const stripeMatches = [

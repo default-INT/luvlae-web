@@ -9,7 +9,7 @@ import {
 } from '../src/shared/lib/email/index.server';
 
 const names = [
-  'APP_ENV', 'NEXT_PUBLIC_APP_ENV', 'EMAIL_CONFIGURED', 'EMAIL_ENABLED', 'EMAIL_FROM', 'EMAIL_STAGE_RECIPIENT',
+  'APP_ENV', 'NEXT_PUBLIC_APP_ENV', 'EMAIL_FROM',
   'EMAIL_REPLY_TO', 'APP_ORIGIN', 'RESEND_API_KEY', 'RESEND_WEBHOOK_SECRET',
 ] as const;
 
@@ -22,8 +22,6 @@ beforeEach(() => {
     delete process.env[name];
   });
   process.env.APP_ENV = 'stage';
-  process.env.EMAIL_ENABLED = 'true';
-  process.env.EMAIL_STAGE_RECIPIENT = 'account@example.test';
   process.env.RESEND_API_KEY = 're_synthetic';
 });
 
@@ -44,17 +42,13 @@ const input = {
 
 const hasCode = (code: string) => (error: unknown) => error instanceof EmailDeliveryError && error.code === code;
 
-test('disabled by default; stage routes every recipient through one inbox and freezes sender fields', async () => {
-  delete process.env.EMAIL_ENABLED;
-  assert.equal(readEmailConfiguration().enabled, false);
-  await assert.rejects(sendTransactionalEmail(input), hasCode('EMAIL_DISABLED'));
-
-  process.env.EMAIL_ENABLED = 'true';
+test('stage is enabled by default, sends to the requested recipient, and freezes sender fields', async () => {
+  assert.equal(readEmailConfiguration().enabled, true);
   process.env.EMAIL_REPLY_TO = 'support@example.test';
   const frozen = prepareTransactionalEmail(input);
-  assert.equal(frozen.to, 'account@example.test');
+  assert.equal(frozen.to, input.to);
   assert.equal(frozen.subject, '[STAGE] Order confirmed');
-  assert.equal(frozen.from, 'Luvlae Stage <onboarding@resend.dev>');
+  assert.equal(frozen.from, 'Luvlae <notify@luvlae.com>');
   assert.equal(frozen.replyTo, 'support@example.test');
 
   let body: Record<string, unknown> | undefined;
@@ -66,38 +60,22 @@ test('disabled by default; stage routes every recipient through one inbox and fr
   };
 
   assert.deepEqual(await sendTransactionalEmail(frozen), { id: 'provider-123' });
-  assert.deepEqual(body?.to, ['account@example.test']);
+  assert.deepEqual(body?.to, [input.to]);
   assert.equal(body?.subject, '[STAGE] Order confirmed');
   assert.deepEqual(body?.tags, [{ name: 'job', value: input.jobId }]);
   assert.equal(body?.reply_to, 'support@example.test');
 });
 
-test('stage refuses destination or sender drift after payload is frozen', async () => {
+test('stage refuses sender drift after payload is frozen', async () => {
   const frozen = prepareTransactionalEmail(input);
-  process.env.EMAIL_STAGE_RECIPIENT = 'changed@example.test';
-  await assert.rejects(sendTransactionalEmail(frozen), hasCode('EMAIL_STAGE_DESTINATION_CHANGED'));
-  process.env.EMAIL_STAGE_RECIPIENT = 'account@example.test';
-  process.env.EMAIL_FROM = 'Changed <onboarding@resend.dev>';
+  process.env.EMAIL_FROM = 'Changed <notify@luvlae.com>';
   await assert.rejects(sendTransactionalEmail(frozen), hasCode('EMAIL_SENDER_CHANGED'));
 });
 
-test('production cannot use stage sender or routing', () => {
+test('production remains disabled until a production dispatch path is configured', () => {
   process.env.APP_ENV = 'production';
-  process.env.NEXT_PUBLIC_APP_ENV = 'production';
-  assert.throws(readEmailConfiguration, hasCode('EMAIL_FROM_INVALID'));
-  process.env.EMAIL_FROM = 'Luvlae <onboarding@resend.dev>';
-  assert.throws(readEmailConfiguration, hasCode('EMAIL_PRODUCTION_CONFIGURATION_INVALID'));
-  process.env.EMAIL_FROM = 'Luvlae <orders@luvlae.com>';
-  assert.throws(readEmailConfiguration, hasCode('EMAIL_PRODUCTION_CONFIGURATION_INVALID'));
-  delete process.env.EMAIL_STAGE_RECIPIENT;
   assert.equal(readEmailConfiguration().environment, 'production');
-});
-
-test('unconfigured deployed stage remains disabled even when an old runtime switch is true', () => {
-  process.env.EMAIL_CONFIGURED = 'false';
   assert.equal(readEmailConfiguration().enabled, false);
-  process.env.EMAIL_CONFIGURED = 'true';
-  assert.equal(readEmailConfiguration().enabled, true);
 });
 
 test('provider failures classify rejection, rate limit, and unknown outcomes without provider details', async () => {

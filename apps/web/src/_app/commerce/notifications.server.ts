@@ -93,8 +93,7 @@ export const enqueueOrderNotification = async (
     const identity = '_id' in recipient && recipient._id ? recipient._id.toHexString() : hashToken(email);
     const environment = config.environment === 'production' ? 'production' : 'stage';
     const key = hashToken([environment, order._id.toHexString(), eventKey, audience, identity].join(':'));
-    const destination = environment === 'stage' ? config.stageRecipient! : email;
-    const recipientHash = hashToken(destination.toLowerCase());
+    const recipientHash = hashToken(email);
 
     const job: NotificationJob = {
       _id: new ObjectId(), schemaVersion: 1, templateVersion: '1', locale: 'en', key, environment,

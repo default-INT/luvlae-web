@@ -28,9 +28,8 @@ jobs:
       STRIPE_MODE: ${{ github.event_name != 'pull_request' && github.ref != 'refs/heads/main' && vars.STRIPE_PRODUCTION_MODE == 'live' && 'live' || 'test' }}
       STRIPE_CHEKOUT_DISABLED: ${{ (github.event_name == 'pull_request' || vars.STRIPE_CHEKOUT_DISABLED == 'true') && 'true' || 'false' }}
       NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ github.event_name != 'pull_request' && github.ref != 'refs/heads/main' && vars.NEXT_PUBLIC_GA_MEASUREMENT_ID || '' }}
-      EMAIL_CONFIGURED: ${{ github.ref == 'refs/heads/main' && vars.EMAIL_STAGE_CONFIGURED == 'true' && 'true' || 'false' }}
-      EMAIL_FROM: ${{ vars.EMAIL_STAGE_FROM }}
-      EMAIL_REPLY_TO: ${{ vars.EMAIL_STAGE_REPLY_TO }}
+      EMAIL_FROM: ${{ vars.EMAIL_STAGE_FROM || 'Luvlae <notify@luvlae.com>' }}
+      EMAIL_REPLY_TO: ${{ vars.EMAIL_STAGE_REPLY_TO || 'notify@luvlae.com' }}
       APP_ORIGIN: ${{ vars.EMAIL_STAGE_APP_ORIGIN }}
 
     steps:

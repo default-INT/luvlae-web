@@ -20,15 +20,13 @@ import type { DatabaseContext } from '../src/shared/lib/mongodb/index.server';
 let replica: MongoMemoryReplSet;
 let context: DatabaseContext;
 const adminId = new ObjectId();
-const envNames = ['EMAIL_ENABLED', 'APP_ENV', 'EMAIL_STAGE_RECIPIENT', 'RESEND_API_KEY', 'MOCK_CHECKOUT_ENABLED'] as const;
+const envNames = ['APP_ENV', 'RESEND_API_KEY', 'MOCK_CHECKOUT_ENABLED'] as const;
 const originalEnv = new Map<string, string | undefined>();
 
 before(async () => {
   for (const name of envNames) originalEnv.set(name, process.env[name]);
 
-  process.env.EMAIL_ENABLED = 'true';
-  process.env.APP_ENV = 'development';
-  process.env.EMAIL_STAGE_RECIPIENT = 'stage@example.test';
+  process.env.APP_ENV = 'stage';
   process.env.RESEND_API_KEY = 'synthetic-resend-key';
   process.env.MOCK_CHECKOUT_ENABLED = 'true';
 
@@ -150,16 +148,13 @@ test('mock refund for a shipped order creates one refund message', async () => {
   assert.equal(jobs.filter(job => job.type === 'refund.succeeded').length, 1);
 });
 
-test('disabled email queues no paid or fulfillment jobs', async () => {
-  process.env.EMAIL_ENABLED = 'false';
-
-  try {
-    const { orderId } = await makeMockOrder('DISABLED');
-    await updateStatus(orderId, 'processing');
-    assert.deepEqual(await jobsFor(orderId), []);
-  } finally {
-    process.env.EMAIL_ENABLED = 'true';
-  }
+test('stage queues notifications without a runtime email switch', async () => {
+  const { orderId } = await makeMockOrder('ALWAYS_ON');
+  await updateStatus(orderId, 'processing');
+  const jobs = await jobsFor(orderId);
+  assert.ok(jobs.some(job => job.type === 'order.paid' && job.recipient === 'checkout@example.test'));
+  assert.ok(jobs.some(job => job.type === 'admin.order-paid'));
+  assert.ok(jobs.some(job => job.type === 'order.processing'));
 });
 
 test('admin notification migration defaults legacy preferences off and rejects non-boolean values', async () => {
