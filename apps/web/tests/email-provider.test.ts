@@ -72,10 +72,15 @@ test('stage refuses sender drift after payload is frozen', async () => {
   await assert.rejects(sendTransactionalEmail(frozen), hasCode('EMAIL_SENDER_CHANGED'));
 });
 
-test('production remains disabled until a production dispatch path is configured', () => {
+test('production uses the same provider path without the stage subject prefix', () => {
   process.env.APP_ENV = 'production';
-  assert.equal(readEmailConfiguration().environment, 'production');
-  assert.equal(readEmailConfiguration().enabled, false);
+  const config = readEmailConfiguration();
+  const frozen = prepareTransactionalEmail(input);
+  assert.equal(config.environment, 'production');
+  assert.equal(config.enabled, true);
+  assert.equal(frozen.to, input.to);
+  assert.equal(frozen.subject, input.subject);
+  assert.equal(frozen.from, 'Luvlae <notify@luvlae.com>');
 });
 
 test('provider failures classify rejection, rate limit, and unknown outcomes without provider details', async () => {

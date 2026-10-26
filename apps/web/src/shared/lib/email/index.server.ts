@@ -8,6 +8,7 @@ export interface EmailConfiguration {
   from: string;
   replyTo?: string;
   appOrigin?: string;
+  subjectPrefix: string;
 }
 
 export interface TransactionalEmail {
@@ -45,14 +46,16 @@ const optional = (value: string | undefined) => value?.trim() || undefined;
 
 export const readEmailConfiguration = (): EmailConfiguration => {
   const environment = process.env.APP_ENV || 'development';
+
   if (environment !== 'stage' && environment !== 'development' && environment !== 'production') {
     throw new EmailDeliveryError('EMAIL_ENVIRONMENT_INVALID');
   }
 
-  const enabled = environment === 'stage';
+  const enabled = environment === 'stage' || environment === 'production';
   const from = optional(process.env.EMAIL_FROM) ?? defaultSender;
   const replyTo = optional(process.env.EMAIL_REPLY_TO);
   const appOrigin = optional(process.env.APP_ORIGIN);
+  const subjectPrefix = environment === 'stage' ? '[STAGE] ' : '';
 
   if (enabled) {
     if (!from || /[\r\n]/.test(from) || !validAddress(from.match(/<([^>]+)>/)?.[1] ?? from)) {
@@ -74,7 +77,7 @@ export const readEmailConfiguration = (): EmailConfiguration => {
     }
   }
 
-  return { enabled, environment, from,
+  return { enabled, environment, from, subjectPrefix,
     ...(replyTo ? { replyTo } : {}), ...(appOrigin ? { appOrigin } : {}) };
 };
 
@@ -100,11 +103,10 @@ export const prepareTransactionalEmail = (input: TransactionalEmail): Transactio
     throw new EmailDeliveryError('EMAIL_REPLY_TO_CHANGED');
   }
 
-  if (configuration.environment === 'production') {
-    return { ...input, from: configuration.from, replyTo: configuration.replyTo };
-  }
+  const subject = configuration.subjectPrefix && !input.subject.startsWith(configuration.subjectPrefix)
+    ? `${configuration.subjectPrefix}${input.subject}`
+    : input.subject;
 
-  const subject = input.subject.startsWith('[STAGE] ') ? input.subject : `[STAGE] ${input.subject}`;
   return { ...input, from: configuration.from, subject, replyTo: configuration.replyTo };
 };
 

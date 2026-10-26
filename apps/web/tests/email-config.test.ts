@@ -26,16 +26,16 @@ const emailSecrets = (mode: string) => Object.entries(config({ mode, isPreview: 
   .filter(([name, binding]) => /^(EMAIL_|RESEND_)/.test(name) && binding.type === 'secret')
   .map(([name]) => name).sort();
 
-test('stage always declares provider and webhook secrets without an activation gate', () => {
+test('stage and production declare the same email runtime bindings and scheduler', () => {
   const stage = config({ mode: 'stage', isPreview: false });
-  assert.deepEqual(emailSecrets('stage'), ['RESEND_API_KEY', 'RESEND_WEBHOOK_SECRET']);
-  assert.equal(stage.worker.env.EMAIL_FROM?.type, 'text');
-  assert.equal(stage.worker.env.EMAIL_REPLY_TO?.type, 'text');
-  assert.equal(stage.worker.env.APP_ORIGIN?.type, 'text');
-});
-
-test('email credentials and scheduler remain stage-only', () => {
   const production = config({ mode: 'production', isPreview: false });
-  assert.deepEqual(emailSecrets('production'), []);
-  assert.equal(production.worker.triggers, undefined);
+
+  for (const [mode, worker] of [['stage', stage.worker], ['production', production.worker]] as const) {
+    assert.deepEqual(emailSecrets(mode), ['RESEND_API_KEY', 'RESEND_WEBHOOK_SECRET']);
+    assert.equal(worker.env.EMAIL_FROM?.type, 'text');
+    assert.equal(worker.env.EMAIL_REPLY_TO?.type, 'text');
+    assert.equal(worker.env.APP_ORIGIN?.type, 'text');
+    assert.equal(worker.entrypoint, './src/_app/cloudflare/worker.ts');
+    assert.equal(worker.triggers?.length, 1);
+  }
 });

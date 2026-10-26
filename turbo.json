@@ -28,7 +28,6 @@
         "DEPLOY_ENV",
         "STRIPE_MODE",
         "STRIPE_CHEKOUT_DISABLED",
-        "EMAIL_CONFIGURED",
         "EMAIL_FROM",
         "EMAIL_REPLY_TO",
         "APP_ORIGIN"
@@ -60,7 +59,6 @@
         "DEPLOY_ENV",
         "STRIPE_MODE",
         "STRIPE_CHEKOUT_DISABLED",
-        "EMAIL_CONFIGURED",
         "EMAIL_FROM",
         "EMAIL_REPLY_TO",
         "APP_ORIGIN"
@@ -76,7 +74,6 @@
         "DEPLOY_ENV",
         "STRIPE_MODE",
         "STRIPE_CHEKOUT_DISABLED",
-        "EMAIL_CONFIGURED",
         "EMAIL_FROM",
         "EMAIL_REPLY_TO",
         "APP_ORIGIN"

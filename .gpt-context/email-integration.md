@@ -1,10 +1,10 @@
 # Transactional email research and proposed integration
 
-Researched 2026-10-22. **Resend selected; code implemented locally on 2026-10-23.** The research/proposals below are historical inputs; current behavior is in the [stage runbook](../apps/web/docs/email-stage.md) and [implementation sequence](email-implementation-plan.md). User expects up to 10 orders/day. Required: buyer order/progress emails, administrator new-order emails, custom design/HTML and infrastructure fit. Admin recipients now come only from active database users with `notify.orders=true`; a synthetic local send was accepted by Resend. Remote rollout is not verified.
+Researched 2026-10-22. **Resend selected; code implemented locally on 2026-10-23.** The research/proposals below are historical inputs; current behavior is in the [email runbook](../apps/web/docs/email.md) and [implementation sequence](email-implementation-plan.md). User expects up to 10 orders/day. Required: buyer order/progress emails, administrator new-order emails, custom design/HTML and infrastructure fit. Admin recipients now come only from active database users with `notify.orders=true`; a synthetic local send was accepted by Resend. Remote rollout is not verified.
 
 ### User decision — 2026-10-26
 
-The user explicitly chose always-on stage sending to actual order/admin addresses, including arbitrary external providers such as Gmail. Do not redirect stage mail to a test inbox or require a recipient allowlist. Remove `EMAIL_STAGE_RECIPIENT`, `EMAIL_ENABLED`, and `EMAIL_STAGE_CONFIGURED`/`EMAIL_CONFIGURED` gates. The `luvlae.com` domain is verified and a direct test send to an external inbox succeeded. Stage subjects carry `[STAGE]`; use only team-controlled stage orders and inboxes. This decision supersedes the stage capture/allowlist recommendations below. Production remains disabled pending a separate promotion.
+The user explicitly chose one always-on implementation for stage and production, sending to actual order/admin addresses including arbitrary external providers such as Gmail. Do not redirect stage mail to a test inbox or require a recipient allowlist. `EMAIL_STAGE_RECIPIENT`, `EMAIL_ENABLED`, and `EMAIL_STAGE_CONFIGURED`/`EMAIL_CONFIGURED` gates do not exist. The `luvlae.com` domain is verified and a direct test send to an external inbox succeeded. Stage subjects carry `[STAGE]`; use only team-controlled stage orders and inboxes. This decision supersedes the stage capture/allowlist recommendations below.
 
 ## Recommendation and verified provider terms
 

@@ -6,7 +6,7 @@ Date: 2026-10-18. Status: server foundation implemented; the full payment lifecy
 
 The embedded outbox proposal below is superseded by migration `006-notifications`: separate `notificationJobs`, `emailEvents` and `emailSuppressions` collections with validators/indexes. Lifecycle transitions and logical per-recipient jobs commit in the same transaction. Jobs snapshot integer-cent order data, template version/locale and frozen provider requests; dispatch has leases, bounded retries and explicit unknown outcomes. Confirmed provider delivery failure can create an audited redelivery child without overwriting the original provider history. The old embedded shipping writer is retired; no historical backfill/send occurs automatically.
 
-Migration `007-admin-notifications` adds required nested `adminUsers.notify.orders: boolean`, backfills existing users to false and indexes active/opt-in selection. New accounts default to false. Both enqueue and dispatch require active status and `notify.orders=true`. Preference changes use an explicit guarded operational command. Remote application of these two migrations remains unverified; local replica-set coverage passes. See [email runbook](../apps/web/docs/email-stage.md).
+Migration `007-admin-notifications` adds required nested `adminUsers.notify.orders: boolean`, backfills existing users to false and indexes active/opt-in selection. New accounts default to false. Both enqueue and dispatch require active status and `notify.orders=true`. Preference changes use an explicit guarded operational command. Remote application of these two migrations remains unverified; local replica-set coverage passes. See [email runbook](../apps/web/docs/email.md).
 
 ## Requirements and scope
 

@@ -1,8 +1,8 @@
 # Resend integration implementation plan
 
-Date: 2026-10-22; implementation update 2026-10-23. The code below is implemented locally; remote rollout remains separate. A synthetic email was accepted by Resend using the ignored local key; stage runtime provisioning is unverified. Current operational instructions supersede proposed configuration names below: [stage runbook](../apps/web/docs/email-stage.md). Research and provider restrictions: [email integration](email-integration.md).
+Date: 2026-10-22; implementation update 2026-10-23. The code below is implemented locally; remote rollout remains separate. A synthetic email was accepted by Resend using the ignored local key; runtime provisioning is unverified. Current operational instructions supersede proposed configuration names below: [email runbook](../apps/web/docs/email.md). Research and provider restrictions: [email integration](email-integration.md).
 
-User decision on 2026-10-26: stage sends directly to each actual buyer/admin address and is always enabled, with no stage recipient redirect/allowlist or `EMAIL_STAGE_RECIPIENT`, `EMAIL_ENABLED`, `EMAIL_STAGE_CONFIGURED`, or `EMAIL_CONFIGURED` switch. This supersedes the capture-mode recipient boundary and stage activation-gate requirements below. Use only team-controlled stage orders and inboxes. Production stays unconfigured until separately promoted.
+User decision on 2026-10-26: stage and production use one always-on email implementation and send directly to each actual buyer/admin address, with no stage recipient redirect/allowlist or `EMAIL_STAGE_RECIPIENT`, `EMAIL_ENABLED`, `EMAIL_STAGE_CONFIGURED`, or `EMAIL_CONFIGURED` switch. This supersedes the capture-mode recipient boundary and stage activation-gate requirements below. Use only team-controlled stage orders and inboxes.
 
 ## Agent subtasks and ownership
 
@@ -43,11 +43,11 @@ If cancellation and its successful refund commit together, create one combined c
 
 ### 1. Stage configuration and provider boundary
 
-- Add validated server-only settings: existing `RESEND_API_KEY`; new `EMAIL_ENABLED`, `EMAIL_FROM`, `EMAIL_STAGE_RECIPIENT`, `EMAIL_ADMIN_RECIPIENTS`, optional `EMAIL_REPLY_TO`, `RESEND_WEBHOOK_SECRET`, and environment-specific `APP_ORIGIN` for links. Confirm final names while implementing against existing environment conventions; these additional settings are not implemented yet. Never infer origin from untrusted request headers.
+- Superseded proposal: the initial plan included enable and recipient-redirect settings. The implemented contract uses `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `EMAIL_FROM`, optional `EMAIL_REPLY_TO`, and environment-specific `APP_ORIGIN`; recipients come from orders and opted-in administrators. Never infer origin from untrusted request headers.
 - Add runtime binding declarations scoped to stage and activation state; avoid making a missing email secret a new mandatory production deployment dependency. Local uses ignored env files; deployed stage uses Worker runtime secrets/bindings, not just CI build variables. Do not print secret values or recipient addresses in diagnostics.
 - Create server-only provider interface `sendTransactionalEmail` and a Resend HTTPS adapter using native `fetch`, explicit timeout, stable idempotency header, opaque job tag, sanitized errors and provider message ID. Use official SDK/Svix support for signature verification after validating Workers compatibility; do not hand-roll cryptographic verification.
 - Add a controlled CLI diagnostic for synthetic test content, restricted to development/stage. No unauthenticated test-send route or automatic send on startup/build. Actual diagnostic send is a separately explicit action; it is not executed by this plan.
-- Completion: key is available in the runtime that actually sends, one explicitly requested synthetic message reaches the account-owned inbox, and blocked recipients never reach Resend. Production remains disabled. No assertion of end-to-end readiness from an API 2xx alone.
+- Completion: the key is available in each runtime that sends, one explicitly requested synthetic message reaches a controlled inbox, and the scheduled order lifecycle is verified. No assertion of end-to-end readiness follows from an API 2xx alone.
 
 ### 2. Repository-owned email design
 
@@ -112,7 +112,7 @@ If cancellation and its successful refund commit together, create one combined c
 | Authorized email status/retry API | Existing admin route/handler conventions |
 | Admin email history | Existing admin order details |
 | Scheduler | Existing Cloudflare entrypoint/configuration |
-| Operator smoke/recovery tools and runbook | `apps/web/scripts/` and `apps/web/docs/email-stage.md` |
+| Operator smoke/recovery tools and runbook | `apps/web/scripts/` and `apps/web/docs/email.md` |
 
 No customer-facing development labels. No new app/package merely for this integration. Respect [FSD rules](fsd-rules.md).
 
