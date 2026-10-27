@@ -86,6 +86,27 @@ test('checkout requires matching public/secret keys and fails closed for invalid
   assert.throws(getStripeMode, hasCode('STRIPE_NOT_CONFIGURED'));
 });
 
+test('restricted server keys support checkout and SDK clients while rejecting invalid or cross-mode keys', () => {
+  for (const mode of ['test', 'live'] as const) {
+    configure(mode);
+    process.env.STRIPE_SECRET_KEY = `rk_${mode}_synthetic`;
+    assert.equal(requireStripeCheckoutConfiguration().mode, mode);
+    assert.ok(createStripeClient());
+
+    const otherMode = mode === 'live' ? 'test' : 'live';
+
+    for (const key of [`rk_${otherMode}_synthetic`, `sk_${otherMode}_synthetic`,
+      `pk_${mode}_synthetic`, `rk_${mode}_`, `sk_${mode}_`, 'invalid', '']) {
+      process.env.STRIPE_SECRET_KEY = key;
+      assert.throws(requireStripeCheckoutConfiguration, hasCode('STRIPE_NOT_CONFIGURED'));
+      assert.throws(createStripeClient, hasCode('STRIPE_NOT_CONFIGURED'));
+    }
+
+    delete process.env.STRIPE_SECRET_KEY;
+    assert.throws(createStripeClient, hasCode('STRIPE_NOT_CONFIGURED'));
+  }
+});
+
 test('live requires production runtime and build markers, even with a production Node build', () => {
   configure('live');
   assert.equal(requireStripeCheckoutConfiguration().livemode, true);
@@ -93,6 +114,8 @@ test('live requires production runtime and build markers, even with a production
   for (const marker of ['NEXT_PUBLIC_APP_ENV', 'APP_ENV'] as const) {
     for (const environment of ['stage', 'development', '']) {
       process.env[marker] = environment;
+      assert.throws(createStripeClient, hasCode('STRIPE_NOT_CONFIGURED'));
+      process.env.STRIPE_SECRET_KEY = 'rk_live_synthetic';
       assert.throws(createStripeClient, hasCode('STRIPE_NOT_CONFIGURED'));
     }
 
