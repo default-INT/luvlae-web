@@ -1,5 +1,9 @@
 # Luvlae.com architecture and technology
 
+## Production Atlas provisioning — 2026-10-27
+
+Production database `luvlae_production` was initialized using the separate migration principal and explicitly loaded ignored `apps/web/.env.production.local` (Node 22). Migrations `001-commerce`, `002-mock-order-mode`, `004-stripe-request-snapshot`, `005-refunds`, `006-notifications`, and `007-admin-notifications` completed; `db:check` verified transaction rollback. Post-migration verification found 15 collections, zero products/orders/admins, no migration locks and no retained transaction probes. Test seed `003` was not run. Local access using `luvlae_prod_runtime` was subsequently verified with `db:check`: migration-marker read, transactional insert/abort and absence of the rolled-back probe all passed. Cloudflare production secret configuration/connectivity remain unverified. The explicit production env file avoids `.env.local` stage values taking precedence when running operational commands.
+
 ## Transactional email implementation — 2026-10-23
 
 Resend is selected for initial up-to-10-orders/day usage. Implemented in `apps/web`: repository-owned email-compatible HTML/text templates using the website palette, transactional MongoDB notification jobs, payment/fulfillment/cancellation/refund hooks, leased dispatch with frozen provider payloads, signed delivery callbacks, suppression and authorized admin history/retry. As of 2026-10-26, `luvlae.com` is verified in Resend and a direct test send from `notify@luvlae.com` succeeded. Stage and production use one always-on email implementation, Worker entrypoint and scheduler; there is no recipient redirect, allowlist, runtime switch, or build activation gate. Both send to actual buyer/admin recipients, while stage subjects carry `[STAGE]`. See the [email runbook](../apps/web/docs/email.md) and [research](email-integration.md).
