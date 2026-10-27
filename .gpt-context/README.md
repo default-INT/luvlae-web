@@ -27,6 +27,7 @@ Add focused notes here when the project gains durable architecture, development 
 - [ESLint rules](eslint-rules.md)
 - [Luvlae Berberine Patches](products/luvlae-berberine-patches.md)
 - [SEO requirements for Luvlae.com](seo-requirements.md)
+- [SEO audit for direct storefront sales — 2026-10-27](seo-audit-2026-10-27.md)
 
 - [Commerce server implementation and API runbook](../apps/web/docs/commerce-api.md)
 

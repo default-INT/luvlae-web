@@ -1,13 +1,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { product } from '@/entities/product';
+import { siteUrl } from '@/shared/config/site';
+import { getOfferSchema, getProductAnalytics, product } from '@/entities/product';
 import { getProductOffer } from '@/entities/product/index.server';
 import { ProductPurchase } from '@/features/shopping-cart';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { ActionLink } from '@/shared/ui/ActionLink';
 import { Reveal } from '@/shared/ui/Reveal';
+import { EcommerceEvent } from '@/shared/ui/EcommerceEvent';
 import { SiteFooter } from '@/widgets/SiteFooter';
 import { SiteHeader } from '@/widgets/SiteHeader';
 
@@ -69,8 +71,8 @@ export const ProductPage = async () => {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: page.home, item: 'https://luvlae.com/' },
-      { '@type': 'ListItem', position: 2, name: page.breadcrumbCurrent, item: 'https://luvlae.com/products/berberine-patches' },
+      { '@type': 'ListItem', position: 1, name: page.home, item: siteUrl('/') },
+      { '@type': 'ListItem', position: 2, name: page.breadcrumbCurrent, item: siteUrl('/products/berberine-patches') },
     ],
   };
 
@@ -80,9 +82,11 @@ export const ProductPage = async () => {
     name: page.hero.title,
     description: page.schemaDescription,
     brand: { '@type': 'Brand', name: page.schemaBrand },
-    image: 'https://luvlae.com/images/luvlae-berberine-patches-box-and-patch-sheet.webp',
+    image: siteUrl('/images/luvlae-berberine-patches-box-and-patch-sheet.webp'),
     size: page.hero.detailTwoValue,
-    url: 'https://luvlae.com/products/berberine-patches',
+    url: siteUrl('/products/berberine-patches'),
+    sku: product.sku,
+    offers: getOfferSchema(offer, product.path),
   };
 
   return (
@@ -234,6 +238,7 @@ export const ProductPage = async () => {
         </section>
       </main>
       <SiteFooter dictionary={dictionary}/>
+      {offer && <EcommerceEvent name='view_item' parameters={getProductAnalytics(offer)}/>}
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}/>
     </>

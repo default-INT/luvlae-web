@@ -1,8 +1,10 @@
 import Link from 'next/link';
 
 import { OrderCartSync } from '@/features/shopping-cart';
+import { getPurchaseAnalytics } from '@/entities/order';
 import { product } from '@/entities/product';
 import { money } from '@/shared/lib/money';
+import { EcommerceEvent } from '@/shared/ui/EcommerceEvent';
 
 import { OrderPaymentStatus } from '../OrderPaymentStatus';
 
@@ -15,6 +17,7 @@ interface Props { id: string; order: GuestOrder; copy: Dictionary['commerce'] }
 
 export const OrderResult = (props: Props) => {
   const { id, order, copy } = props;
+  const purchase = getPurchaseAnalytics(order);
 
   const fulfillment: Record<string, string> = {
     unfulfilled: copy.unfulfilled, processing: copy.processing, shipped: copy.shipped,
@@ -44,6 +47,7 @@ export const OrderResult = (props: Props) => {
         <h1>{title}</h1><p className={styles.description}>{description}</p>
         <OrderPaymentStatus id={id} paymentStatus={order.paymentStatus} copy={copy}/>
         <OrderCartSync id={id} paymentStatus={order.paymentStatus} items={order.items}/>
+        {purchase && <EcommerceEvent name='purchase' parameters={purchase} onceKey={order.orderNumber}/>}
         <dl className={styles.details}>
           <div><dt>{copy.orderNumber}</dt><dd>{order.orderNumber}</dd></div>
           <div><dt>{copy.orderStatus}</dt><dd>

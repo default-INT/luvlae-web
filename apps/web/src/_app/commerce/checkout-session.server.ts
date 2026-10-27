@@ -191,6 +191,12 @@ export const findGuestCheckout = async (
   return {
     id, status, paymentStatus: order.payment.status, publishableKey: configuration.publishableKey,
     clientSecret: payable ? checkout.client_secret : null, expiresAt: new Date(checkout.expires_at * 1000).toISOString(),
+    ...(payable && attempt.livemode ? { quote: {
+      currency: attempt.quoteSnapshot.currency, subtotal: attempt.quoteSnapshot.pricing.subtotal,
+      items: attempt.quoteSnapshot.items.map(item => ({
+        sku: item.sku, name: item.name, quantity: item.quantity, unitAmount: item.unitAmount, lineSubtotal: item.lineSubtotal,
+      })),
+    } } : {}),
   };
 };
 

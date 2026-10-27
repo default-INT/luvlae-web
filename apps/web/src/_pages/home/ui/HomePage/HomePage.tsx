@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { siteUrl } from '@/shared/config/site';
 import { product } from '@/entities/product';
 import { ActionLink } from '@/shared/ui/ActionLink';
 import { LineBreakText } from '@/shared/ui/LineBreakText';
@@ -20,15 +21,15 @@ const websiteSchema = {
   '@graph': [
     {
       '@type': 'Organization',
-      '@id': 'https://luvlae.com/#organization',
+      '@id': siteUrl('/#organization'),
       name: 'Luvlae',
-      url: 'https://luvlae.com/',
+      url: siteUrl('/'),
     },
     {
       '@type': 'WebSite',
       name: 'Luvlae',
-      url: 'https://luvlae.com/',
-      publisher: { '@id': 'https://luvlae.com/#organization' },
+      url: siteUrl('/'),
+      publisher: { '@id': siteUrl('/#organization') },
     },
   ],
 };
