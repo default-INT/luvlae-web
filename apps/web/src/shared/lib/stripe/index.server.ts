@@ -27,7 +27,7 @@ const requireStripeSecretKey = () => {
   const mode = getStripeMode();
   const key = process.env.STRIPE_SECRET_KEY;
 
-  if (!key?.startsWith(`sk_${mode}_`)) {
+  if (!key || !new RegExp(`^(?:sk|rk)_${mode}_.+$`).test(key)) {
     return fail(503, 'STRIPE_NOT_CONFIGURED', 'A Stripe secret API key matching the configured mode is required.');
   }
 

@@ -10,7 +10,7 @@ The integration plan is [here](../../../.gpt-context/stripe-checkout-integration
 | --- | --- |
 | `STRIPE_CHEKOUT_DISABLED` | `false`; only exact `true` blocks creating/resuming the embedded form |
 | `STRIPE_MODE` | `test`; only `test` or `live` accepted |
-| `STRIPE_SECRET_KEY` | Server-only `sk_test_…` / `sk_live_…` matching mode |
+| `STRIPE_SECRET_KEY` | Server-only standard `sk_test_…` / `sk_live_…` or restricted `rk_test_…` / `rk_live_…`, matching mode |
 | `STRIPE_PUBLISHABLE_KEY` | Runtime `pk_test_…` / `pk_live_…` matching mode; returned to the protected checkout view |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret for this exact endpoint/environment (`whsec_…`) |
 | `APP_ENV` | `production` required for live; Cloudflare binds the selected deployment environment |
@@ -18,6 +18,8 @@ The integration plan is [here](../../../.gpt-context/stripe-checkout-integration
 
 Keep the API and signing secrets out of browser bundles. The publishable key is public by design; all keys
 must belong to the same Stripe account/sandbox. Prefix checks verify mode, not ownership of a publishable key.
+Restricted keys must grant the provider operations used by checkout, webhooks, refunds and reconciliation;
+accepting the prefix does not verify permissions. Validate those flows in the target environment.
 The existing CLI wrapper deliberately accepts test keys and localhost forwarding only.
 
 The disable switch blocks checkout creation/form access; it does **not** block webhook intake. Keep live

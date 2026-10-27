@@ -1,6 +1,12 @@
 # Luvlae.com architecture and technology
 
+## Stripe restricted API keys — 2026-10-27
+
+The shared Stripe adapter accepts standard (`sk_`) and restricted (`rk_`) server API keys with a nonempty suffix in the configured test/live mode. Cross-mode keys, publishable keys and live operation outside both production markers remain rejected. Prefix acceptance does not prove the restricted key's provider permissions; target-runtime checkout/refund/reconciliation verification remains required. See [launch runbook](../apps/web/docs/stripe-live-readiness.md).
+
 ## Production Atlas provisioning — 2026-10-27
+
+Subsequent user-authorized catalog provisioning created `LUVLAE-BERBERINE-60` in production at USD 1.00 (100 cents), with sales enabled and initial stock 132, zero reserved. Name/description and stock were copied from the observed stage product; this is user-requested payment-verification pricing/stock, not independently verified retail terms or physical inventory. Creation used the existing transactional `createProduct` service and recorded `product.create` in the audit journal. Two active production administrators existed at provisioning time. Later price/stock changes should use the admin workflow; no test-seed migration or checkout-mode change was performed.
 
 Production database `luvlae_production` was initialized using the separate migration principal and explicitly loaded ignored `apps/web/.env.production.local` (Node 22). Migrations `001-commerce`, `002-mock-order-mode`, `004-stripe-request-snapshot`, `005-refunds`, `006-notifications`, and `007-admin-notifications` completed; `db:check` verified transaction rollback. Post-migration verification found 15 collections, zero products/orders/admins, no migration locks and no retained transaction probes. Test seed `003` was not run. Local access using `luvlae_prod_runtime` was subsequently verified with `db:check`: migration-marker read, transactional insert/abort and absence of the rolled-back probe all passed. Cloudflare production secret configuration/connectivity remain unverified. The explicit production env file avoids `.env.local` stage values taking precedence when running operational commands.
 
