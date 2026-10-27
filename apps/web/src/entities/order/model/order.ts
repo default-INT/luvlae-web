@@ -1,4 +1,5 @@
 export interface GuestOrder {
+  analyticsPurchaseEligible?: boolean;
   orderNumber: string; orderStatus: string; checkoutMode: 'mock' | 'stripe';
   currency: 'USD'; paymentStatus: string; fulfillmentStatus: string;
   pricing: { subtotal: number; total: number | null };
@@ -12,4 +13,5 @@ export interface GuestCheckout {
   publishableKey: string;
   clientSecret: string | null;
   expiresAt: string;
+  quote?: { currency: 'USD'; subtotal: number; items: GuestOrder['items'] };
 }

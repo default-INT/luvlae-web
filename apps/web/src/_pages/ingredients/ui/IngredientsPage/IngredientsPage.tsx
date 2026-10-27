@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { siteUrl } from '@/shared/config/site';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { LineBreakText } from '@/shared/ui/LineBreakText';
@@ -20,8 +21,8 @@ export const IngredientsPage = async () => {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: informationUi.home, item: 'https://luvlae.com/' },
-      { '@type': 'ListItem', position: 2, name: page.title, item: 'https://luvlae.com/ingredients' },
+      { '@type': 'ListItem', position: 1, name: informationUi.home, item: siteUrl('/') },
+      { '@type': 'ListItem', position: 2, name: page.title, item: siteUrl('/ingredients') },
     ],
   };
 

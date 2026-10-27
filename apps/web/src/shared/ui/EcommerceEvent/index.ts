@@ -1,0 +1,1 @@
+export { EcommerceEvent } from './EcommerceEvent';

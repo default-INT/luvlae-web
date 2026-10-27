@@ -1,5 +1,11 @@
 # Luvlae.com architecture and technology
 
+## Canonical storefront and analytics — 2026-10-27
+
+The canonical public origin is centralized at `apps/web/src/shared/config/site` as `https://www.luvlae.com`. App metadata/discovery/JSON-LD use it, and Next config has an apex-only 308 preserving path/query. Upstream domain redirects still need verification after deployment; the audit observed an external 307 before this change. Product Offer markup shares the existing request-scoped MongoDB offer with the visible UI, so catalog edits update both on the next SSR request. The user confirmed USD 19.99 as production retail pricing; no DB price write was needed here.
+
+Ecommerce tracking lives in client-safe `shared/lib/analytics` with generic `shared/ui/EcommerceEvent`, entity-level product/order mapping, cart action hooks and page composition. Guest order projection authorizes purchase analytics only for a succeeded associated live CheckoutAttempt in production. Events contain product/order-number snapshots, not customer details, guest access IDs/tokens or Stripe payloads. See [SEO implementation and collection limits](seo-requirements.md#direct-sales-seo-implementation--2026-10-27).
+
 ## Stripe restricted API keys — 2026-10-27
 
 The shared Stripe adapter accepts standard (`sk_`) and restricted (`rk_`) server API keys with a nonempty suffix in the configured test/live mode. Cross-mode keys, publishable keys and live operation outside both production markers remain rejected. Prefix acceptance does not prove the restricted key's provider permissions; target-runtime checkout/refund/reconciliation verification remains required. See [launch runbook](../apps/web/docs/stripe-live-readiness.md).

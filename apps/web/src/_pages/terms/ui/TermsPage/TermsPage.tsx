@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Fragment } from 'react';
 
+import { siteUrl } from '@/shared/config/site';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { SiteFooter } from '@/widgets/SiteFooter';
@@ -33,8 +34,8 @@ export const TermsPage = async () => {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: informationUi.home, item: 'https://luvlae.com/' },
-      { '@type': 'ListItem', position: 2, name: copy.title, item: 'https://luvlae.com/terms' },
+      { '@type': 'ListItem', position: 1, name: informationUi.home, item: siteUrl('/') },
+      { '@type': 'ListItem', position: 2, name: copy.title, item: siteUrl('/terms') },
     ],
   };
 

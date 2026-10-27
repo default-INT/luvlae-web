@@ -1,6 +1,14 @@
+import { siteOrigin } from './src/shared/config/site';
+
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  redirects: async () => [{
+    source: '/:path*',
+    has: [{ type: 'host', value: 'luvlae.com' }],
+    destination: `${siteOrigin}/:path*`,
+    permanent: true,
+  }],
   headers: async () => ['/admin/:path*', '/orders/:path*', '/order/:path*'].map(source => ({
     source,
     headers: [

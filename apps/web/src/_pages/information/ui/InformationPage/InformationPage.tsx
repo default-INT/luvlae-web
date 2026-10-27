@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { siteUrl } from '@/shared/config/site';
 import { product } from '@/entities/product';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
@@ -25,8 +26,8 @@ export const InformationPage = async (props: InformationPageProps) => {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://luvlae.com/' },
-      { '@type': 'ListItem', position: 2, name: content.title, item: `https://luvlae.com${content.path}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl('/') },
+      { '@type': 'ListItem', position: 2, name: content.title, item: siteUrl(content.path) },
     ],
   };
 

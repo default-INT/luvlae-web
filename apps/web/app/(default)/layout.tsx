@@ -1,5 +1,6 @@
 import '@/shared/styles/globals.css';
 
+import { siteUrl } from '@/shared/config/site';
 import { CartRuntime } from '@/features/shopping-cart';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { Analytics } from '@/_app/analytics';
@@ -9,7 +10,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://luvlae.com'),
+  metadataBase: new URL(siteUrl()),
 };
 
 interface Props {

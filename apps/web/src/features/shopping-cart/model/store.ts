@@ -1,5 +1,8 @@
 import { createStore } from 'zustand/vanilla';
 
+import { getProductAnalytics } from '@/entities/product';
+import { trackEcommerceEvent } from '@/shared/lib/analytics';
+
 import { commerceRequest } from '../api/commerce';
 
 import { pendingKey, storageKey } from './cart';
@@ -27,6 +30,16 @@ interface Dependencies {
   persistent?: () => Pick<Storage, 'setItem'>;
 }
 
+const trackCartView = (items: CartItem[], offers: Record<string, Offer>) => {
+  if (!items.length || items.some(item => !offers[item.sku])) return;
+
+  trackEcommerceEvent('view_cart', {
+    currency: 'USD',
+    value: items.reduce((sum, item) => sum + offers[item.sku].price.unitAmount * item.quantity, 0) / 100,
+    items: items.flatMap(item => getProductAnalytics(offers[item.sku], item.quantity).items),
+  });
+};
+
 // Never contains server request data. Each SSR consumer receives a fresh empty store.
 export const createCartStore = (dependencies: Dependencies = {}) => {
   const request = dependencies.request ?? commerceRequest;
@@ -37,7 +50,12 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
     items: [], offers: {}, offerErrors: {}, settledOrders: [], ready: false, open: false, busy: false,
     cancelling: false, pending: null, error: '',
     restore: (items, offers, pending, settledOrders = []) => set({ items, offers, pending, settledOrders, ready: true }),
-    setOpen: open => set({ open }),
+    setOpen: open => {
+      const state = get();
+      set({ open });
+
+      if (open && !state.open) trackCartView(state.items, state.offers);
+    },
     add: (offer, quantity) => {
       const state = get();
 
@@ -59,16 +77,34 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
         : [...state.items, { sku: offer.sku, quantity: next }];
 
       set({ items, offers: { ...state.offers, [offer.sku]: latest }, open: true, error: '' });
+      const added = next - (existing?.quantity ?? 0);
+
+      if (added > 0) trackEcommerceEvent('add_to_cart', getProductAnalytics(latest, added));
+
+      if (!state.open) trackCartView(items, get().offers);
     },
     update: (sku, quantity) => {
       if (get().busy || get().pending || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) return;
 
+      const state = get();
+      const previous = state.items.find(item => item.sku === sku)?.quantity;
       set({ items: get().items.map(item => item.sku === sku ? { sku, quantity } : item), error: '' });
+
+      if (previous && previous !== quantity && state.offers[sku]) {
+        const event = quantity > previous ? 'add_to_cart' : 'remove_from_cart';
+        trackEcommerceEvent(event, getProductAnalytics(state.offers[sku], Math.abs(quantity - previous)));
+      }
     },
     remove: sku => {
       if (get().busy || get().pending) return;
 
+      const state = get();
+      const removed = state.items.find(item => item.sku === sku);
       set({ items: get().items.filter(item => item.sku !== sku), error: '' });
+
+      if (removed && state.offers[sku]) {
+        trackEcommerceEvent('remove_from_cart', getProductAnalytics(state.offers[sku], removed.quantity));
+      }
     },
     confirmPaidOrder: (id, purchased) => {
       const state = get();

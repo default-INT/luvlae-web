@@ -1,9 +1,11 @@
 import Link from 'next/link';
 
 import { product } from '@/entities/product';
+import { getOrderItemsAnalytics } from '@/entities/order';
 import { OrderCartSync } from '@/features/shopping-cart';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
+import { EcommerceEvent } from '@/shared/ui/EcommerceEvent';
 import { SiteFooter } from '@/widgets/SiteFooter';
 import { SiteHeader } from '@/widgets/SiteHeader';
 
@@ -38,6 +40,10 @@ export const CheckoutPage = async (props: Props) => {
           {checkout && !showForm && <CheckoutStatus checkout={checkout} copy={copy}/>}
         </section>
       </main>
+      {showForm && checkout.quote && checkout.publishableKey.startsWith('pk_live_')
+        && <EcommerceEvent name='begin_checkout' onceKey={id} parameters={getOrderItemsAnalytics(
+          checkout.quote.items, checkout.quote.currency, checkout.quote.subtotal,
+        )}/>}
       {checkout && ['expired', 'failed'].includes(checkout.paymentStatus)
         && <OrderCartSync id={id} paymentStatus={checkout.paymentStatus} items={[]}/>}
       <SiteFooter dictionary={dictionary}/>

@@ -21,7 +21,7 @@ interface OrderDocument {
   _id: ObjectId; orderNumber: string; orderStatus: string; checkoutMode?: GuestOrder['checkoutMode'];
   currency: 'USD'; pricing: GuestOrder['pricing']; items: GuestOrder['items'];
   guestAccess: { tokenHash: string; expiresAt: Date };
-  payment: { status: string }; fulfillment: { status: string };
+  payment: { status: string; settledAttemptId?: ObjectId }; fulfillment: { status: string };
 }
 
 export const findGuestOrder = async (db: Db, id: string, token: string): Promise<GuestOrder | null> => {
@@ -33,7 +33,15 @@ export const findGuestOrder = async (db: Db, id: string, token: string): Promise
 
   if (!order) return null;
 
+  const eligible = process.env.APP_ENV === 'production' && process.env.NEXT_PUBLIC_APP_ENV === 'production'
+    && order.checkoutMode !== 'mock' && order.payment.status === 'paid' && order.payment.settledAttemptId;
+
+  const liveSettlement = eligible ? await db.collection('checkoutAttempts').findOne({
+    _id: order.payment.settledAttemptId, orderId: order._id, state: 'succeeded', livemode: true,
+  }, { projection: { _id: 1 } }) : null;
+
   return {
+    analyticsPurchaseEligible: Boolean(liveSettlement),
     orderNumber: order.orderNumber, orderStatus: order.orderStatus,
     checkoutMode: order.checkoutMode ?? 'stripe', currency: order.currency,
     pricing: { subtotal: order.pricing.subtotal, total: order.pricing.total },
