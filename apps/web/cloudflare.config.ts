@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
     worker: defineWorker({
       name: mode === 'stage' ? 'luvlae-web-stage' : 'luvlae-web',
       ...(mode === 'stage' ? { workersDev: true, previewUrls: false } : {}),
+      ...(production ? { workersDev: true, previewUrls: true } : {}),
       entrypoint: './src/_app/cloudflare/worker.ts',
       triggers: [
         ...(production ? [triggers.fetch({ pattern: '*.luvlae.com/*', zone: 'luvlae.com' })] : []),

@@ -2,6 +2,8 @@
 
 ## Production route conflict — 2026-10-27
 
+A subsequent user-supplied log showed strict deployment also comparing remote `workers_dev: true` / `preview_urls: true` with locally generated false values. Production now explicitly sets `workersDev: true` and `previewUrls: true` to preserve the existing remote settings; stage remains `workersDev: true`, `previewUrls: false`. Remote redeployment remains unverified.
+
 A user-supplied production release log showed strict deployment aborting because local configuration omitted the existing Dashboard route `{ pattern: '*.luvlae.com/*', zone_name: 'luvlae.com' }`. `apps/web/cloudflare.config.ts` now declares the matching production-only `triggers.fetch({ pattern: '*.luvlae.com/*', zone: 'luvlae.com' })`, alongside the email scheduler. Stage/development have no custom-domain fetch trigger. Strict deployment checks remain enabled. This preserves the existing route rather than removing it during upload; successful remote redeployment remains unverified. The accompanying vinext legacy-fallback warnings were not the reported upload failure.
 
 Verified on 2026-10-18 against commit `398b900` using repository configuration, installed adapter source, a successful local Node 22.22.2 Vite build, GitHub's public Actions API, and production HTTP responses. No deployment was performed.
