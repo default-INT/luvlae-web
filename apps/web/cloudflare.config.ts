@@ -20,7 +20,10 @@ export default defineConfig(({ mode }) => {
       name: mode === 'stage' ? 'luvlae-web-stage' : 'luvlae-web',
       ...(mode === 'stage' ? { workersDev: true, previewUrls: false } : {}),
       entrypoint: './src/_app/cloudflare/worker.ts',
-      ...(emailRuntime ? { triggers: [triggers.scheduled({ schedule: '* * * * *' })] } : {}),
+      triggers: [
+        ...(production ? [triggers.fetch({ pattern: '*.luvlae.com/*', zone: 'luvlae.com' })] : []),
+        ...(emailRuntime ? [triggers.scheduled({ schedule: '* * * * *' })] : []),
+      ],
       compatibilityDate: '2026-10-02',
       compatibilityFlags: ['nodejs_compat'],
       assets: {
