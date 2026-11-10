@@ -2,6 +2,14 @@
 
 Date: 2026-10-18. Status: server foundation implemented; the full payment lifecycle below remains the target design. Stage migration `001-commerce` and the transaction rollback check are verified after `dbAdmin` was granted. See [implementation and API runbook](../apps/web/docs/commerce-api.md).
 
+## Offer model extension — 2026-11-09 (local, not remotely migrated)
+
+Product.offers stores stable IDs, unitsPerPack, USD integer-cent total price, lifecycle and sort order; Product.price remains virtual `standard`. Product.storefront stores chosen homepage IDs/highlight. inventory.version is independent of the catalog version. Every own-order inventory writer increments it; stock changes use separate audited versioned operations.
+
+Order/attempt items optionally snapshot offerId/unitsPerPack/inventoryQuantity; historical items normalize to standard/one physical box per unit. Migration008 extends validators additively and backfills only missing offer arrays/inventory version. Migration009 adds frozen shipping/Customer provisioning and order-only includedTax; it preserves historical requests. New packs-v2 orders require validated frozen shipping. Optional salesTerms captures explicitly activated policy version/effectiveAt on new Stripe and mock orders, while replays remain unchanged.
+
+See [Stage2 contracts](dtc-bundles-s2.md), [lifecycle](dtc-bundles-s3a.md), [shipping/recovery](dtc-bundles-s3b.md) and [rollout](dtc-bundles-rollout.md). Catalog provisioning uses audited services with no stock seed, order rewrite or provider calls. No remote008/009 application or offer activation occurred during this work.
+
 ## Notification update — 2026-10-23
 
 The embedded outbox proposal below is superseded by migration `006-notifications`: separate `notificationJobs`, `emailEvents` and `emailSuppressions` collections with validators/indexes. Lifecycle transitions and logical per-recipient jobs commit in the same transaction. Jobs snapshot integer-cent order data, template version/locale and frozen provider requests; dispatch has leases, bounded retries and explicit unknown outcomes. Confirmed provider delivery failure can create an audited redelivery child without overwriting the original provider history. The old embedded shipping writer is retired; no historical backfill/send occurs automatically.

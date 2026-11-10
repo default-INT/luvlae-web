@@ -45,8 +45,13 @@ export const findGuestOrder = async (db: Db, id: string, token: string): Promise
     orderNumber: order.orderNumber, orderStatus: order.orderStatus,
     checkoutMode: order.checkoutMode ?? 'stripe', currency: order.currency,
     pricing: { subtotal: order.pricing.subtotal, total: order.pricing.total },
-    items: order.items.map(item => ({ sku: item.sku, name: item.name, quantity: item.quantity,
-      unitAmount: item.unitAmount, lineSubtotal: item.lineSubtotal })),
+    items: order.items.map(item => ({
+      sku: item.sku, name: item.name, quantity: item.quantity,
+      unitAmount: item.unitAmount, lineSubtotal: item.lineSubtotal,
+      ...(item.offerId ? { offerId: item.offerId } : {}),
+      ...(item.unitsPerPack ? { unitsPerPack: item.unitsPerPack } : {}),
+      ...(item.inventoryQuantity ? { inventoryQuantity: item.inventoryQuantity } : {}),
+    })),
     paymentStatus: order.payment.status, fulfillmentStatus: order.fulfillment.status,
   };
 };

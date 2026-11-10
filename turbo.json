@@ -30,7 +30,9 @@
         "STRIPE_CHEKOUT_DISABLED",
         "EMAIL_FROM",
         "EMAIL_REPLY_TO",
-        "APP_ORIGIN"
+        "APP_ORIGIN",
+        "SALES_TERMS_POLICY_VERSION",
+        "SALES_TERMS_EFFECTIVE_AT"
       ]
     },
     "dev": {
@@ -61,7 +63,9 @@
         "STRIPE_CHEKOUT_DISABLED",
         "EMAIL_FROM",
         "EMAIL_REPLY_TO",
-        "APP_ORIGIN"
+        "APP_ORIGIN",
+        "SALES_TERMS_POLICY_VERSION",
+        "SALES_TERMS_EFFECTIVE_AT"
       ],
       "cache": false,
       "persistent": true
@@ -76,7 +80,9 @@
         "STRIPE_CHEKOUT_DISABLED",
         "EMAIL_FROM",
         "EMAIL_REPLY_TO",
-        "APP_ORIGIN"
+        "APP_ORIGIN",
+        "SALES_TERMS_POLICY_VERSION",
+        "SALES_TERMS_EFFECTIVE_AT"
       ],
       "passThroughEnv": [
         "CLOUDFLARE_API_TOKEN",

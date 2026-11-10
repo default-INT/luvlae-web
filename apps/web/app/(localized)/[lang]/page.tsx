@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 
+import { product } from '@/entities/product';
+import { getProductOffer } from '@/entities/product/index.server';
 import { HomePage } from '@/_pages/home';
 import { defaultLocale, isLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
@@ -8,7 +10,7 @@ import type { Metadata } from 'next';
 
 type HomeRouteProps = PageProps<'/[lang]'>;
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 async function getLocalizedDictionary(params: HomeRouteProps['params']) {
   const { lang } = await params;
@@ -49,7 +51,10 @@ export async function generateMetadata({ params }: HomeRouteProps): Promise<Meta
 
 export default async function HomeRoute(props: HomeRouteProps) {
   const { params } = props;
-  const dictionary = await getLocalizedDictionary(params);
 
-  return <HomePage dictionary={dictionary}/>;
+  const [dictionary, offer] = await Promise.all([
+    getLocalizedDictionary(params), getProductOffer(product.sku).catch(() => null),
+  ]);
+
+  return <HomePage dictionary={dictionary} offer={offer}/>;
 }

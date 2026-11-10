@@ -1,0 +1,8 @@
+.selector { display: grid; gap: 10px; min-width: 0; margin: 0; padding: 0; border: 0;
+  legend { padding: 0; margin-bottom: 12px; font-size: .9rem; font-weight: 750; } }
+.option { display: flex; gap: 12px; align-items: center; padding: 16px;
+  border: 1px solid var(--color-border); border-radius: 12px; font-size: .85rem;
+  &:has(input:checked) { border-color: var(--color-blue); background: var(--color-surface-muted); }
+  input { accent-color: var(--color-navy); }
+  span { flex: 1; } strong { white-space: nowrap; } small { display: block; margin-top: 5px; } }
+@media (max-width: 420px) { .option { flex-wrap: wrap; strong { margin-left: 26px; } } }

@@ -36,6 +36,10 @@ test('stage and production declare the same email runtime bindings and scheduler
     assert.equal(worker.env.EMAIL_REPLY_TO?.type, 'text');
     assert.equal(worker.env.APP_ORIGIN?.type, 'text');
     assert.equal(worker.entrypoint, './src/_app/cloudflare/worker.ts');
-    assert.equal(worker.triggers?.length, 1);
+    const scheduled = worker.triggers?.filter(trigger => trigger.type === 'scheduled');
+    assert.deepEqual(scheduled, [{ type: 'scheduled', schedule: '* * * * *' }]);
+    assert.equal(worker.triggers?.length, mode === 'stage' ? 1 : 2);
+    assert.deepEqual(worker.triggers?.filter(trigger => trigger.type === 'fetch'), mode === 'stage' ? []
+      : [{ type: 'fetch', pattern: '*.luvlae.com/*', zone: 'luvlae.com' }]);
   }
 });

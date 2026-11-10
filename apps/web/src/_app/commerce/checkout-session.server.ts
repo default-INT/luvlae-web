@@ -9,9 +9,13 @@ import { inTransaction, withDatabase } from '@/shared/lib/mongodb/index.server';
 import { hashToken } from '@/shared/lib/security/index.server';
 import { createStripeClient, requireStripeCheckoutConfiguration } from '@/shared/lib/stripe/index.server';
 
+import { validObservedTax } from './included-tax.server';
 import { collections } from './collections.server';
-import { integerSchema, operationSchema, skuSchema, versionSchema } from './contracts';
+import { checkoutRequestSchema } from './contracts';
 import { reserveOrder } from './reservations.server';
+import {
+  stripeShipping, prepareCustomerProvision, provisionShippingCustomer, freezeShippingSession,
+} from './shipping-checkout.server';
 import { stripeRequestMigrationName } from './stripe-request-migration.server';
 import { validateCheckoutAssociation, validateCheckoutSession } from './stripe-checkout-policy.server';
 
@@ -19,13 +23,7 @@ import type { CheckoutAttempt } from './models';
 import type { DatabaseContext } from '@/shared/lib/mongodb/index.server';
 import type { GuestCheckout } from '@/entities/order';
 
-export const checkoutSessionSchema = z.strictObject({
-  operationId: operationSchema,
-  guestToken: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
-  items: z.array(z.strictObject({
-    sku: skuSchema, quantity: integerSchema.min(1).max(99), productVersion: versionSchema,
-  })).min(1).max(20),
-}).refine(value => new Set(value.items.map(item => item.sku)).size === value.items.length);
+export const checkoutSessionSchema = checkoutRequestSchema;
 
 const pricingPolicy = { shipping: 'included-us-v1', tax: 'included-v1', discount: 'none-v1' as const };
 const dayMilliseconds = 86400000;
@@ -37,13 +35,16 @@ export const checkoutSessionParameters = (attempt: CheckoutAttempt): Stripe.Chec
   allowed_payment_method_types: ['card'], billing_address_collection: 'required', locale: 'en',
   wallet_options: { link: { display: 'never' } },
   name_collection: { individual: { enabled: true, optional: false } },
-  shipping_address_collection: { allowed_countries: ['US'] },
-  customer_creation: 'if_required',
+  ...(attempt.shippingSnapshot ? { customer: attempt.customerProvision?.customerId,
+    customer_update: { shipping: 'never' as const } } : {
+    shipping_address_collection: { allowed_countries: ['US'] }, customer_creation: 'if_required',
+  }),
   automatic_tax: { enabled: true },
   allow_promotion_codes: false,
   client_reference_id: attempt.orderId.toHexString(),
   metadata: { orderId: attempt.orderId.toHexString(), attemptId: attempt._id.toHexString() },
-  payment_intent_data: { metadata: { orderId: attempt.orderId.toHexString(), attemptId: attempt._id.toHexString() } },
+  payment_intent_data: { ...(attempt.shippingSnapshot ? { shipping: stripeShipping(attempt.shippingSnapshot) } : {}),
+    metadata: { orderId: attempt.orderId.toHexString(), attemptId: attempt._id.toHexString() } },
   expires_at: Math.floor(attempt.inventoryReservation.expiresAt.getTime() / 1000),
   line_items: attempt.quoteSnapshot.items.map(item => ({
     quantity: item.quantity,
@@ -78,7 +79,7 @@ export const associateRecoveredCheckoutSession = async (
     total: checkout.amount_total === pricing.total,
     discount: checkout.total_details?.amount_discount === 0,
     shipping: checkout.total_details?.amount_shipping === 0,
-    tax: checkout.total_details?.amount_tax === 0,
+    tax: validObservedTax(attempt, checkout),
   };
 
   if (!Object.values(rules).every(Boolean)) return mismatch();
@@ -143,16 +144,34 @@ export const createCheckoutSession = async (
 
   const now = Math.floor(Date.now() / 1000) * 1000;
 
+  const cart = (() => {
+    if (value.cartFormat === 'packs-v2') { return { cartFormat: value.cartFormat,
+      shippingAddress: value.shippingAddress, items: value.items }; }
+
+    if (value.cartFormat === 'packs-v1') return { cartFormat: value.cartFormat, items: value.items };
+
+    return { items: value.items };
+  })();
+
   const reserved = await reserveOrder(context, {
     creationKeyHash: hashToken(`stripe:${value.guestToken}:${value.operationId}`),
     guestTokenHash: hashToken(value.guestToken), guestAccessExpiresAt: new Date(now + 30 * dayMilliseconds),
     expiresAt: new Date(now + 30 * 60 * 1000), checkoutMode: 'stripe', livemode: configuration.livemode,
-    pricingPolicy, items: value.items,
-  }, { createStripeRequest: attempt => ({ apiVersion: Stripe.API_VERSION, parameters: checkoutSessionParameters(attempt) }) });
+    pricingPolicy: value.cartFormat !== undefined ? { ...pricingPolicy, catalog: 'packs-v1' } : pricingPolicy,
+    ...cart,
+  }, { prepareAttempt: prepareCustomerProvision });
 
-  const attempt = await collections(context.db).attempts.findOne({ _id: reserved.attemptId });
+  let attempt = await collections(context.db).attempts.findOne({ _id: reserved.attemptId });
 
   if (!attempt) return fail(503, 'CHECKOUT_NOT_READY', 'Checkout is not ready. Retry the same checkout.');
+
+  if (attempt.shippingSnapshot) {
+    attempt = await provisionShippingCustomer(context, attempt, client);
+
+    if (!attempt.stripeRequest && attempt.active && attempt.state === 'creating') {
+      attempt = await freezeShippingSession(context, attempt, checkoutSessionParameters(attempt));
+    }
+  }
 
   await resumeAttempt(context, attempt, client);
   return { id: reserved.orderId.toHexString(), replayed: reserved.replayed };
@@ -195,6 +214,8 @@ export const findGuestCheckout = async (
       currency: attempt.quoteSnapshot.currency, subtotal: attempt.quoteSnapshot.pricing.subtotal,
       items: attempt.quoteSnapshot.items.map(item => ({
         sku: item.sku, name: item.name, quantity: item.quantity, unitAmount: item.unitAmount, lineSubtotal: item.lineSubtotal,
+        ...(item.offerId ? { offerId: item.offerId, unitsPerPack: item.unitsPerPack,
+          inventoryQuantity: item.inventoryQuantity } : {}),
       })),
     } } : {}),
   };

@@ -5,9 +5,10 @@ import { trackEcommerceEvent } from '@/shared/lib/analytics';
 
 import { commerceRequest } from '../api/commerce';
 
-import { pendingKey, storageKey } from './cart';
+import { cartKey, parseCart, parseOffers, pendingKey, pendingRequest, storageKey, toCartOffer } from './cart';
 
 import type { CartItem, Offer, PendingCheckout } from './cart';
+import type { ShippingAddress } from '@/entities/order';
 import type { Dictionary } from '@/shared/config/i18n';
 
 interface CartState {
@@ -16,10 +17,11 @@ interface CartState {
   pending: PendingCheckout | null; error: string;
   restore: (items: CartItem[], offers: Record<string, Offer>, pending: PendingCheckout | null, settledOrders?: string[]) => void;
   setOpen: (open: boolean) => void;
-  add: (offer: Offer, quantity: number) => void;
-  update: (sku: string, quantity: number) => void;
-  remove: (sku: string) => void;
-  checkout: (copy: Dictionary['commerce']) => Promise<string | null>;
+  add: (offer: Offer, quantity: number) => boolean;
+  update: (sku: string, quantity: number, offerId?: string) => void;
+  replaceOffer: (sku: string, sourceOfferId: string, destination: Offer) => boolean;
+  remove: (sku: string, offerId?: string) => void;
+  checkout: (copy: Dictionary['commerce'], address?: ShippingAddress) => Promise<string | null>;
   cancelCheckout: (copy: Dictionary['commerce']) => Promise<boolean>;
   confirmPaidOrder: (id: string, purchased: CartItem[]) => void;
   releaseExpiredCheckout: (id: string) => void;
@@ -30,13 +32,18 @@ interface Dependencies {
   persistent?: () => Pick<Storage, 'setItem'>;
 }
 
+const cartAnalytics = (offer: Offer, quantity: number) => {
+  const result = getProductAnalytics(offer, quantity, offer.offerId ?? 'standard');
+  return { ...result, items: result.items?.map(item => ({ ...item, item_variant: offer.offerId ?? 'standard' })) };
+};
+
 const trackCartView = (items: CartItem[], offers: Record<string, Offer>) => {
-  if (!items.length || items.some(item => !offers[item.sku])) return;
+  if (!items.length || items.some(item => !offers[cartKey(item)])) return;
 
   trackEcommerceEvent('view_cart', {
     currency: 'USD',
-    value: items.reduce((sum, item) => sum + offers[item.sku].price.unitAmount * item.quantity, 0) / 100,
-    items: items.flatMap(item => getProductAnalytics(offers[item.sku], item.quantity).items),
+    value: items.reduce((sum, item) => sum + offers[cartKey(item)].price.unitAmount * item.quantity, 0) / 100,
+    items: items.flatMap(item => cartAnalytics(offers[cartKey(item)], item.quantity).items ?? []),
   });
 };
 
@@ -49,7 +56,10 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
   return createStore<CartState>()((set, get) => ({
     items: [], offers: {}, offerErrors: {}, settledOrders: [], ready: false, open: false, busy: false,
     cancelling: false, pending: null, error: '',
-    restore: (items, offers, pending, settledOrders = []) => set({ items, offers, pending, settledOrders, ready: true }),
+    restore: (items, offers, pending, settledOrders = []) => {
+      const normalized = parseCart(items);
+      set({ items: normalized, offers: parseOffers(offers, normalized), pending, settledOrders, ready: true });
+    },
     setOpen: open => {
       const state = get();
       set({ open });
@@ -59,51 +69,103 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
     add: (offer, quantity) => {
       const state = get();
 
+      if (state.busy || state.pending || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) return false;
+
+      const key = cartKey(offer);
+      const current = state.offers[key];
+      const latest = current && current.version > offer.version ? current : offer;
+      const existing = state.items.find(item => cartKey(item) === key);
+      const next = quantity + (existing?.quantity ?? 0);
+
+      const items = existing ? state.items.map(item => cartKey(item) === key ? { ...item, quantity: next } : item)
+        : [...state.items, { sku: offer.sku, offerId: offer.offerId ?? 'standard', quantity }];
+
+      const offers = { ...state.offers, [key]: latest };
+
+      const boxes = items.filter(item => item.sku === offer.sku).reduce((sum, item) =>
+        sum + item.quantity * (offers[cartKey(item)]?.unitsPerPack ?? 1), 0);
+
+      const stock = latest.availableBoxes ?? latest.availableQuantity * (latest.unitsPerPack ?? 1);
+
+      if (!latest.salesEnabled || next > latest.availableQuantity || next > 99 || boxes > Math.min(99, stock)
+        || (!existing && state.items.length >= 20)) { set({ error: 'CART_LIMIT' }); return false; }
+
+      set({ items, offers, open: true, error: '' });
+      trackEcommerceEvent('add_to_cart', cartAnalytics(latest, quantity));
+
+      if (!state.open) trackCartView(items, offers);
+
+      return true;
+    },
+    update: (sku, quantity, offerId = 'standard') => {
+      const state = get();
+
       if (state.busy || state.pending || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) return;
 
-      const current = state.offers[offer.sku];
-      const latest = current && current.version > offer.version ? current : offer;
-      const max = Math.min(99, latest.availableQuantity);
+      const key = cartKey({ sku, offerId });
+      const previous = state.items.find(item => cartKey(item) === key)?.quantity;
+      const latest = state.offers[key];
+      const items = state.items.map(item => cartKey(item) === key ? { ...item, quantity } : item);
 
-      if (!latest.salesEnabled || max < 1) return;
+      const boxes = items.filter(item => item.sku === sku).reduce((sum, item) =>
+        sum + item.quantity * (state.offers[cartKey(item)]?.unitsPerPack ?? 1), 0);
 
-      const existing = state.items.find(item => item.sku === offer.sku);
+      const stock = latest?.availableBoxes ?? (latest ? latest.availableQuantity * (latest.unitsPerPack ?? 1) : 99);
 
-      if (!existing && state.items.length >= 20) return;
+      if (quantity > (latest?.availableQuantity ?? 99) || boxes > Math.min(99, stock)) { set({ error: 'CART_LIMIT' }); return; }
 
-      const next = Math.min(max, quantity + (existing?.quantity ?? 0));
+      set({ items, error: '' });
 
-      const items = existing ? state.items.map(item => item.sku === offer.sku ? { ...item, quantity: next } : item)
-        : [...state.items, { sku: offer.sku, quantity: next }];
-
-      set({ items, offers: { ...state.offers, [offer.sku]: latest }, open: true, error: '' });
-      const added = next - (existing?.quantity ?? 0);
-
-      if (added > 0) trackEcommerceEvent('add_to_cart', getProductAnalytics(latest, added));
-
-      if (!state.open) trackCartView(items, get().offers);
-    },
-    update: (sku, quantity) => {
-      if (get().busy || get().pending || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) return;
-
-      const state = get();
-      const previous = state.items.find(item => item.sku === sku)?.quantity;
-      set({ items: get().items.map(item => item.sku === sku ? { sku, quantity } : item), error: '' });
-
-      if (previous && previous !== quantity && state.offers[sku]) {
-        const event = quantity > previous ? 'add_to_cart' : 'remove_from_cart';
-        trackEcommerceEvent(event, getProductAnalytics(state.offers[sku], Math.abs(quantity - previous)));
+      if (previous && previous !== quantity && latest) {
+        trackEcommerceEvent(quantity > previous ? 'add_to_cart' : 'remove_from_cart',
+          cartAnalytics(latest, Math.abs(quantity - previous)));
       }
     },
-    remove: sku => {
-      if (get().busy || get().pending) return;
-
+    replaceOffer: (sku, sourceOfferId, destination) => {
       const state = get();
-      const removed = state.items.find(item => item.sku === sku);
-      set({ items: get().items.filter(item => item.sku !== sku), error: '' });
+      const sourceKey = cartKey({ sku, offerId: sourceOfferId });
+      const destinationKey = cartKey(destination);
+      const source = state.items.find(item => cartKey(item) === sourceKey);
 
-      if (removed && state.offers[sku]) {
-        trackEcommerceEvent('remove_from_cart', getProductAnalytics(state.offers[sku], removed.quantity));
+      if (state.busy || state.pending || !source || destination.sku !== sku) return false;
+
+      if (sourceKey === destinationKey) return true;
+
+      const existing = state.items.find(item => cartKey(item) === destinationKey);
+      const quantity = source.quantity + (existing?.quantity ?? 0);
+      const current = state.offers[destinationKey];
+      const latest = current && current.version > destination.version ? current : destination;
+      const offers = { ...state.offers, [destinationKey]: latest };
+      const items = state.items.filter(item => cartKey(item) !== sourceKey && cartKey(item) !== destinationKey);
+      items.push({ sku, offerId: destination.offerId ?? 'standard', quantity });
+
+      const boxes = items.filter(item => item.sku === sku).reduce((sum, item) =>
+        sum + item.quantity * (offers[cartKey(item)]?.unitsPerPack ?? 1), 0);
+
+      const stock = latest.availableBoxes ?? latest.availableQuantity * (latest.unitsPerPack ?? 1);
+
+      if (!latest.salesEnabled || quantity > latest.availableQuantity || quantity > 99 || boxes > Math.min(99, stock)) {
+        set({ error: 'CART_LIMIT' });
+        return false;
+      }
+
+      const offerErrors = { ...state.offerErrors };
+      delete offerErrors[sourceKey];
+      delete offerErrors[destinationKey];
+      set({ items, offers, offerErrors, error: '' });
+      return true;
+    },
+    remove: (sku, offerId = 'standard') => {
+      const state = get();
+
+      if (state.busy || state.pending) return;
+
+      const key = cartKey({ sku, offerId });
+      const removed = state.items.find(item => cartKey(item) === key);
+      set({ items: state.items.filter(item => cartKey(item) !== key), error: '' });
+
+      if (removed && state.offers[key]) {
+        trackEcommerceEvent('remove_from_cart', cartAnalytics(state.offers[key], removed.quantity));
       }
     },
     confirmPaidOrder: (id, purchased) => {
@@ -114,7 +176,7 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
       const alreadySettled = state.settledOrders.includes(id);
 
       const items = alreadySettled ? state.items : state.items.flatMap(item => {
-        const count = purchased.find(value => value.sku === item.sku)?.quantity ?? 0;
+        const count = purchased.find(value => cartKey(value) === cartKey(item))?.quantity ?? 0;
         return item.quantity > count ? [{ ...item, quantity: item.quantity - count }] : [];
       });
 
@@ -151,33 +213,65 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
       try {
         let pending = state.pending;
 
-        if (!pending.orderId) {
-          // A lost creation response may hide a payable Session. Resolve the exact request before cancelling it.
-          const result = await request<{ id: string }>('/api/checkout/session', {
-            operationId: pending.operationId, guestToken: pending.guestToken, items: pending.items,
-          });
-
+        const replay = async () => {
+          const result = await request<{ id: string }>('/api/checkout/session', pendingRequest(pending));
           pending = { ...pending, orderId: result.id };
           session().setItem(pendingKey, JSON.stringify(pending));
           set({ pending });
+        };
+
+        if (!pending.orderId) {
+          try {
+            const result = await request<{ id: string }>('/api/checkout/resolve', {
+              operationId: pending.operationId, guestToken: pending.guestToken,
+            });
+
+            pending = { ...pending, orderId: result.id };
+            session().setItem(pendingKey, JSON.stringify(pending));
+            set({ pending });
+          } catch (failure) {
+            if (pending.cartFormat === 'packs-v2' || !(failure instanceof Error)
+              || failure.message !== 'CHECKOUT_NOT_READY') throw failure;
+
+            await replay();
+          }
         }
 
-        await request(`/api/orders/${pending.orderId}/checkout/cancel`, {}, pending.guestToken);
+        try {
+          await request(`/api/orders/${pending.orderId}/checkout/cancel`, {}, pending.guestToken);
+        } catch (failure) {
+          if (!(failure instanceof Error) || failure.message !== 'CHECKOUT_NOT_READY') throw failure;
+
+          await replay();
+          await request(`/api/orders/${pending.orderId}/checkout/cancel`, {}, pending.guestToken);
+        }
+
         session().removeItem(pendingKey);
         set({ pending: null });
         return true;
       } catch (failure) {
         const code = failure instanceof Error ? failure.message : '';
+
+        if (code === 'CHECKOUT_RELOAD_REQUIRED') {
+          try { session().removeItem(pendingKey); }
+          catch { set({ error: copy.cancelCheckoutError }); return false; }
+
+          set({ pending: null, error: '' });
+          return true;
+        }
+
         set({ error: code === 'CHECKOUT_CANNOT_CANCEL' ? copy.checkoutCannotCancel : copy.cancelCheckoutError });
         return false;
       } finally {
         set({ busy: false, cancelling: false });
       }
     },
-    checkout: async copy => {
+    checkout: async (copy, address) => {
       const state = get();
 
-      if (state.busy || !state.items.length) return null;
+      if (state.busy || (!state.items.length && !state.pending)) return null;
+
+      if (!state.pending && !address) { set({ error: copy.shippingAddressRequired }); return null; }
 
       set({ busy: true, error: '' });
 
@@ -185,67 +279,85 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
         let attempt = state.pending;
 
         if (!attempt) {
-          // Price and availability are verified only after the customer clicks Checkout.
+          const products = new Map<string, Offer>();
+          await Promise.all([...new Set(state.items.map(item => item.sku))].map(async sku => {
+            products.set(sku, await request<Offer>(`/api/products/${sku}`));
+          }));
           const fresh: Record<string, Offer> = {};
           const errors: Record<string, string> = {};
-          await Promise.all(state.items.map(async item => {
-            try { fresh[item.sku] = await request<Offer>(`/api/products/${item.sku}`); }
-            catch { errors[item.sku] = copy.offerError; }
-          }));
+
+          for (const item of state.items) {
+            const product = products.get(item.sku)!;
+
+            const selected = product.purchaseOffers?.find(offer => offer.offerId === (item.offerId ?? 'standard'))
+              ?? (!product.purchaseOffers && (item.offerId ?? 'standard') === 'standard' ? {
+                offerId: 'standard', unitsPerPack: 1, patchesPerPack: 60, price: product.price,
+                availableQuantity: product.availableQuantity, sortOrder: 0,
+              } : undefined);
+
+            if (!selected) { errors[cartKey(item)] = copy.offerError; continue; }
+
+            fresh[cartKey(item)] = toCartOffer(product, selected);
+          }
+
           set({ offers: { ...state.offers, ...fresh }, offerErrors: errors });
 
           if (Object.keys(errors).length) throw new Error('PRODUCT_UNAVAILABLE');
 
-          if (state.items.some(item => item.quantity > fresh[item.sku].availableQuantity)) throw new Error('OUT_OF_STOCK');
+          if (state.items.some(item => item.quantity > fresh[cartKey(item)].availableQuantity)) throw new Error('OUT_OF_STOCK');
 
-          if (state.items.some(item => state.offers[item.sku]?.price.unitAmount !== fresh[item.sku].price.unitAmount
-            || state.offers[item.sku]?.version !== fresh[item.sku].version)) throw new Error('PRICE_CHANGED');
-
-          const quote = await request<{ items: (CartItem & { unitAmount: number; productVersion: number })[] }>(
-            '/api/checkout/quote', { items: state.items },
-          );
-
-          const changed = quote.items.some(item => item.unitAmount !== fresh[item.sku].price.unitAmount
-            || item.productVersion !== fresh[item.sku].version);
-
-          if (changed) {
-            for (const item of quote.items) { fresh[item.sku] = {
-              ...fresh[item.sku], price: { currency: 'USD', unitAmount: item.unitAmount }, version: item.productVersion,
-            }; }
-
-            set({ offers: { ...get().offers, ...fresh } });
+          if (state.items.some(item => state.offers[cartKey(item)]?.price.unitAmount !== fresh[cartKey(item)].price.unitAmount
+            || state.offers[cartKey(item)]?.version !== fresh[cartKey(item)].version
+            || (state.offers[cartKey(item)]?.unitsPerPack ?? 1) !== fresh[cartKey(item)].unitsPerPack)) {
             throw new Error('PRICE_CHANGED');
           }
+
+          const quote = await request<{ items: (CartItem & { unitAmount: number; productVersion: number })[] }>(
+            '/api/checkout/quote', { cartFormat: 'packs-v2', items: state.items },
+          );
+
+          const changed = quote.items.length !== state.items.length || quote.items.some(item =>
+            state.items.find(value => cartKey(value) === cartKey(item))?.quantity !== item.quantity
+            || item.unitAmount !== fresh[cartKey(item)]?.price.unitAmount
+            || item.productVersion !== fresh[cartKey(item)]?.version);
+
+          if (changed) throw new Error('PRICE_CHANGED');
 
           const bytes = crypto.getRandomValues(new Uint8Array(32));
           const guestToken = btoa(String.fromCharCode(...bytes)).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
           attempt = {
-            items: quote.items.map(({ sku, quantity, productVersion }) => ({ sku, quantity, productVersion })),
+            cartFormat: 'packs-v2', shippingAddress: { ...address! },
+            items: quote.items.map(({ sku, offerId, quantity, productVersion }) => ({
+              sku, offerId: offerId ?? 'standard', quantity, productVersion,
+            })),
             operationId: crypto.randomUUID(), guestToken,
           };
-          // Retain the exact request until its outcome is known, including across reloads.
           session().setItem(pendingKey, JSON.stringify(attempt));
           set({ pending: attempt });
         }
 
-        const { operationId, guestToken, items } = attempt;
-        const result = await request<{ id: string }>('/api/checkout/session', { operationId, guestToken, items });
+        const result = await request<{ id: string }>('/api/checkout/session', pendingRequest(attempt));
         const pending = { ...attempt, orderId: result.id };
         session().setItem(pendingKey, JSON.stringify(pending));
         set({ pending, open: false });
         return result.id;
       } catch (failure) {
         const code = failure instanceof Error ? failure.message : '';
-        const changed = ['PRICE_CHANGED', 'OUT_OF_STOCK', 'PRODUCT_UNAVAILABLE'].includes(code);
 
-        if (changed || ['INVALID_INPUT'].includes(code)) {
-          session().removeItem(pendingKey);
-          set({ pending: null });
+        if (code === 'CHECKOUT_RELOAD_REQUIRED') {
+          try { session().removeItem(pendingKey); }
+          catch { set({ error: copy.checkoutError }); return null; }
+
+          set({ pending: null, error: copy.checkoutReloadRequired });
+          return null;
         }
 
+        const changed = ['PRICE_CHANGED', 'OUT_OF_STOCK', 'PRODUCT_UNAVAILABLE'].includes(code);
         const unavailable = ['CHECKOUT_UNAVAILABLE', 'STRIPE_NOT_CONFIGURED'].includes(code);
         const message = unavailable ? copy.checkoutUnavailable : copy.checkoutError;
-        set({ error: changed ? copy.changedError : message });
+        const addressError = ['INVALID_SHIPPING_ADDRESS', 'SHIPPING_ADDRESS_UNSUPPORTED', 'INVALID_INPUT'].includes(code);
+        const failureMessage = addressError ? copy.shippingAddressError : message;
+        set({ error: changed ? copy.changedError : failureMessage });
         return null;
       } finally {
         set({ busy: false });

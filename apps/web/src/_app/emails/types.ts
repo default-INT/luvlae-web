@@ -12,6 +12,9 @@ export interface NotificationItem {
   quantity: number;
   unitAmount: number;
   lineSubtotal: number;
+  offerId?: string;
+  unitsPerPack?: number;
+  inventoryQuantity?: number;
 }
 
 export interface NotificationContent {

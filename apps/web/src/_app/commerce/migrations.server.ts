@@ -7,6 +7,8 @@ import { migrateAdminNotifications } from './admin-notifications-migration.serve
 import { migrateNotifications } from './notification-migration.server';
 import { migrateMockOrders } from './mock-migration.server';
 import { migrateStripeRequests } from './stripe-request-migration.server';
+import { migrateLockedShipping } from './shipping-migration.server';
+import { migrateDtcBundles } from './dtc-bundles-migration.server';
 
 import type { Db, Document, IndexDescription } from 'mongodb';
 
@@ -232,4 +234,6 @@ export const migrateCommerce = async (db: Db) => {
   await migrateRefunds(db);
   await migrateNotifications(db);
   await migrateAdminNotifications(db);
+  await migrateDtcBundles(db);
+  await migrateLockedShipping(db);
 };

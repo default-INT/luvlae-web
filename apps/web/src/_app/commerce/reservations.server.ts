@@ -9,25 +9,37 @@ import { randomToken } from '@/shared/lib/security/index.server';
 
 import { appendAudit, requestFingerprint } from './audit.server';
 import { collections } from './collections.server';
-import { integerSchema, skuSchema, versionSchema } from './contracts';
+import { legacyCheckoutItemsSchema, packCheckoutItemsSchema } from './contracts';
+import { calculateOfferItems } from './offer-calculator.server';
+import { readActiveSalesTerms } from './sales-terms.server';
+import { shippingAddressSchema } from './shipping-address';
+import { requireShippingSchema } from './shipping-migration.server';
+import { aggregateInventoryItems, requirePackSchema } from './inventory-items.server';
 
 import type { CheckoutAttempt, Order } from './models';
 import type { DatabaseContext } from '@/shared/lib/mongodb/index.server';
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 
-const reservationSchema = z.strictObject({
+const reservationFields = {
   creationKeyHash: hash, guestTokenHash: hash, guestAccessExpiresAt: z.date(),
   expiresAt: z.date(), livemode: z.boolean(), checkoutMode: z.literal('stripe').optional(),
-  pricingPolicy: z.strictObject({ shipping: z.string().min(1), tax: z.string().min(1), discount: z.literal('none-v1') }),
-  items: z.array(z.strictObject({ sku: skuSchema, quantity: integerSchema.min(1).max(99), productVersion: versionSchema }))
-    .min(1).max(20),
-}).refine(value => new Set(value.items.map(item => item.sku)).size === value.items.length);
+  pricingPolicy: z.strictObject({ shipping: z.string().min(1), tax: z.string().min(1), discount: z.literal('none-v1'),
+    catalog: z.literal('packs-v1').optional() }),
+};
+
+const reservationSchema = z.union([
+  z.strictObject({ ...reservationFields, cartFormat: z.undefined().optional(), items: legacyCheckoutItemsSchema }),
+  z.strictObject({ ...reservationFields, cartFormat: z.literal('packs-v1'), items: packCheckoutItemsSchema }),
+  z.strictObject({ ...reservationFields, cartFormat: z.literal('packs-v2'), items: packCheckoutItemsSchema,
+    shippingAddress: shippingAddressSchema }),
+]);
 
 // A server use case, not an HTTP route. Provider setup/reconciliation is deliberately a separate integration.
 // The caller supplies approved policies/expiry and guest-scoped key hashes; no default sales terms are invented.
 interface ReservationOptions {
-  createStripeRequest: (attempt: CheckoutAttempt) => NonNullable<CheckoutAttempt['stripeRequest']>;
+  prepareAttempt?: (attempt: CheckoutAttempt) => CheckoutAttempt['customerProvision'];
+  createStripeRequest?: (attempt: CheckoutAttempt) => NonNullable<CheckoutAttempt['stripeRequest']>;
 }
 
 export const reserveOrder = async (
@@ -35,7 +47,12 @@ export const reserveOrder = async (
 ) => {
   const value = reservationSchema.parse(input);
 
+  if (value.cartFormat !== undefined) value.pricingPolicy.catalog = 'packs-v1';
+  else if (value.pricingPolicy.catalog) fail(400, 'INVALID_INPUT', 'Catalog policy requires packs format.');
+
   const requestHash = requestFingerprint({
+    ...(value.cartFormat !== undefined ? { cartFormat: value.cartFormat } : {}),
+    ...(value.cartFormat === 'packs-v2' ? { shippingAddress: value.shippingAddress } : {}),
     items: value.items, pricingPolicy: value.pricingPolicy, livemode: value.livemode,
     guestTokenHash: value.guestTokenHash, ...(value.checkoutMode ? { checkoutMode: value.checkoutMode } : {}),
   });
@@ -51,38 +68,64 @@ export const reserveOrder = async (
       return { orderId: existing._id, attemptId: attempt?._id, replayed: true };
     }
 
+    if (options?.prepareAttempt && value.cartFormat !== 'packs-v2') {
+      fail(409, 'CHECKOUT_RELOAD_REQUIRED', 'Reload your cart to provide a delivery address.');
+    }
+
+    if (value.cartFormat === 'packs-v2') await requireShippingSchema(context.db, session);
+
     if (value.expiresAt.getTime() <= Date.now() || value.guestAccessExpiresAt.getTime() <= Date.now()) {
       fail(400, 'INVALID_EXPIRATION', 'Reservation and access expiration must be in the future.');
     }
 
     const now = new Date();
+    const salesTerms = readActiveSalesTerms(now);
     const orderId = new ObjectId();
     const attemptId = new ObjectId();
     const items: Order['items'] = [];
 
+    if (value.cartFormat !== undefined) {
+      await requirePackSchema(context.db, session);
+      const catalog = await products.find({ sku: { $in: value.items.map(item => item.sku) } }, { session }).toArray();
+      items.push(...calculateOfferItems(catalog, value.items));
+
+      for (const demand of aggregateInventoryItems(items)) {
+        const product = catalog.find(product => product.sku === demand.sku)!;
+        const available = { $gte: [{ $subtract: ['$inventory.stockQuantity', '$inventory.reservedQuantity'] }, demand.quantity] };
+
+        const reserved = await products.updateOne({ _id: demand.productId, version: product.version, salesEnabled: true,
+          $expr: available }, { $inc: { 'inventory.version': 1, 'inventory.reservedQuantity': demand.quantity },
+          $set: { updatedAt: now } }, { session });
+
+        if (!reserved.modifiedCount) fail(409, 'OUT_OF_STOCK', 'Requested quantity is unavailable.');
+      }
+    } else {
     // Sequential DB calls: MongoDB does not support parallel operations within a transaction.
-    for (const requested of value.items) {
-      const product = await products.findOne({ sku: requested.sku }, { session });
+      for (const requested of value.items) {
+        const product = await products.findOne({ sku: requested.sku }, { session });
 
-      if (!product || !product.salesEnabled) return fail(409, 'PRODUCT_UNAVAILABLE', 'A product is unavailable.');
+        if (!product || !product.salesEnabled) return fail(409, 'PRODUCT_UNAVAILABLE', 'A product is unavailable.');
 
-      if (product.version !== requested.productVersion) fail(409, 'PRICE_CHANGED', 'Confirm the updated product offer.');
+        if (product.version !== requested.productVersion) fail(409, 'PRICE_CHANGED', 'Confirm the updated product offer.');
 
-      const reserved = await products.updateOne({
-        _id: product._id, version: requested.productVersion, salesEnabled: true,
-        $expr: { $gte: [{ $subtract: ['$inventory.stockQuantity', '$inventory.reservedQuantity'] }, requested.quantity] },
-      }, { $inc: { 'inventory.reservedQuantity': requested.quantity }, $set: { updatedAt: now } }, { session });
+        const reserved = await products.updateOne({
+          _id: product._id, version: requested.productVersion, salesEnabled: true,
+          $expr: { $gte: [{ $subtract: ['$inventory.stockQuantity', '$inventory.reservedQuantity'] }, requested.quantity] },
+        }, { $inc: { 'inventory.version': 1, 'inventory.reservedQuantity': requested.quantity },
+          $set: { updatedAt: now } }, { session });
 
-      if (!reserved.modifiedCount) fail(409, 'OUT_OF_STOCK', 'Requested quantity is unavailable.');
+        if (!reserved.modifiedCount) fail(409, 'OUT_OF_STOCK', 'Requested quantity is unavailable.');
 
-      const lineSubtotal = product.price.unitAmount * requested.quantity;
+        const lineSubtotal = product.price.unitAmount * requested.quantity;
 
-      if (!Number.isSafeInteger(lineSubtotal)) fail(400, 'INVALID_AMOUNT', 'Amount exceeds supported bounds.');
+        if (!Number.isSafeInteger(lineSubtotal)) fail(400, 'INVALID_AMOUNT', 'Amount exceeds supported bounds.');
 
-      items.push({
-        productId: product._id, sku: product.sku, name: product.name, quantity: requested.quantity,
-        unitAmount: product.price.unitAmount, lineSubtotal, productVersion: product.version,
-      });
+        items.push({
+          productId: product._id, sku: product.sku, name: product.name, quantity: requested.quantity,
+          unitAmount: product.price.unitAmount, lineSubtotal, productVersion: product.version,
+        });
+      }
+
     }
 
     const subtotal = items.reduce((sum, item) => sum + item.lineSubtotal, 0);
@@ -102,7 +145,10 @@ export const reserveOrder = async (
       orderNumber: `LV-${randomToken().slice(0, 16).toUpperCase()}`,
       creationKeyHash: value.creationKeyHash, creationRequestHash: requestHash,
       guestAccess: { tokenHash: value.guestTokenHash, expiresAt: value.guestAccessExpiresAt },
+      ...(value.cartFormat === 'packs-v2' ? { shippingAddress: value.shippingAddress,
+        shippingPolicy: 'contiguous-us-v1' as const } : {}),
       items, currency: 'USD', pricing, pricingPolicy: value.pricingPolicy, orderStatus: 'open',
+      ...(salesTerms ? { salesTerms } : {}),
       payment: {
         status: 'pending', activeAttemptId: attemptId, amountPaid: 0, amountRefunded: 0,
         disputed: false, reconciliationRequired: false,
@@ -117,13 +163,18 @@ export const reserveOrder = async (
       stripeIdempotencyKey: `checkout-${attemptId.toHexString()}`, state: 'creating', active: true,
       quoteSnapshot: { items, currency: 'USD', pricing, pricingPolicy: value.pricingPolicy },
       inventoryReservation: {
-        state: 'held', items: items.map(item => ({ productId: item.productId, quantity: item.quantity })),
+        state: 'held', items: aggregateInventoryItems(items).map(({ productId, quantity }) => ({ productId, quantity })),
         expiresAt: value.expiresAt,
       },
+      ...(value.cartFormat === 'packs-v2' ? { shippingSnapshot: value.shippingAddress } : {}),
       livemode: value.livemode, createdAt: now, updatedAt: now,
     };
 
-    if (options) attempt.stripeRequest = options.createStripeRequest(attempt);
+    if (options?.prepareAttempt && value.cartFormat === 'packs-v2') {
+      attempt.customerProvision = options.prepareAttempt(attempt);
+    }
+
+    if (options?.createStripeRequest) attempt.stripeRequest = options.createStripeRequest(attempt);
 
     await attempts.insertOne(attempt, { session });
     await appendAudit(context.db, session, {

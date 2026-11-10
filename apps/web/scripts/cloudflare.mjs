@@ -3,6 +3,8 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { z } from 'zod';
+
 export const getDeployment = (environment = 'production', settings = {}) => {
   if (!['stage', 'production'].includes(environment)) {
     throw new Error(`Unsupported deployment environment: ${environment}`);
@@ -17,9 +19,21 @@ export const getDeployment = (environment = 'production', settings = {}) => {
     throw new Error('Stage must use Stripe test mode.');
   }
 
+  const salesTerms = {
+    policyVersion: settings.SALES_TERMS_POLICY_VERSION ?? '',
+    effectiveAt: settings.SALES_TERMS_EFFECTIVE_AT ?? '',
+  };
+  if ((salesTerms.policyVersion || salesTerms.effectiveAt) && !z.object({
+    policyVersion: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,99}$/),
+    effectiveAt: z.iso.datetime({ offset: true }),
+  }).safeParse(salesTerms).success) {
+    throw new Error('Provide both valid SALES_TERMS_POLICY_VERSION and ISO SALES_TERMS_EFFECTIVE_AT, or leave both empty.');
+  }
+
   return {
     environment, worker: environment === 'stage' ? 'luvlae-web-stage' : 'luvlae-web',
     stripe: { mode: stripeMode, disabled: checkoutDisabled },
+    salesTerms,
   };
 };
 
@@ -41,6 +55,13 @@ export const verifyArtifact = (root, deployment) => {
 
   if (!stripeMatches) {
     throw new Error('Stripe mode/activation differs from the build artifact. Rebuild before deploying.');
+  }
+
+  if (manifest.salesTerms?.policyVersion !== deployment.salesTerms.policyVersion
+    || manifest.salesTerms?.effectiveAt !== deployment.salesTerms.effectiveAt
+    || config.env?.SALES_TERMS_POLICY_VERSION?.value !== deployment.salesTerms.policyVersion
+    || config.env?.SALES_TERMS_EFFECTIVE_AT?.value !== deployment.salesTerms.effectiveAt) {
+    throw new Error('Sales terms activation differs from the build artifact. Rebuild before deploying.');
   }
 
   const headersFile = path.join(output, 'assets/_headers');
@@ -83,7 +104,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     run(['exec', 'vite', 'build', '--mode', deployment.environment]);
     const output = path.join(root, '.cloudflare/output/v0/workers/default');
     writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({
-      environment: deployment.environment, stripe: deployment.stripe,
+      environment: deployment.environment, stripe: deployment.stripe, salesTerms: deployment.salesTerms,
     }));
     if (deployment.environment === 'stage') {
       const headersFile = path.join(output, 'assets/_headers');

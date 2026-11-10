@@ -115,7 +115,8 @@ const renderItemsHtml = (content: NotificationContent) => content.items.map(item
     <td style="padding:12px 0;border-bottom:1px solid #d8dce9;color:#001a40;font-size:14px;line-height:20px;">
       ${escapeHtml(cleanText(item.name))}<br>
       <span style="color:#43474f;font-size:12px;">
-        Qty ${Math.max(0, Math.floor(item.quantity))} · ${formatAmount(item.unitAmount)} each
+        ${item.offerId ? 'Sets' : 'Qty'} ${Math.max(0, Math.floor(item.quantity))}${item.inventoryQuantity
+  ? ` · ${item.inventoryQuantity} boxes` : ''} · ${formatAmount(item.unitAmount)} each
       </span>
     </td>
     <td align="right" valign="top"
@@ -125,7 +126,8 @@ const renderItemsHtml = (content: NotificationContent) => content.items.map(item
   </tr>`).join('');
 
 const renderItemsText = (content: NotificationContent) => content.items.map(item => [
-  `• ${cleanText(item.name)} — Qty ${Math.max(0, Math.floor(item.quantity))}`,
+  `• ${cleanText(item.name)} — ${item.offerId ? 'Sets' : 'Qty'} ${Math.max(0, Math.floor(item.quantity))}${item.inventoryQuantity
+    ? ` · ${item.inventoryQuantity} boxes` : ''}`,
   `${formatAmount(item.unitAmount)} each · ${formatAmount(item.lineSubtotal)} total`,
 ].join(' ')).join('\n');
 

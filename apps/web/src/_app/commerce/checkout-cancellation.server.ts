@@ -9,6 +9,7 @@ import { createStripeClient } from '@/shared/lib/stripe/index.server';
 
 import { appendAudit } from './audit.server';
 import { collections } from './collections.server';
+import { cancelUnopenedShippingCheckout } from './shipping-checkout.server';
 import { applyCheckoutTransition } from './stripe-checkout-persistence.server';
 import { planCheckoutTransition, validateCheckoutAssociation, validateCheckoutSession } from './stripe-checkout-policy.server';
 
@@ -26,6 +27,10 @@ export const cancelGuestCheckout = async (database: DatabaseContext, id: string,
   if (!order) return fail(404, 'NOT_FOUND', 'Checkout not found.');
 
   const attempt = await attempts.findOne({ orderId: order._id });
+
+  if (attempt?.shippingSnapshot && !attempt.stripeRequest && !attempt.stripeSessionId) {
+    return cancelUnopenedShippingCheckout(database, attempt);
+  }
 
   if (!attempt?.stripeSessionId) return fail(409, 'CHECKOUT_NOT_READY', 'Resume checkout before trying again.');
 

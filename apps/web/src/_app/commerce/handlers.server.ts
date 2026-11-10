@@ -11,11 +11,12 @@ import { findGuestOrder, guestOrderCookie } from '@/entities/order/index.server'
 import { login, logout, requireAdmin, requireSessionCookie, sessionCookie } from './auth.server';
 import { collections } from './collections.server';
 import { cancelGuestCheckout } from './checkout-cancellation.server';
+import { checkoutResolveSchema, resolveGuestCheckout } from './checkout-resolve.server';
 import { checkoutSessionSchema, createCheckoutSession } from './checkout-session.server';
-import {
-  cancellationSchema, createProductSchema, fulfillmentSchema, idSchema,
+import { cancellationSchema, createProductSchema, fulfillmentSchema, idSchema,
   loginSchema, quoteSchema, restockSchema, skuSchema, updateProductSchema,
-} from './contracts';
+  createOfferSchema, updateOfferSchema, duplicateOfferSchema, storefrontSchema, inventoryAdjustmentSchema } from './contracts';
+import { createOffer, updateOffer, duplicateOffer, updateStorefront, adjustInventory } from './catalog-mutations.server';
 import { createMockOrder, mockCheckoutSchema, requireMockCheckout } from './mock-checkout.server';
 import { cancelOrder, orderDetailDto, orderSummaryDto, restockOrder, updateFulfillment } from './orders.server';
 import { orderListFilter } from './order-filters.server';
@@ -263,4 +264,40 @@ export const cancelCheckoutSession = (request: Request, route: RouteParams) => h
 
   await readJson(request, z.strictObject({}));
   return withDatabase(async context => json(await cancelGuestCheckout(context, id, authorization.slice(7))));
+})();
+
+export const postOffer = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
+  const sku = skuSchema.parse((await route.params).sku);
+  const result = await createOffer(context, adminId, sku, await readJson(request, createOfferSchema));
+  return json(result, result.replayed ? 200 : 201);
+});
+export const patchOffer = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
+  const params = await route.params;
+  return json(await updateOffer(context, adminId, skuSchema.parse(params.sku), z.uuid().parse(params.offerId),
+    await readJson(request, updateOfferSchema)));
+});
+export const postDuplicateOffer = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
+  const params = await route.params;
+
+  const result = await duplicateOffer(context, adminId, skuSchema.parse(params.sku), z.uuid().parse(params.offerId),
+    await readJson(request, duplicateOfferSchema));
+
+  return json(result, result.replayed ? 200 : 201);
+});
+export const patchStorefront = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
+  const sku = skuSchema.parse((await route.params).sku);
+  return json(await updateStorefront(context, adminId, sku, await readJson(request, storefrontSchema)));
+});
+export const postInventoryAdjustment = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
+  const sku = skuSchema.parse((await route.params).sku);
+  return json(await adjustInventory(context, adminId, sku, await readJson(request, inventoryAdjustmentSchema)));
+});
+
+export const resolveCheckout = (request: Request) => handle(async () => {
+  requireOrigin(request);
+  const input = await readJson(request, checkoutResolveSchema);
+  return withDatabase(async context => {
+    const result = await resolveGuestCheckout(context, input);
+    return json(result, 200, { 'Set-Cookie': guestOrderCookie(result.id, input.guestToken, request.url) });
+  });
 })();

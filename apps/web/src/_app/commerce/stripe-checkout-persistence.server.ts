@@ -37,7 +37,8 @@ const updateInventory = async ({ db, session, context, transition, now }: Checko
       _id: item.productId, 'inventory.reservedQuantity': { $gte: item.quantity },
       ...(stockDelta ? { 'inventory.stockQuantity': { $gte: item.quantity } } : {}),
     }, {
-      $inc: { 'inventory.reservedQuantity': -item.quantity, 'inventory.stockQuantity': stockDelta * item.quantity },
+      $inc: { 'inventory.version': 1,
+        'inventory.reservedQuantity': -item.quantity, 'inventory.stockQuantity': stockDelta * item.quantity },
       $set: { updatedAt: now },
     }, { session });
 

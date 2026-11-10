@@ -11,11 +11,16 @@ import { migrateCommerce } from '../src/_app/commerce/migrations.server';
 import { migrateAdminNotifications } from '../src/_app/commerce/admin-notifications-migration.server';
 import { cancelOrder, refundOrder } from '../src/_app/commerce/refunds.server';
 import { updateFulfillment } from '../src/_app/commerce/orders.server';
-import { createMockOrder } from '../src/_app/commerce/mock-checkout.server';
+import { createMockOrder as rawCreateMockOrder } from '../src/_app/commerce/mock-checkout.server';
 import { createProduct } from '../src/_app/commerce/products.server';
 import { randomToken } from '../src/shared/lib/security/index.server';
 
+import { withShipping } from './helpers/shipping';
+
 import type { DatabaseContext } from '../src/shared/lib/mongodb/index.server';
+
+const createMockOrder = (context: DatabaseContext, input: Parameters<typeof rawCreateMockOrder>[1]) =>
+  rawCreateMockOrder(context, withShipping(input));
 
 let replica: MongoMemoryReplSet;
 let context: DatabaseContext;

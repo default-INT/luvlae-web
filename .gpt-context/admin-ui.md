@@ -1,5 +1,17 @@
 # Admin interface
 
+## Offers and inventory extension — 2026-11-09 (local, not deployed)
+
+ProductEditor has independent catalog, inventory adjustment, offer lifecycle and homepage-slot forms. Quantity/total-price offers are reusable templates; stable server IDs support arbitrary pack sizes without JSX changes. Stock changes use a separate version and audited delta/set action. Uncertain mutations freeze the exact request/operation ID; accepted writes with failed refresh retry the read only. Drafts survive background refresh and version conflicts require explicit review. Order details distinguish sets/boxes, included tax and optional sales-terms version/date.
+
+Local MCP QA confirmed synthetic login, catalog edit/restore and stock +1/-1 returning to stock12/reserved0. Final MCP QA also exercised draft creation/edit/publish/archive and archived-offer duplication; both temporary4-box offers ended archived with original homepage slots and stock preserved. Earlier supplemental CLI verified homepage configuration. See [execution evidence](dtc-bundles-execution.md) and [technical solution](dtc-bundles-technical-solution.md). Remote runtime and responsive admin checks remain unverified.
+
+## Same-origin guard — 2026-11-09
+
+The shared API guard compares Origin with the strictly parsed Host authority and request protocol; only requests without Host fall back to request.url. Next's Node adapter reconstructs request.url from its configured listener hostname/port, which can differ from the browser's localhost/127.0.0.1 address and incorrectly produced INVALID_ORIGIN before credential checks. Forwarded host/protocol headers are not used by this guard; malformed Host, missing/mismatched Origin and explicit cross-site fetches remain rejected. Regression coverage: `apps/web/tests/api-origin.test.ts`. Local MCP login/product-list checks passed on both localhost:3022 and 127.0.0.1:3022; signed out after each with no catalog mutations. Full regression206/206, scoped lint and TypeScript passed; independent medium review found no P1/P2 issues.
+
+## Existing implementation
+
 Implemented 2026-10-18 in `apps/web` using the existing commerce APIs. Direct entry: `/admin` redirects to `/admin/orders`; there are no admin links on the public storefront.
 
 - `/admin/login`: email/password form, generic invalid-credential error and rate-limit feedback; no registration/password-reset UI. Existing operational administrator commands remain the account setup/reset path. Never put credentials in context notes.

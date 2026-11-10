@@ -31,6 +31,11 @@ export const generateMetadata = async (): Promise<Metadata> => {
   };
 };
 
-export default function ProductRoute() {
-  return <ProductPage/>;
+export default async function ProductRoute(props: {
+  searchParams: Promise<{ offer?: string | string[] }>;
+}) {
+  const query = await props.searchParams;
+  const initialOfferId = Array.isArray(query.offer) ? '' : query.offer;
+
+  return <ProductPage initialOfferId={initialOfferId}/>;
 }

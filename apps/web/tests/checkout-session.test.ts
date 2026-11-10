@@ -19,6 +19,8 @@ import { stripeRequestMigrationName } from '../src/_app/commerce/stripe-request-
 import { ApiError } from '../src/shared/lib/api/index.server';
 import { hashToken, randomToken } from '../src/shared/lib/security/index.server';
 
+import { withShipping, stubShippingCustomers } from './helpers/shipping';
+
 import type { DatabaseContext } from '../src/shared/lib/mongodb/index.server';
 
 let replica: MongoMemoryReplSet;
@@ -59,8 +61,11 @@ const fixture = async (sku: string, quantity = 1, stock = 5) => {
     stockQuantity: stock, salesEnabled: true, operationId: randomUUID(),
   }));
 
-  const input = { operationId: randomUUID(), guestToken: randomToken(), items: [{ sku, quantity, productVersion: 1 }] };
+  const input = withShipping({ operationId: randomUUID(), guestToken: randomToken(),
+    items: [{ sku, quantity, productVersion: 1 }] });
+
   const stripe = new Stripe('sk_test_synthetic');
+  stubShippingCustomers(stripe);
   const sessions = new Map<string, Stripe.Checkout.Session>();
   const requests: { parameters: Stripe.Checkout.SessionCreateParams; key: string; apiVersion?: string }[] = [];
   let creates = 0;
@@ -88,6 +93,7 @@ const fixture = async (sku: string, quantity = 1, stock = 5) => {
       const total = parameters.line_items!.reduce((sum, item) => sum + item.price_data!.unit_amount! * item.quantity!, 0);
       checkout = {
         id: `cs_test_${randomUUID()}`, object: 'checkout.session', mode: 'payment', ui_mode: 'embedded_page',
+        customer: parameters.customer, automatic_tax: { enabled: true, status: 'complete' },
         livemode: false, status: 'open', payment_status: 'unpaid', currency: 'usd',
         metadata: parameters.metadata, client_reference_id: parameters.client_reference_id,
         amount_subtotal: total, amount_total: total, expires_at: parameters.expires_at,
@@ -151,10 +157,13 @@ test('embedded checkout reserves once with exact server quote, card-only US form
   assert.equal(parameters.redirect_on_completion, 'never');
   assert.equal(parameters.locale, 'en');
   assert.deepEqual(parameters.wallet_options, { link: { display: 'never' } });
-  assert.deepEqual(parameters.shipping_address_collection?.allowed_countries, ['US']);
+  assert.equal(parameters.shipping_address_collection, undefined);
+  assert.equal(parameters.customer_creation, undefined);
+  assert.deepEqual(parameters.customer_update, { shipping: 'never' });
+  assert.equal(parameters.customer, attempt.customerProvision?.customerId);
   assert.deepEqual(parameters.name_collection?.individual, { enabled: true, optional: false });
   assert.equal(parameters.customer_email, undefined);
-  assert.equal(parameters.automatic_tax?.enabled, false);
+  assert.equal(parameters.automatic_tax?.enabled, true);
   assert.equal(parameters.allow_promotion_codes, false);
   assert.equal(parameters.expires_at! * 1000, attempt.inventoryReservation.expiresAt.getTime());
   assert.equal(parameters.line_items?.[0].price_data?.unit_amount, 2599);
@@ -308,7 +317,8 @@ test('unsupported USD totals roll back reservation before contacting Stripe', as
 
   for (const amount of [49, 100000000]) {
     await products.updateOne({ sku: input.items[0].sku }, { $set: { 'price.unitAmount': amount } });
-    await assert.rejects(createCheckoutSession(context, input, stripe), hasCode('INVALID_CHECKOUT_AMOUNT'));
+    await assert.rejects(createCheckoutSession(context, input, stripe),
+      hasCode(amount < 50 ? 'INVALID_CHECKOUT_AMOUNT' : 'INVALID_AMOUNT'));
     assert.equal((await products.findOne({ sku: input.items[0].sku }))?.inventory.reservedQuantity, 0);
     assert.equal(await orders.countDocuments({ 'items.sku': input.items[0].sku }), 0);
   }
@@ -317,7 +327,11 @@ test('unsupported USD totals roll back reservation before contacting Stripe', as
 });
 
 test('retries use persisted request defaults and API version across application builder changes', async () => {
-  const { input, stripe, requests, timeout, stats } = await fixture('CHECKOUT-VERSIONED');
+  const { input: currentInput, stripe, requests, timeout, stats } = await fixture('CHECKOUT-VERSIONED');
+
+  const input = { operationId: currentInput.operationId, guestToken: currentInput.guestToken,
+    items: currentInput.items.map(({ offerId: _offerId, ...item }) => item) };
+
   const now = Math.floor(Date.now() / 1000) * 1000;
 
   const reserved = await reserveOrder(context, {
@@ -344,7 +358,18 @@ test('retries use persisted request defaults and API version across application 
 });
 
 test('unbound legacy attempts require recovery, while bound legacy Sessions resume without guessed parameters', async () => {
-  const { input, stripe, requests, timeout } = await fixture('CHECKOUT-LEGACY');
+  const { input: currentInput, stripe, requests, timeout } = await fixture('CHECKOUT-LEGACY');
+
+  const input = { operationId: currentInput.operationId, guestToken: currentInput.guestToken,
+    items: currentInput.items.map(({ offerId: _offerId, ...item }) => item) };
+
+  const now = Date.now();
+  await reserveOrder(context, {
+    creationKeyHash: hashToken(`stripe:${input.guestToken}:${input.operationId}`),
+    guestTokenHash: hashToken(input.guestToken), guestAccessExpiresAt: new Date(now + 30 * 86400000),
+    expiresAt: new Date(now + 1800000), checkoutMode: 'stripe', livemode: false,
+    pricingPolicy: { shipping: 'included-us-v1', tax: 'included-v1', discount: 'none-v1' }, items: input.items,
+  }, { createStripeRequest: attempt => ({ apiVersion: Stripe.API_VERSION, parameters: checkoutSessionParameters(attempt) }) });
   timeout();
   await assert.rejects(createCheckoutSession(context, input, stripe), hasCode('STRIPE_CHECKOUT_UNAVAILABLE'));
   const { attempts } = collections(context.db);

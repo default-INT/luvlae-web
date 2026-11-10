@@ -1,0 +1,1 @@
+export { InventoryForm } from './InventoryForm';

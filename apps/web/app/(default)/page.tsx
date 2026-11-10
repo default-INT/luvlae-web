@@ -1,10 +1,12 @@
+import { product } from '@/entities/product';
+import { getProductOffer } from '@/entities/product/index.server';
 import { HomePage } from '@/_pages/home';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 
 import type { Metadata } from 'next';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const dictionary = await getDictionary(defaultLocale);
@@ -33,7 +35,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomeRoute() {
-  const dictionary = await getDictionary(defaultLocale);
+  const [dictionary, offer] = await Promise.all([
+    getDictionary(defaultLocale), getProductOffer(product.sku).catch(() => null),
+  ]);
 
-  return <HomePage dictionary={dictionary}/>;
+  return <HomePage dictionary={dictionary} offer={offer}/>;
 }

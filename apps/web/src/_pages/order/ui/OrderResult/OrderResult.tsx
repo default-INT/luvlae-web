@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { OrderCartSync } from '@/features/shopping-cart';
 import { getPurchaseAnalytics } from '@/entities/order';
-import { product } from '@/entities/product';
+import { normalizePackSnapshot, product } from '@/entities/product';
 import { money } from '@/shared/lib/money';
 import { EcommerceEvent } from '@/shared/ui/EcommerceEvent';
 
@@ -57,10 +57,17 @@ export const OrderResult = (props: Props) => {
         </dl>
         <div className={styles.selection}>
           <h2>{copy.orderItems}</h2>
-          {order.items.map(item => <div className={styles.line} key={item.sku}>
-            <span>{item.name}<small>{copy.quantity}: {item.quantity} · {money(item.unitAmount)}</small></span>
-            <strong>{money(item.lineSubtotal)}</strong>
-          </div>)}
+          {order.items.map(item => {
+            const snapshot = normalizePackSnapshot(item);
+            const pack = item.offerId !== undefined && snapshot;
+
+            return <div className={styles.line} key={`${item.sku}:${item.offerId ?? 'standard'}`}>
+              <span>{item.name}<small>{pack ? copy.sets : copy.quantity}: {item.quantity} · {money(item.unitAmount)}</small>
+                {pack && <small>{pack.inventoryQuantity} {copy.boxes} · {pack.inventoryQuantity * 60} {copy.patches}</small>}
+              </span>
+              <strong>{money(item.lineSubtotal)}</strong>
+            </div>;
+          })}
           <div className={styles.total}>
             <span>{copy.total}</span><strong>{money(order.pricing.total ?? order.pricing.subtotal)}</strong>
           </div>

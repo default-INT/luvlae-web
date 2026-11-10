@@ -7,6 +7,7 @@ import { inTransaction } from '@/shared/lib/mongodb/index.server';
 
 import { appendAudit, checkReplay, requestFingerprint } from './audit.server';
 import { collections } from './collections.server';
+import { aggregateInventoryItems } from './inventory-items.server';
 import { enqueueOrderNotification } from './notifications.server';
 
 import type { z } from 'zod';
@@ -25,6 +26,7 @@ export const orderSummaryDto = (order: Order) => ({
 export const orderDetailDto = (order: Order) => ({
   ...orderSummaryDto(order),
   items: order.items.map(({ productId, ...item }) => ({ ...item, productId: productId.toHexString() })),
+  ...(order.salesTerms ? { salesTerms: { ...order.salesTerms, effectiveAt: order.salesTerms.effectiveAt.toISOString() } } : {}),
   customer: order.customer, shippingAddress: order.shippingAddress, fulfillment: order.fulfillment,
   payment: {
     provider: order.checkoutMode === 'mock' ? 'mock' : 'stripe',
@@ -139,9 +141,10 @@ export const restockOrder = async (
   }
 
   const restocked = { ...order.restockedQuantities };
+  const physicalItems = aggregateInventoryItems(order.items);
 
   for (const item of input.items) {
-    const purchased = order.items.find(value => value.sku === item.sku);
+    const purchased = physicalItems.find(value => value.sku === item.sku);
 
     if (!purchased) return fail(409, 'RESTOCK_LIMIT', 'The item does not belong to this order.');
 
@@ -150,7 +153,8 @@ export const restockOrder = async (
     }
 
     const result = await products.updateOne({ _id: purchased.productId }, {
-      $inc: { 'inventory.stockQuantity': item.quantity, version: 1 }, $set: { updatedAt: new Date(), updatedBy: adminId },
+      $inc: { 'inventory.version': 1, 'inventory.stockQuantity': item.quantity },
+      $set: { updatedAt: new Date(), updatedBy: adminId },
     }, { session });
 
     if (!result.modifiedCount) fail(409, 'PRODUCT_UNAVAILABLE', 'The referenced product does not exist.');

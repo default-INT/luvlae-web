@@ -18,7 +18,11 @@ import { ProductGallery } from '../ProductGallery';
 
 import styles from './styles.module.scss';
 
-export const ProductPage = async () => {
+interface Props { initialOfferId?: string }
+
+export const ProductPage = async (props: Props) => {
+  const { initialOfferId } = props;
+
   const [dictionary, offer] = await Promise.all([
     getDictionary(defaultLocale), getProductOffer(product.sku).catch(() => null),
   ]);
@@ -112,7 +116,7 @@ export const ProductPage = async () => {
                 <div><dt>{page.hero.detailThreeLabel}</dt><dd>{page.hero.detailThreeValue}</dd></div>
                 <div><dt>{page.hero.detailFourLabel}</dt><dd>{page.hero.detailFourValue}</dd></div>
               </dl>
-              <ProductPurchase offer={offer} copy={dictionary.commerce}/>
+              <ProductPurchase offer={offer} copy={dictionary.commerce} initialOfferId={initialOfferId}/>
               <p className={styles.purchaseNote}>{page.hero.purchaseNote}</p>
               <Link className={styles.inlineLink} href='#product-details'>{page.hero.secondaryAction} ↗</Link>
             </div>
@@ -238,7 +242,7 @@ export const ProductPage = async () => {
         </section>
       </main>
       <SiteFooter dictionary={dictionary}/>
-      {offer && <EcommerceEvent name='view_item' parameters={getProductAnalytics(offer)}/>}
+      {offer && <EcommerceEvent name='view_item' parameters={getProductAnalytics(offer, 1, initialOfferId)}/>}
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}/>
     </>

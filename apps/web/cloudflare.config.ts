@@ -37,6 +37,8 @@ export default defineConfig(({ mode }) => {
         MOCK_CHECKOUT_ENABLED: bindings.text(mode === 'stage' ? 'true' : 'false'),
         STRIPE_MODE: bindings.text(stripeMode),
         STRIPE_CHEKOUT_DISABLED: bindings.text(checkoutDisabled ? 'true' : 'false'),
+        SALES_TERMS_POLICY_VERSION: bindings.text(process.env.SALES_TERMS_POLICY_VERSION ?? ''),
+        SALES_TERMS_EFFECTIVE_AT: bindings.text(process.env.SALES_TERMS_EFFECTIVE_AT ?? ''),
         NEXT_MONGODB_USERNAME: bindings.secret(),
         NEXT_MONGODB_PASSWORD: bindings.secret(),
         NEXT_MONGODB_URI: bindings.secret(),

@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { fail } from '@/shared/lib/api/index.server';
 import { matchesStripeMode } from '@/shared/lib/stripe/index.server';
 
+import { hasFrozenInclusiveTax, validObservedTax } from './included-tax.server';
+import { requestFingerprint } from './audit.server';
+
 import type Stripe from 'stripe';
 import type { CheckoutAttempt, Order } from './models';
 
@@ -48,8 +51,14 @@ export const validateCheckoutAssociation = (
 
   const intent = typeof checkout.payment_intent === 'object' ? checkout.payment_intent : null;
   const intentId = typeof checkout.payment_intent === 'string' ? checkout.payment_intent : intent?.id;
+  const customerId = typeof checkout.customer === 'string' ? checkout.customer : checkout.customer?.id;
+
+  const shippingMatches = !attempt.shippingSnapshot || (order.shippingPolicy === 'contiguous-us-v1'
+    && requestFingerprint(order.shippingAddress) === requestFingerprint(attempt.shippingSnapshot)
+    && attempt.customerProvision?.state === 'ready' && customerId === attempt.customerProvision.customerId);
 
   const valid = allMatch({
+    shippingMatches,
     stripeOrder: order.checkoutMode !== 'mock',
     attemptEnvironment: matchesStripeMode(attempt.livemode),
     sessionEnvironment: matchesStripeMode(checkout.livemode),
@@ -83,7 +92,9 @@ const validatePaidAmounts = ({ checkout, attempt, order, intent }: CheckoutConte
     total: checkout.amount_total === pricing.total,
     discount: checkout.total_details?.amount_discount === pricing.discount,
     shipping: checkout.total_details?.amount_shipping === pricing.shipping,
-    tax: checkout.total_details?.amount_tax === pricing.tax,
+    tax: validObservedTax(attempt, checkout),
+    completeAutomaticTax: !attempt.shippingSnapshot || (checkout.automatic_tax?.enabled === true
+      && checkout.automatic_tax.status === 'complete'),
     paidIntent: intent?.status === 'succeeded',
     intentEnvironment: !!intent && matchesStripeMode(intent.livemode),
     intentCurrency: intent?.currency === 'usd',
@@ -93,7 +104,8 @@ const validatePaidAmounts = ({ checkout, attempt, order, intent }: CheckoutConte
 
   if (!valid) return amountError();
 
-  return { ...pricing, total: pricing.total };
+  return { ...pricing, total: pricing.total,
+    ...(hasFrozenInclusiveTax(attempt) ? { includedTax: checkout.total_details!.amount_tax } : {}) };
 };
 
 const contactsSchema = z.object({
@@ -104,14 +116,15 @@ const contactsSchema = z.object({
   }),
 });
 
-const readContacts = (checkout: Stripe.Checkout.Session): CheckoutTransition['contacts'] => {
+const readContacts = (checkout: Stripe.Checkout.Session, attempt: CheckoutAttempt): CheckoutTransition['contacts'] => {
   const customer = checkout.customer_details;
   const shipping = checkout.collected_information?.shipping_details;
   const address = shipping?.address;
 
   const result = contactsSchema.safeParse({
-    customer: { email: customer?.email, name: customer?.name, ...(customer?.phone ? { phone: customer.phone } : {}) },
-    shippingAddress: {
+    customer: { email: customer?.email, name: customer?.name ?? attempt.shippingSnapshot?.recipientName,
+      ...(customer?.phone ? { phone: customer.phone } : {}) },
+    shippingAddress: attempt.shippingSnapshot ?? {
       recipientName: shipping?.name, line1: address?.line1, city: address?.city, state: address?.state,
       postalCode: address?.postal_code, country: address?.country, ...(address?.line2 ? { line2: address.line2 } : {}),
     },
@@ -180,7 +193,7 @@ export const planCheckoutTransition = (context: CheckoutContext, eventType: stri
     : transitions[outcome];
 
   const pricing = paid ? validatePaidAmounts(context) : undefined;
-  const contacts = paid ? readContacts(context.checkout) : undefined;
+  const contacts = paid ? readContacts(context.checkout, context.attempt) : undefined;
   const releasedPayment = paid && attempt.inventoryReservation.state === 'released';
 
   return {

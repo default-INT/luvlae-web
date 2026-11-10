@@ -1,5 +1,11 @@
 # SEO requirements for Luvlae.com
 
+## How-to public verification — 2026-10-30
+
+Post-rule update: after the user deployed a Cloudflare redirect, all HTTP/HTTPS apex/www variants for home, About, How-to and Product were checked. Alternatives now return one 308 to HTTPS www, retaining path/query, then 200; canonical URLs return 200 directly. Sitemap opens with 14 HTTPS www URLs. This supersedes the pending redirect state in the initial snapshot below. Search Console processing remains unverified.
+
+See [the impressions investigation](seo-how-to-audit-2026-10-30.md). Published how-to canonical, robots and sitemap now consistently use HTTPS www. HTTP www still serves 200 instead of redirecting, and HTTPS apex still redirects with 307. Permanent consolidation remains pending external configuration verification. The current browser account lacks access to the Luvlae Domain property; the reported decline's cause and Google-selected canonical remain unknown.
+
 ## Direct-sales SEO implementation — 2026-10-27
 
 - The user confirmed the production retail price as USD 19.99 and authorized canonical, Offer and ecommerce analytics changes. This resolves the audit's uncertainty about intended retail pricing; no catalog write was made in this change.

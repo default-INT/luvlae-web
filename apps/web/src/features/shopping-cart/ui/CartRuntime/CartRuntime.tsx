@@ -22,7 +22,9 @@ export const CartRuntime = (props: Props) => {
       let settledOrders: string[] = [];
 
       try {
-        const saved = JSON.parse(localStorage.getItem(storageKey) ?? localStorage.getItem('luvlae-cart-v1') ?? '[]');
+        const saved = JSON.parse(localStorage.getItem(storageKey)
+          ?? localStorage.getItem('luvlae-cart-v2') ?? localStorage.getItem('luvlae-cart-v1') ?? '[]');
+
         items = parseCart(Array.isArray(saved) ? saved : saved?.items);
         offers = parseOffers(saved?.offers, items);
         settledOrders = parseSettledOrders(saved?.settledOrders);

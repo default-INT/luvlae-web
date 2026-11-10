@@ -1,7 +1,6 @@
 import 'server-only';
 
 import { ObjectId } from 'mongodb';
-import { z } from 'zod';
 
 import { fail } from '@/shared/lib/api/index.server';
 import { inTransaction } from '@/shared/lib/mongodb/index.server';
@@ -10,18 +9,17 @@ import { hashToken, randomToken } from '@/shared/lib/security/index.server';
 import { appendAudit, requestFingerprint } from './audit.server';
 import { collections } from './collections.server';
 import { enqueueOrderNotification } from './notifications.server';
-import { integerSchema, operationSchema, skuSchema, versionSchema } from './contracts';
+import { calculateOfferItems } from './offer-calculator.server';
+import { readActiveSalesTerms } from './sales-terms.server';
+import { aggregateInventoryItems, requirePackSchema } from './inventory-items.server';
+import { requireShippingSchema } from './shipping-migration.server';
+import { checkoutRequestSchema } from './contracts';
 
+import type { z } from 'zod';
 import type { Order } from './models';
 import type { DatabaseContext } from '@/shared/lib/mongodb/index.server';
 
-export const mockCheckoutSchema = z.strictObject({
-  operationId: operationSchema,
-  guestToken: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
-  items: z.array(z.strictObject({
-    sku: skuSchema, quantity: integerSchema.min(1).max(99), productVersion: versionSchema,
-  })).min(1).max(20),
-}).refine(value => new Set(value.items.map(item => item.sku)).size === value.items.length);
+export const mockCheckoutSchema = checkoutRequestSchema;
 
 export const requireMockCheckout = () => {
   if (process.env.MOCK_CHECKOUT_ENABLED !== 'true') {
@@ -34,7 +32,11 @@ export const createMockOrder = async (context: DatabaseContext, input: z.infer<t
   requireMockCheckout();
   const value = mockCheckoutSchema.parse(input);
   const creationKeyHash = hashToken(`mock:${value.guestToken}:${value.operationId}`);
-  const requestHash = requestFingerprint({ mode: 'mock', items: value.items });
+
+  const requestHash = requestFingerprint({ mode: 'mock', items: value.items,
+    ...(value.cartFormat !== undefined ? { cartFormat: value.cartFormat } : {}),
+    ...(value.cartFormat === 'packs-v2' ? { shippingAddress: value.shippingAddress } : {}) });
+
   return inTransaction(context, async session => {
     const { products, orders, attempts } = collections(context.db);
     const existing = await orders.findOne({ creationKeyHash }, { session });
@@ -45,31 +47,55 @@ export const createMockOrder = async (context: DatabaseContext, input: z.infer<t
       return { id: existing._id.toHexString(), replayed: true };
     }
 
+    const shippingAddress = value.cartFormat === 'packs-v2' ? value.shippingAddress
+      : fail(409, 'CHECKOUT_RELOAD_REQUIRED', 'Reload your cart to provide a delivery address.');
+
+    await requireShippingSchema(context.db, session);
     const now = new Date();
+    const salesTerms = readActiveSalesTerms(now);
     const orderId = new ObjectId();
     const attemptId = new ObjectId();
     const items: Order['items'] = [];
 
-    for (const requested of value.items) {
-      const product = await products.findOne({ sku: requested.sku }, { session });
+    if (value.cartFormat !== undefined) {
+      await requirePackSchema(context.db, session);
+      const catalog = await products.find({ sku: { $in: value.items.map(item => item.sku) } }, { session }).toArray();
+      items.push(...calculateOfferItems(catalog, value.items));
 
-      if (!product || !product.salesEnabled) return fail(409, 'PRODUCT_UNAVAILABLE', 'A product is unavailable.');
+      for (const demand of aggregateInventoryItems(items)) {
+        const product = catalog.find(product => product.sku === demand.sku)!;
+        const available = { $gte: [{ $subtract: ['$inventory.stockQuantity', '$inventory.reservedQuantity'] }, demand.quantity] };
 
-      if (product.version !== requested.productVersion) fail(409, 'PRICE_CHANGED', 'Review the updated price before checkout.');
+        const result = await products.updateOne({ _id: demand.productId, version: product.version, salesEnabled: true,
+          $expr: available }, { $inc: { 'inventory.version': 1, 'inventory.stockQuantity': -demand.quantity },
+          $set: { updatedAt: now } }, { session });
 
-      const result = await products.updateOne({
-        _id: product._id, version: requested.productVersion, salesEnabled: true,
-        $expr: { $gte: [{ $subtract: ['$inventory.stockQuantity', '$inventory.reservedQuantity'] }, requested.quantity] },
-      }, { $inc: { 'inventory.stockQuantity': -requested.quantity }, $set: { updatedAt: now } }, { session });
+        if (!result.modifiedCount) fail(409, 'OUT_OF_STOCK', 'Requested quantity is unavailable.');
+      }
+    } else {
+      for (const requested of value.items) {
+        const product = await products.findOne({ sku: requested.sku }, { session });
 
-      if (!result.modifiedCount) fail(409, 'OUT_OF_STOCK', 'Requested quantity is unavailable.');
+        if (!product || !product.salesEnabled) return fail(409, 'PRODUCT_UNAVAILABLE', 'A product is unavailable.');
 
-      const lineSubtotal = requested.quantity * product.price.unitAmount;
+        if (product.version !== requested.productVersion) fail(409, 'PRICE_CHANGED', 'Review the updated price before checkout.');
 
-      if (!Number.isSafeInteger(lineSubtotal)) fail(400, 'INVALID_AMOUNT', 'Amount exceeds supported bounds.');
+        const result = await products.updateOne({
+          _id: product._id, version: requested.productVersion, salesEnabled: true,
+          $expr: { $gte: [{ $subtract: ['$inventory.stockQuantity', '$inventory.reservedQuantity'] }, requested.quantity] },
+        }, { $inc: { 'inventory.version': 1, 'inventory.stockQuantity': -requested.quantity },
+          $set: { updatedAt: now } }, { session });
 
-      items.push({ productId: product._id, sku: product.sku, name: product.name, quantity: requested.quantity,
-        unitAmount: product.price.unitAmount, lineSubtotal, productVersion: product.version });
+        if (!result.modifiedCount) fail(409, 'OUT_OF_STOCK', 'Requested quantity is unavailable.');
+
+        const lineSubtotal = requested.quantity * product.price.unitAmount;
+
+        if (!Number.isSafeInteger(lineSubtotal)) fail(400, 'INVALID_AMOUNT', 'Amount exceeds supported bounds.');
+
+        items.push({ productId: product._id, sku: product.sku, name: product.name, quantity: requested.quantity,
+          unitAmount: product.price.unitAmount, lineSubtotal, productVersion: product.version });
+      }
+
     }
 
     const subtotal = items.reduce((sum, item) => sum + item.lineSubtotal, 0);
@@ -78,7 +104,9 @@ export const createMockOrder = async (context: DatabaseContext, input: z.infer<t
 
     // Zero delivery/tax are test-only policies, not commercial shipping or tax terms.
     const pricing: Order['pricing'] = { state: 'final', subtotal, discount: 0, shipping: 0, tax: 0, total: subtotal };
-    const pricingPolicy = { shipping: 'mock-zero-v1', tax: 'mock-zero-v1', discount: 'none-v1' };
+
+    const pricingPolicy: Order['pricingPolicy'] = { shipping: 'mock-zero-v1', tax: 'mock-zero-v1', discount: 'none-v1',
+      ...(value.cartFormat !== undefined ? { catalog: 'packs-v1' } : {}) };
 
     const order: Order = {
       _id: orderId, schemaVersion: 1, version: 1, checkoutMode: 'mock',
@@ -86,9 +114,9 @@ export const createMockOrder = async (context: DatabaseContext, input: z.infer<t
       creationKeyHash, creationRequestHash: requestHash,
       guestAccess: { tokenHash: hashToken(value.guestToken), expiresAt: new Date(now.getTime() + 30 * 86400000) },
       items, currency: 'USD', pricing, pricingPolicy, orderStatus: 'open',
+      ...(salesTerms ? { salesTerms } : {}),
       customer: { name: 'Test Customer', email: 'checkout@example.test' },
-      shippingAddress: { recipientName: 'Test Customer', line1: '123 Test Street', city: 'New York',
-        state: 'NY', postalCode: '10001', country: 'US' },
+      shippingAddress, shippingPolicy: 'contiguous-us-v1',
       payment: { status: 'paid', settledAttemptId: attemptId, amountPaid: subtotal, amountRefunded: 0,
         paidAt: now, disputed: false, reconciliationRequired: false },
       fulfillment: { status: 'unfulfilled' }, restockedQuantities: {}, notifications: [], createdAt: now, updatedAt: now,
@@ -101,8 +129,10 @@ export const createMockOrder = async (context: DatabaseContext, input: z.infer<t
       _id: attemptId, schemaVersion: 1, orderId, requestKeyHash: creationKeyHash, requestHash,
       stripeIdempotencyKey: `mock-only-${attemptId.toHexString()}`, state: 'succeeded', active: false,
       quoteSnapshot: { items, currency: 'USD', pricing, pricingPolicy },
-      inventoryReservation: { state: 'committed', items: items.map(item => ({ productId: item.productId,
-        quantity: item.quantity })), expiresAt: now, committedAt: now },
+      inventoryReservation: { state: 'committed',
+        items: aggregateInventoryItems(items).map(({ productId, quantity }) => ({ productId, quantity })),
+        expiresAt: now, committedAt: now },
+      shippingSnapshot: shippingAddress,
       livemode: false, createdAt: now, updatedAt: now,
     }, { session });
     await appendAudit(context.db, session, {

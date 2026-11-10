@@ -116,8 +116,31 @@ export const readJson = async <T>(request: Request, schema: z.ZodType<T>): Promi
 
 export const requireOrigin = (request: Request) => {
   const origin = request.headers.get('origin');
+  const url = new URL(request.url);
+  const host = request.headers.get('host');
+  let expectedOrigin = url.origin;
 
-  if (origin !== new URL(request.url).origin) {
+  // Next's Node adapter can reconstruct request.url with the configured listener hostname.
+  // Host retains the browser's destination authority; forwarded headers are not trusted here.
+  if (host !== null) {
+    if (!host || /[\s,/@\\?#%]/.test(host)) {
+      fail(403, 'INVALID_ORIGIN', 'A same-origin request is required.');
+    }
+
+    try {
+      const destination = new URL(`${url.protocol}//${host}`);
+
+      if (!destination.hostname || destination.pathname !== '/' || destination.search || destination.hash
+        || destination.username || destination.password) throw new Error('Invalid authority');
+
+      expectedOrigin = destination.origin;
+    } catch {
+      fail(403, 'INVALID_ORIGIN', 'A same-origin request is required.');
+    }
+  }
+
+  if (!['http:', 'https:'].includes(url.protocol) || request.headers.get('sec-fetch-site') === 'cross-site'
+    || origin !== expectedOrigin) {
     fail(403, 'INVALID_ORIGIN', 'A same-origin request is required.');
   }
 };

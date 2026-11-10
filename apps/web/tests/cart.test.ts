@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 
 import { createCartStore } from '../src/features/shopping-cart/model/store';
 import {
-  parseCart, parseOffers, parsePending, parseSettledOrders, pendingKey, storageKey,
+  cartKey, parseCart, parseOffers, parsePending, parseSettledOrders, pendingKey, storageKey,
 } from '../src/features/shopping-cart/model/cart';
 import { dictionaryShape } from '../src/shared/config/i18n/dictionary';
 
@@ -12,6 +12,9 @@ import type { ProductOffer } from '../src/entities/product';
 import type { commerceRequest } from '../src/features/shopping-cart/api/commerce';
 
 const copy = dictionaryShape.commerce;
+
+const checkoutAddress = { recipientName: 'Test Recipient', line1: '123 Example St', city: 'Austin',
+  state: 'TX', postalCode: '78701', country: 'US' as const };
 
 const offer: ProductOffer = {
   id: '000000000000000000000001', sku: 'LUVLAE-BERBERINE-60', name: 'Luvlae Berberine Patches',
@@ -66,12 +69,12 @@ test('checkout updates a changed offer and requires confirmation before order cr
   const session = memorySession();
   const store = createCartStore({ request, session: () => session });
   store.getState().add(offer, 1);
-  assert.equal(await store.getState().checkout(copy), null);
-  assert.equal(store.getState().offers[offer.sku].price.unitAmount, 3199);
+  assert.equal(await store.getState().checkout(copy, checkoutAddress), null);
+  assert.equal(store.getState().offers[cartKey(offer)].price.unitAmount, 3199);
   assert.equal(store.getState().error, copy.changedError);
   assert.equal(calls.some(path => path.endsWith('/session')), false);
-  assert.equal(await store.getState().checkout(copy), '000000000000000000000002');
-  assert.deepEqual(store.getState().items, [{ sku: offer.sku, quantity: 1 }]);
+  assert.equal(await store.getState().checkout(copy, checkoutAddress), '000000000000000000000002');
+  assert.deepEqual(store.getState().items, parseCart([{ sku: offer.sku, quantity: 1 }]));
   assert.equal(store.getState().pending?.orderId, '000000000000000000000002');
 });
 
@@ -86,7 +89,7 @@ test('checkout rejects insufficient stock without creating an order or blocking 
   const session = memorySession();
   const store = createCartStore({ request, session: () => session });
   store.getState().add(offer, 2);
-  assert.equal(await store.getState().checkout(copy), null);
+  assert.equal(await store.getState().checkout(copy, checkoutAddress), null);
   assert.equal(calls.length, 1);
   assert.equal(store.getState().busy, false);
   assert.equal(store.getState().error, copy.changedError);
@@ -115,17 +118,17 @@ test('uncertain checkout survives reload and retries the exact request without r
 
   const store = createCartStore({ request, session: () => session });
   store.getState().add(offer, 1);
-  assert.equal(await store.getState().checkout(copy), null);
+  assert.equal(await store.getState().checkout(copy, checkoutAddress), null);
   const uncertain = store.getState();
   assert.ok(uncertain.pending);
   uncertain.update(offer.sku, 2);
   assert.equal(store.getState().items[0].quantity, 1);
   const restored = createCartStore({ request, session: () => session });
   restored.getState().restore(uncertain.items, uncertain.offers, uncertain.pending);
-  assert.equal(await restored.getState().checkout(copy), '000000000000000000000003');
+  assert.equal(await restored.getState().checkout(copy, checkoutAddress), '000000000000000000000003');
   assert.deepEqual(bodies[0], bodies[1]);
   assert.equal(calls.filter(path => path.startsWith('/api/products/')).length, 1);
-  assert.deepEqual(restored.getState().items, [{ sku: offer.sku, quantity: 1 }]);
+  assert.deepEqual(restored.getState().items, parseCart([{ sku: offer.sku, quantity: 1 }]));
   assert.equal(restored.getState().pending?.orderId, '000000000000000000000003');
 });
 
@@ -146,8 +149,8 @@ test('double checkout while verification is pending starts only one creation flo
   const session = memorySession();
   const store = createCartStore({ request, session: () => session });
   store.getState().add(offer, 1);
-  const first = store.getState().checkout(copy);
-  assert.equal(await store.getState().checkout(copy), null);
+  const first = store.getState().checkout(copy, checkoutAddress);
+  assert.equal(await store.getState().checkout(copy, checkoutAddress), null);
   release(offer);
   assert.equal(await first, '000000000000000000000004');
   assert.equal(creations, 1);
@@ -157,7 +160,7 @@ test('restoring browser storage rejects malformed quantities, duplicate products
   const items = parseCart([{ sku: offer.sku, quantity: 1 }, { sku: offer.sku, quantity: 2 },
     { sku: 'OTHER', quantity: 100 }, { sku: 'THIRD', quantity: 1.5 }]);
 
-  assert.deepEqual(items, [{ sku: offer.sku, quantity: 1 }]);
+  assert.deepEqual(items, [{ sku: offer.sku, offerId: 'standard', quantity: 1 }]);
   assert.deepEqual(parseOffers({ [offer.sku]: { ...offer, price: { currency: 'USD', unitAmount: -1 } } }, items), {});
   assert.equal(parsePending({ operationId: 'invalid', guestToken: 'invalid', items }), null);
 });
@@ -183,8 +186,8 @@ test('a completed Session response preserves the cart and resumes using only the
   const pending = pendingCheckout();
   const items = [{ sku: offer.sku, quantity: 1 }];
   store.getState().restore(items, { [offer.sku]: offer }, pending);
-  assert.equal(await store.getState().checkout(copy), orderId);
-  assert.deepEqual(store.getState().items, items);
+  assert.equal(await store.getState().checkout(copy, checkoutAddress), orderId);
+  assert.deepEqual(store.getState().items, parseCart(items));
   assert.deepEqual(bodies, [{ operationId: pending.operationId, guestToken: pending.guestToken, items: pending.items }]);
   assert.equal(JSON.parse(session.getItem(pendingKey)!).orderId, orderId);
 });
@@ -197,9 +200,9 @@ test('only the associated paid order removes its purchased quantities and record
   const items = [{ sku: offer.sku, quantity: 3 }, { sku: 'OTHER', quantity: 2 }];
   store.getState().restore(items, { [offer.sku]: offer }, pending);
   store.getState().confirmPaidOrder('000000000000000000000099', pending.items);
-  assert.deepEqual(store.getState().items, items);
+  assert.deepEqual(store.getState().items, parseCart(items));
   store.getState().confirmPaidOrder(orderId, pending.items);
-  assert.deepEqual(store.getState().items, [{ sku: offer.sku, quantity: 2 }, { sku: 'OTHER', quantity: 2 }]);
+  assert.deepEqual(store.getState().items, parseCart([{ sku: offer.sku, quantity: 2 }, { sku: 'OTHER', quantity: 2 }]));
   assert.equal(store.getState().pending, null);
   const saved = JSON.parse(persistent.getItem(storageKey)!);
   assert.deepEqual(saved.items, store.getState().items);
@@ -222,7 +225,7 @@ test('paid cleanup survives reload when forgetting the pending browser request f
   restored.getState().restore(parseCart(saved.items), parseOffers(saved.offers, saved.items),
     parsePending(JSON.parse(session.getItem(pendingKey)!)), parseSettledOrders(saved.settledOrders));
   restored.getState().confirmPaidOrder(orderId, pending.items);
-  assert.deepEqual(restored.getState().items, [{ sku: offer.sku, quantity: 2 }]);
+  assert.deepEqual(restored.getState().items, parseCart([{ sku: offer.sku, quantity: 2 }]));
   assert.equal(restored.getState().pending, null);
 });
 
@@ -238,7 +241,7 @@ test('blocked cart persistence retains recovery data and does not subtract twice
   store.getState().restore([{ sku: offer.sku, quantity: 3 }], { [offer.sku]: offer }, pending);
   store.getState().confirmPaidOrder(orderId, pending.items);
   store.getState().confirmPaidOrder(orderId, pending.items);
-  assert.deepEqual(store.getState().items, [{ sku: offer.sku, quantity: 2 }]);
+  assert.deepEqual(store.getState().items, parseCart([{ sku: offer.sku, quantity: 2 }]));
   assert.ok(session.getItem(pendingKey));
 });
 
@@ -253,7 +256,7 @@ test('only a matching confirmed expired checkout unlocks the cart without removi
   assert.ok(store.getState().pending);
   store.getState().releaseExpiredCheckout(orderId);
   assert.equal(store.getState().pending, null);
-  assert.deepEqual(store.getState().items, items);
+  assert.deepEqual(store.getState().items, parseCart(items));
   store.getState().update(offer.sku, 2);
   assert.equal(store.getState().items[0].quantity, 2);
 });
@@ -294,8 +297,8 @@ test('uncertain creation is resolved before cancellation and errors keep the exa
   const request: typeof commerceRequest = async <T>(path: string, body?: unknown): Promise<T> => {
     calls.push(path);
 
-    if (path === '/api/checkout/session') {
-      assert.deepEqual(body, pending);
+    if (path === '/api/checkout/resolve') {
+      assert.deepEqual(body, { operationId: pending.operationId, guestToken: pending.guestToken });
       return { id: '000000000000000000000002' } as T;
     }
 
@@ -313,7 +316,7 @@ test('uncertain creation is resolved before cancellation and errors keep the exa
   assert.equal(store.getState().items[0].quantity, 1);
   fail = false;
   assert.equal(await store.getState().cancelCheckout(copy), true);
-  assert.equal(calls.filter(path => path === '/api/checkout/session').length, 1);
+  assert.equal(calls.filter(path => path === '/api/checkout/resolve').length, 1);
 });
 
 test('pending cancellation blocks competing checkout and edits until provider confirmation', async () => {
@@ -330,7 +333,7 @@ test('pending cancellation blocks competing checkout and edits until provider co
   const cancelling = store.getState().cancelCheckout(copy);
   assert.equal(store.getState().busy, true);
   assert.equal(await store.getState().cancelCheckout(copy), false);
-  assert.equal(await store.getState().checkout(copy), null);
+  assert.equal(await store.getState().checkout(copy, checkoutAddress), null);
   store.getState().remove(offer.sku);
   assert.equal(store.getState().items.length, 1);
   complete();

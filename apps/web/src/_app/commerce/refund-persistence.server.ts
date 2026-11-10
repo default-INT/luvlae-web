@@ -8,6 +8,7 @@ import { matchesStripeMode } from '@/shared/lib/stripe/index.server';
 
 import { appendAudit } from './audit.server';
 import { collections } from './collections.server';
+import { aggregateInventoryItems } from './inventory-items.server';
 import { requireRefundSchema } from './refund-migration.server';
 import { appendPaymentTransaction } from './payments.server';
 import { enqueueOrderNotification, suppressInvalidRefundNotifications } from './notifications.server';
@@ -40,13 +41,14 @@ export const finishCancellation = async (db: Db, session: ClientSession, order: 
   }
 
   if (settled) {
-    for (const item of order.items) {
+    for (const item of aggregateInventoryItems(order.items)) {
       const quantity = item.quantity - (restocked[item.sku] ?? 0);
 
       if (quantity <= 0) continue;
 
       const result = await collections(db).products.updateOne({ _id: item.productId }, {
-        $inc: { 'inventory.stockQuantity': quantity, version: 1 }, $set: { updatedAt: now, updatedBy: request.adminId },
+        $inc: { 'inventory.version': 1, 'inventory.stockQuantity': quantity },
+        $set: { updatedAt: now, updatedBy: request.adminId },
       }, { session });
 
       if (!result.matchedCount) fail(409, 'PRODUCT_UNAVAILABLE', 'The referenced product does not exist.');

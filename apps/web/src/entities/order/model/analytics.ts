@@ -4,6 +4,7 @@ import type { EcommerceParameters } from '@/shared/lib/analytics';
 export const getOrderItemsAnalytics = (items: GuestOrder['items'], currency: 'USD', subtotal: number): EcommerceParameters => ({
   currency, value: subtotal / 100,
   items: items.map(item => ({
+    ...(item.offerId ? { item_variant: item.offerId } : {}),
     item_id: item.sku, item_name: item.name, price: item.unitAmount / 100, quantity: item.quantity,
   })),
 });

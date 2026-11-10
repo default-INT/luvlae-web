@@ -1,4 +1,5 @@
 export {
-  analyticsLocation, analyticsMeasurementId, initializeAnalytics, isAnalyticsEnabled, trackEcommerceEvent, trackPageView,
+  analyticsLocation, analyticsMeasurementId, initializeAnalytics, isAnalyticsEnabled,
+  trackEcommerceEvent, trackItemListEvent, trackPageView,
 } from './analytics';
-export type { AnalyticsItem, EcommerceEventName, EcommerceParameters } from './analytics';
+export type { AnalyticsItem, EcommerceEventName, EcommerceParameters, ItemListEventName, ItemListParameters } from './analytics';

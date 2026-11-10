@@ -1,72 +1,92 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { adminRequest } from '../../api/admin';
-import { priceInCents } from '../../model/types';
-import { useAdminMutation } from '../../model/useAdminMutation';
 import styles from '../styles.module.scss';
 
+import { CatalogForm } from './ui/CatalogForm';
+import { InventoryForm } from './ui/InventoryForm';
+import { OfferForm } from './ui/OfferForm';
+import { StorefrontForm } from './ui/StorefrontForm';
+
 import type { AdminCopy, AdminProduct } from '../../model/types';
-import type { FormEvent } from 'react';
 
 interface Props { initialProduct: AdminProduct; copy: AdminCopy }
 
 export const ProductEditor = (props: Props) => {
   const { initialProduct, copy } = props;
   const [product, setProduct] = useState(initialProduct);
-  const [validation, setValidation] = useState('');
-  const reload = async () => setProduct(await adminRequest<AdminProduct>(`/products/${product.sku}`));
-  const mutation = useAdminMutation(copy, reload);
+  const [busy, setBusy] = useState(false);
+  const [refreshError, setRefreshError] = useState(false);
+  const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
+  const busyRef = useRef(false);
+  const requestId = useRef(0);
+  const mounted = useRef(true);
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const fields = new FormData(event.currentTarget);
-    const unitAmount = priceInCents(String(fields.get('price')));
-    setValidation('');
+  const onBusyChange = useCallback((value: boolean) => {
+    busyRef.current = value;
+    setBusy(value);
+  }, []);
 
-    if (unitAmount === null) { setValidation(copy.invalidPrice); return; }
+  const reload = useCallback(async () => {
+    const id = ++requestId.current;
 
-    await mutation.run(`/products/${product.sku}`, {
-      version: product.version, name: String(fields.get('name')), shortDescription: String(fields.get('description')),
-      unitAmount, stockQuantity: Number(fields.get('stock')), salesEnabled: fields.get('salesEnabled') === 'on',
-      reason: String(fields.get('reason')),
-    }, 'PATCH');
-  };
+    try {
+      const latest = await adminRequest<AdminProduct>(`/products/${initialProduct.sku}`);
+
+      if (mounted.current && id === requestId.current) {
+        setProduct(latest);
+        setRefreshError(false);
+        setRefreshedAt(new Date().toLocaleTimeString('en-US'));
+      }
+    } catch (failure) {
+      if (mounted.current && id === requestId.current) setRefreshError(true);
+
+      throw failure;
+    }
+  }, [initialProduct.sku]);
+
+  useEffect(() => {
+    mounted.current = true;
+
+    const refresh = () => {
+      if (!busyRef.current && document.visibilityState === 'visible') void reload().catch(() => {});
+    };
+
+    const interval = window.setInterval(refresh, 30000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+
+    return () => {
+      mounted.current = false;
+      requestId.current += 1;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [reload]);
+
+  const formProps = { product, copy, busy, reload, onBusyChange };
 
   return (
     <>
-      <div className={styles.pageHeader}><Link href='/admin/products'>← {copy.backProducts}</Link>
-        <h1>{product.name}</h1><p>{product.sku}</p></div>
-      <form className={styles.columns} onSubmit={submit} key={product.version}>
-        <section className={`${styles.card} ${styles.form}`}>
-          <h2>{copy.pricing}</h2>
-          <label className={styles.field}>{copy.name}<input name='name' required maxLength={200}
-            defaultValue={product.name} disabled={mutation.busy}/></label>
-          <label className={styles.field}>{copy.description}<textarea name='description' maxLength={2000}
-            defaultValue={product.shortDescription} disabled={mutation.busy}/></label>
-          <label className={styles.field}>{copy.price}<input name='price' type='number' min='0.01' step='0.01'
-            required defaultValue={(product.price.unitAmount / 100).toFixed(2)} disabled={mutation.busy}/></label>
-          <label className={styles.field}>{copy.reason}<textarea name='reason' required maxLength={500}
-            disabled={mutation.busy}/></label>
-          {(mutation.error || validation) && <p role='alert' className={styles.error}>{validation || mutation.error}</p>}
-          {mutation.saved && <p role='status' className={styles.success}>{copy.saved}</p>}
-          <button className={styles.button} disabled={mutation.busy}>{mutation.busy ? copy.saving : copy.save}</button>
-        </section>
-        <section className={`${styles.card} ${styles.form}`}>
-          <h2>{copy.inventory}</h2>
-          <label className={styles.field}>{copy.stock}<input name='stock' type='number' step='1'
-            min={product.inventory.reservedQuantity} required defaultValue={product.inventory.stockQuantity}
-            disabled={mutation.busy}/></label>
-          <dl className={styles.details}>
-            <div><dt>{copy.reserved}</dt><dd>{product.inventory.reservedQuantity}</dd></div>
-            <div><dt>{copy.available}</dt><dd>{product.availableQuantity}</dd></div>
-          </dl>
-          <label className={styles.check}><input name='salesEnabled' type='checkbox' defaultChecked={product.salesEnabled}
-            disabled={mutation.busy}/>{copy.salesEnabled}</label>
-        </section>
-      </form>
+      <div className={styles.pageHeader}>
+        <Link href='/admin/products'>← {copy.backProducts}</Link>
+        <h1>{product.name}</h1><p>{copy.sku}: {product.sku}</p>
+        <p>{copy.catalogUi.refreshNote}{refreshedAt && ` · ${copy.catalogUi.refreshedAt}: ${refreshedAt}`}</p>
+        <button className={styles.secondary} disabled={busy} onClick={() => void reload().catch(() => {})}>{copy.refresh}</button>
+        {refreshError && <p role='alert' className={styles.error}>{copy.catalogUi.refreshError}</p>}
+      </div>
+      <div className={styles.stack}>
+        <div className={styles.columns}><CatalogForm {...formProps}/><InventoryForm {...formProps}/></div>
+        <StorefrontForm {...formProps}/>
+        <h2>{copy.catalogUi.offers}</h2>
+        <p className={styles.note}>{copy.catalogUi.offersNote}</p>
+        <OfferForm {...formProps}/>
+        {(product.offers ?? []).map(offer => <OfferForm key={offer.id} {...formProps} offer={offer}/>)}
+      </div>
     </>
   );
 };

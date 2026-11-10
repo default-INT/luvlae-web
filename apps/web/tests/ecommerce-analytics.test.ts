@@ -21,6 +21,7 @@ process.env.APP_ENV = 'production';
 
 const { analyticsLocation, trackEcommerceEvent } = await import('../src/shared/lib/analytics');
 const { createCartStore } = await import('../src/features/shopping-cart/model/store');
+const { toCartOffer } = await import('../src/features/shopping-cart/model/cart');
 const { getProductAnalytics } = await import('../src/entities/product');
 const { getPurchaseAnalytics } = await import('../src/entities/order');
 const { findGuestOrder } = await import('../src/entities/order/index.server');
@@ -79,6 +80,29 @@ test('cart events record actual added/removed quantities and ignore rejected edi
   assert.equal((events[0][2] as { value: number }).value, 39.98);
   assert.equal(JSON.stringify(events).includes('secret'), false);
   assert.equal(JSON.stringify(events).includes('000000000000000000000001'), false);
+});
+
+test('cart pack events retain set prices when the offer also contains the standard catalog entry', () => {
+  const standard = { offerId: 'standard', unitsPerPack: 1, patchesPerPack: 60, price: offer.price,
+    availableQuantity: 10, sortOrder: 0 };
+
+  const two = { ...standard, offerId: '00000000-0000-4000-8000-000000000002', unitsPerPack: 2,
+    patchesPerPack: 120, price: { currency: 'USD' as const, unitAmount: 2999 }, availableQuantity: 5 };
+
+  const selected = toCartOffer({ ...offer, availableQuantity: 10, purchaseOffers: [standard, two] }, two);
+  const store = createCartStore();
+  store.getState().add(selected, 2);
+  store.getState().remove(offer.sku, two.offerId);
+  const events = queue.filter(row => row[0] === 'event');
+  assert.deepEqual(events.map(row => row[1]), ['add_to_cart', 'view_cart', 'remove_from_cart']);
+
+  for (const row of events) {
+    const parameters = row[2] as { value: number; items: { price: number; item_variant: string; quantity: number }[] };
+    assert.equal(parameters.value, 59.98);
+    assert.equal(parameters.items[0].price, 29.99);
+    assert.equal(parameters.items[0].item_variant, two.offerId);
+    assert.equal(parameters.items[0].quantity, 2);
+  }
 });
 
 test('purchase is queued once with a transaction id, including when persistence is blocked', () => {

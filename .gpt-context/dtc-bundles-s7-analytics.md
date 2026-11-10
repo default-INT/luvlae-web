@@ -1,0 +1,9 @@
+# DTC bundles — S7 Home offer-list analytics
+
+`PurchaseOffers` keeps server-rendered cards and adds a small client wrapper. IntersectionObserver records only cards at least 50% within the viewport. Each offer is counted once per mounted list; the seen set survives effect recreation. Newly visible cards may produce separate batches, retaining their original Home positions. Only View Product links produce `select_item`; selection does not add to cart.
+
+The product mapper uses `home_purchase_offers` as stable list ID, zero-based displayed index, SKU as item_id, stable offerId as item_variant, and USD pack price/quantity=1. The list adapter has a separate contract with no aggregate financial value for alternative offers. The explicit allowlist excludes arbitrary fields and uses existing page URL/referrer sanitization. Existing canonical-origin, production and GA-ID gating is retained. No external GA calls were made in development.
+
+`tests/offer-list-analytics.test.ts` covers list/selected fields, stable positions, no aggregate value, query/PII-field exclusion, stage/origin/missing-GA gates, real intersection thresholds, per-offer deduplication and observer cleanup/effect recreation. PDP view_item maps the resolved initial offer to stable ID and set price; cart add/remove/view events pass the selected offer ID even when the cart snapshot also contains the standard catalog option. Regressions cover invalid query fallback and pack event amounts. Independent medium review PASS after these corrections. Final full suite202/202, ESLint/typegen/tsc and stage build PASS; see the execution ledger for runtime limitations.
+
+The stale email config assertion now verifies one exact scheduled trigger in stage and the same schedule plus the exact production fetch route, while retaining secret/text binding and entrypoint checks. No runtime configuration changed.

@@ -1,5 +1,6 @@
 import type { ObjectId } from 'mongodb';
 import type Stripe from 'stripe';
+import type { ShippingAddress } from '@/entities/order';
 
 export interface Product {
   _id: ObjectId;
@@ -8,12 +9,37 @@ export interface Product {
   name: string;
   shortDescription: string;
   price: { currency: 'USD'; unitAmount: number };
-  inventory: { stockQuantity: number; reservedQuantity: number };
+  inventory: { stockQuantity: number; reservedQuantity: number; version?: number };
+  offers?: ProductOfferRecord[];
+  storefront?: ProductStorefront;
   salesEnabled: boolean;
   version: number;
   createdAt: Date;
   updatedAt: Date;
   updatedBy: ObjectId;
+}
+
+export interface ProductOfferRecord {
+  id: string;
+  unitsPerPack: number;
+  price: { currency: 'USD'; unitAmount: number };
+  status: 'draft' | 'active' | 'archived';
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ProductStorefront {
+  homeOfferIds: string[];
+  highlightedOfferId: string | null;
+  highlightBadge: 'bestValue' | 'recommended';
+}
+
+export interface PricingPolicy {
+  shipping: string;
+  tax: string;
+  discount: string;
+  catalog?: 'packs-v1';
 }
 
 export interface Order {
@@ -28,14 +54,17 @@ export interface Order {
   items: {
     productId: ObjectId; sku: string; name: string; quantity: number;
     unitAmount: number; lineSubtotal: number; productVersion: number;
+    offerId?: string; unitsPerPack?: number; inventoryQuantity?: number;
   }[];
   currency: 'USD';
   pricing: {
-    state: 'estimated' | 'final'; subtotal: number; discount: number;
+    state: 'estimated' | 'final'; includedTax?: number; subtotal: number; discount: number;
     shipping: number | null; tax: number | null; total: number | null;
   };
-  pricingPolicy: { shipping: string; tax: string; discount: string };
+  pricingPolicy: PricingPolicy;
+  salesTerms?: { policyVersion: string; effectiveAt: Date };
   customer?: { email: string; name: string; phone?: string };
+  shippingPolicy?: 'contiguous-us-v1';
   shippingAddress?: {
     recipientName: string; line1: string; line2?: string; city: string;
     state: string; postalCode: string; country: 'US';
@@ -64,10 +93,17 @@ export interface CheckoutAttempt {
   requestKeyHash: string; requestHash: string; stripeIdempotencyKey: string;
   state: 'creating' | 'open' | 'processing' | 'succeeded' | 'failed' | 'expired' | 'cancelled';
   active: boolean;
-  quoteSnapshot: { items: Order['items']; currency: 'USD'; pricing: Order['pricing']; pricingPolicy: Order['pricingPolicy'] };
+  quoteSnapshot: {
+    items: Order['items']; currency: 'USD'; pricing: Order['pricing']; pricingPolicy: Order['pricingPolicy'];
+  };
   inventoryReservation: {
     state: 'held' | 'committed' | 'released'; items: { productId: ObjectId; quantity: number }[];
     expiresAt: Date; committedAt?: Date; releasedAt?: Date;
+  };
+  shippingSnapshot?: ShippingAddress;
+  customerProvision?: {
+    state: 'pending' | 'ready'; idempotencyKey: string; apiVersion: string;
+    parameters: Stripe.CustomerCreateParams; customerId?: string; createdAt: Date;
   };
   stripeSessionId?: string; stripePaymentIntentId?: string; livemode: boolean;
   stripeRequest?: { apiVersion: string; parameters: Stripe.Checkout.SessionCreateParams };

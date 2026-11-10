@@ -94,7 +94,7 @@
 
 .promoDescription {
   max-width: 380px;
-  margin: 1.3rem 0 2rem;
+  margin: 1rem 0;
   color: var(--color-navy-strong);
   font-size: clamp(0.95rem, 1.25vw, 1.08rem);
   line-height: 1.65;
@@ -697,7 +697,7 @@
 @media (max-width: 1040px) {
   .promo {
     width: min(100% - 64px, var(--content-width));
-    min-height: 780px;
+    min-height: 980px;
     margin: 0 auto;
     border-radius: 28px;
   }
@@ -708,7 +708,7 @@
 
   .promoImage img {
     left: -8%;
-    height: 52%;
+    height: 40%;
   }
 
   .promoCopy {
@@ -785,7 +785,7 @@
 
   .promo {
     width: calc(100% - 40px);
-    min-height: 690px;
+    min-height: 1040px;
     margin: 0 auto;
     border-radius: 20px;
   }
@@ -800,7 +800,7 @@
 
   .promoImage img {
     left: -23%;
-    height: 54%;
+    height: 36%;
   }
 
   .promoDescription {

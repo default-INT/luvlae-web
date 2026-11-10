@@ -9,11 +9,13 @@ import { Reveal } from '@/shared/ui/Reveal';
 import { SiteFooter } from '@/widgets/SiteFooter';
 import { SiteHeader } from '@/widgets/SiteHeader';
 
+import { PurchaseOffers } from '../PurchaseOffers';
 import { MoreReviews } from '../MoreReviews';
 import { ReviewRow } from '../ReviewRow';
 
 import styles from './styles.module.scss';
 
+import type { ProductOffer } from '@/entities/product';
 import type { Dictionary } from '@/shared/config/i18n';
 
 const websiteSchema = {
@@ -36,12 +38,18 @@ const websiteSchema = {
 
 export interface HomePageProps {
   dictionary: Dictionary;
+  offer?: ProductOffer | null;
 }
 
 export const HomePage = (props: HomePageProps) => {
-  const { dictionary } = props;
+  const { dictionary, offer } = props;
   const { home } = dictionary;
   const reviews = Object.values(home.reviews.items);
+
+  const offers = (offer?.storefront?.homeOfferIds ?? []).flatMap(id => {
+    const selected = offer?.purchaseOffers?.find(value => value.offerId === id);
+    return selected ? [selected] : [];
+  });
 
   const stories = [
     { ...home.stories.one, image: 'luvlae-routine-1.webp', height: 960 },
@@ -80,7 +88,9 @@ export const HomePage = (props: HomePageProps) => {
                 <span className={styles.promoLine}>{home.promo.titleLineOne}</span>
                 <span className={styles.promoLine}>{home.promo.titleLineTwo}</span>
               </h1>
+              <p className={styles.promoDescription}>{home.promo.supportingLine}</p>
               <p className={styles.promoDescription}>{home.promo.description}</p>
+              <p className={styles.promoNote}>{home.promo.featureOne} · {home.promo.featureTwo} · {home.promo.featureThree}</p>
               <ActionLink
                 href={product.path}
                 variant='outline'
@@ -89,6 +99,8 @@ export const HomePage = (props: HomePageProps) => {
                 {home.promo.button}
               </ActionLink>
               <p className={styles.promoNote}>{home.promo.note}</p>
+              <p className={styles.promoNote}>{home.promo.shipping} <Link href='/shipping'>{home.promo.shippingLink}</Link></p>
+              <p className={styles.promoNote}>{home.promo.guarantee} <Link href='/returns'>{home.promo.guaranteeLink}</Link></p>
             </div>
           </div>
         </section>
@@ -128,6 +140,9 @@ export const HomePage = (props: HomePageProps) => {
           </div>
         </section>
 
+        <PurchaseOffers offers={offers} copy={home.purchaseOffers}
+          highlightOfferId={offer?.storefront?.highlightedOfferId ?? null}
+          highlightBadge={offer?.storefront?.highlightBadge ?? 'bestValue'}/>
         <section className={styles.storiesSection} aria-labelledby='stories-heading'>
           <div className={styles.container}>
             <Reveal className={styles.sectionHeader}>
@@ -211,7 +226,8 @@ export const HomePage = (props: HomePageProps) => {
                   </ActionLink>
                   <Link href='/products/berberine-patches'>{home.cta.details} <span aria-hidden='true'>↗</span></Link>
                 </div>
-                <small>{home.cta.note}</small>
+                <small>{home.cta.note} <Link href='/shipping'>{home.cta.shippingLink}</Link>
+                  {' · '}<Link href='/returns'>{home.cta.guaranteeLink}</Link></small>
               </div>
             </Reveal>
           </div>

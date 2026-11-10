@@ -1,5 +1,6 @@
 'use client';
 
+import { normalizePackSnapshot } from '@/entities/product';
 import { money } from '@/shared/lib/money';
 
 import { dateTime } from '../../model/types';
@@ -18,11 +19,13 @@ interface Props { order: OrderDetail; copy: AdminCopy; reload: () => Promise<voi
 export const OrderDetails = (props: Props) => {
   const { order, copy, reload, onBusyChange } = props;
   const address = order.shippingAddress;
+  const includedTax = (order.pricing as typeof order.pricing & { includedTax?: number }).includedTax;
   useOrderPaymentPolling(refundNeedsRefresh(order), reload);
 
   const totals = [
     { label: copy.subtotal, value: order.pricing.subtotal }, { label: copy.discount, value: order.pricing.discount },
-    { label: copy.shipping, value: order.pricing.shipping }, { label: copy.tax, value: order.pricing.tax },
+    { label: copy.shipping, value: order.pricing.shipping },
+    { label: typeof includedTax === 'number' ? copy.taxIncluded : copy.tax, value: includedTax ?? order.pricing.tax },
     { label: copy.total, value: order.pricing.total },
   ];
 
@@ -42,16 +45,27 @@ export const OrderDetails = (props: Props) => {
             <h2>{copy.items}</h2>
             <div className={styles.tableWrap}><table className={styles.table}>
               <thead><tr><th>{copy.name}</th><th>{copy.quantity}</th><th>{copy.unitPrice}</th><th>{copy.total}</th></tr></thead>
-              <tbody>{order.items.map(item => <tr key={item.sku}>
-                <td>{item.name}<small>{item.sku}</small></td><td>{item.quantity}</td>
-                <td>{money(item.unitAmount)}</td><td>{money(item.lineSubtotal)}</td>
-              </tr>)}</tbody>
+              <tbody>{order.items.map(item => {
+                const snapshot = normalizePackSnapshot(item);
+                const pack = item.offerId !== undefined && snapshot;
+
+                return <tr key={`${item.sku}:${item.offerId ?? 'standard'}`}>
+                  <td>{item.name}<small>{item.sku}</small></td>
+                  <td>{item.quantity}{pack && <small>{copy.sets} · {pack.inventoryQuantity} {copy.catalogUi.boxes}</small>}</td>
+                  <td>{money(item.unitAmount)}</td><td>{money(item.lineSubtotal)}</td>
+                </tr>;
+              })}</tbody>
             </table></div>
             <div className={styles.summary}>{totals.map(total => <div key={total.label}>
               <span>{total.label}</span><strong>{total.value === null ? '—' : money(total.value)}</strong>
             </div>)}</div>
           </section>
           <OrderRefundHistory order={order} copy={copy}/>
+          {order.salesTerms && <section className={styles.card}>
+            <h2>{copy.salesTerms}</h2>
+            <p>{order.salesTerms.policyVersion}</p>
+            <p className={styles.note}>{copy.effectiveFrom}: {dateTime(order.salesTerms.effectiveAt)} UTC</p>
+          </section>}
           <OrderEmailHistory order={order} copy={copy} reload={reload} onBusyChange={onBusyChange}/>
           <section className={styles.card}>
             <h2>{copy.customer}</h2>

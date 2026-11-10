@@ -101,14 +101,14 @@ productPage:
   home: Home
   breadcrumbCurrent: Berberine Patches
   hero:
-    eyebrow: 60 patches · 2-month supply
+    eyebrow: 60 patches per box
     title: Luvlae Berberine Patches
-    subtitle: One patch. A simple daily ritual.
+    subtitle: A discreet, pill-free format for your everyday routine.
     description: Bring simplicity to your everyday routine with Luvlae Berberine Patches. A discreet, pill-free format combining berberine with botanical extracts and other ingredients — easy to apply at home or on the go.
     badge: 60 patches per box
     primaryAction: Add to cart
     secondaryAction: Explore product details
-    purchaseNote: Choose your quantity and add the patches to your cart.
+    purchaseNote: Choose your pack and add one set to your cart.
     imageOneAlt: Luvlae Berberine Patches box beside a sheet of iridescent patches
     imageTwoAlt: Open Luvlae Berberine Patches box with a sheet of patches
     imageThreeAlt: Close view of the Luvlae Berberine Patches box and patch sheet
@@ -119,10 +119,10 @@ productPage:
     detailOneValue: Topical patches
     detailTwoLabel: In the box
     detailTwoValue: 60 patches
-    detailThreeLabel: Daily use
-    detailThreeValue: One patch per day
-    detailFourLabel: Supply
-    detailFourValue: 60 days when used as directed
+    detailThreeLabel: Directions
+    detailThreeValue: Follow current package directions
+    detailFourLabel: Pack choices
+    detailFourValue: Choose the pack that fits your routine
   verification:
     eyebrow: PRODUCT DETAILS
     title: What we can confirm
@@ -342,23 +342,31 @@ ingredientsPage:
 
 home:
   promo:
-    eyebrow: LUVLAE BERBERINE PATCHES
-    titleLineOne: Small patch.
-    titleLineTwo: Simple moments.
-    description: Meet a discreet, pill-free step made to fit into your everyday routine.
+    eyebrow: LUVLAE
+    titleLineOne: Berberine
+    titleLineTwo: Patches
+    description: Discover a discreet patch format that’s easy to apply and fits around your day. Each box contains 60 patches.
     imageAlt: Woman holding a Luvlae Berberine Patches box and a sheet of pearly patches
-    button: View product
-    note: Explore the patches and choose your quantity.
+    button: View Product
+    note: 60 patches per box
+    supportingLine: A simple, pill-free step for your everyday routine.
+    featureOne: Pill-free format
+    featureTwo: Discreet design
+    featureThree: Easy to apply
+    shipping: Free Standard Shipping within the contiguous U.S. No minimum order.
+    shippingLink: Shipping Details
+    guarantee: 30-Day Money-Back Guarantee on your entire first order.
+    guaranteeLink: See Guarantee Details
   hero:
     eyebrow: LUVLAE BERBERINE PATCHES
-    title: A little patch.<br>A simpler routine.
-    description: Make room for a small moment of self-care. Discover our discreet, pill-free patches, made to fit around your everyday life.
+    title: A patch format that fits your day.
+    description: Keep your routine simple with a discreet, pill-free format. Start with one box or choose a multi-box pack, with 60 patches in every box.
     imageAlt: Luvlae Berberine Patches box beside a sheet of pearly patches
     badge: 60 patches per box
-    offerNote: Choose the quantity that fits your routine.
-    button: View product
-    destination: Choose your quantity on the product page.
-    details: About the product
+    offerNote: Explore the product and choose your pack.
+    button: View Product
+    destination: Explore the product and choose your pack.
+    details: About the Product
     featureOne: Pill-free format
     featureTwo: Discreet design
     featureThree: Easy to apply
@@ -389,12 +397,14 @@ home:
     description: A closer look at what people appreciate about the patch format.
     link: Read all the reviews
   cta:
-    eyebrow: YOUR NEXT LITTLE RITUAL
-    title: Ready to make it part<br>of your day?
-    description: One compact box. 60 pearly patches. A simple addition to the routine you already love.
-    button: View product
-    note: Explore the product and add your selection to the cart.
+    eyebrow: YOUR ROUTINE, YOUR PACK
+    title: Make room for a simpler routine.
+    description: Explore Luvlae Berberine Patches and choose your pack, with 60 patches in every box.
+    button: View Product
+    note: Free Standard Shipping within the contiguous U.S. Your entire first order is covered by our 30-Day Money-Back Guarantee. Terms apply.
     details: Explore the product
+    shippingLink: Shipping Details
+    guaranteeLink: Guarantee Details
   reviews:
     eyebrow: THE EVERYDAY EXPERIENCE
     title: Let’s talk about the little things
@@ -503,6 +513,25 @@ home:
     howTo: How to Use
     safety: Safety
     science: Science & Evidence
+  purchaseOffers:
+    eyebrow: CHOOSE YOUR PACK
+    title: Find your fit.
+    description: One box or a little more on hand — choose the pack that suits your routine. Every box contains 60 patches.
+    packWord: Pack
+    boxSingular: box
+    boxPlural: boxes
+    patches: patches
+    totalLabel: Pack Total
+    supportingLine: Choose the pack that suits your routine.
+    viewProduct: View Product
+    soldOut: Currently unavailable
+    badgeLabels:
+      bestValue: Best Value
+      recommended: Recommended
+    shipping: Free Standard Shipping within the contiguous U.S. No minimum order.
+    shippingLink: Shipping Details
+    guarantee: Your entire eligible first order is covered by our 30-Day Money-Back Guarantee, including every box in a multi-box pack.
+    guaranteeLink: Guarantee Details
 
 aboutProductMetadata:
   title: About Luvlae Berberine Patches | Format & Everyday Routine
@@ -559,7 +588,7 @@ commerce:
   resumeCheckout: Resume checkout
   checkoutEyebrow: SECURE CHECKOUT
   checkoutTitle: Complete your order
-  checkoutDescription: Pay by card and enter your shipping address. Delivery throughout the USA is included, with no additional shipping or tax added at checkout.
+  checkoutDescription: Pay securely using the delivery address you provided. Standard shipping within the contiguous United States is free.
   backToCart: Return to shopping
   paymentForm: Secure card payment and shipping address
   loadingPayment: Loading secure payment form…
@@ -580,8 +609,37 @@ commerce:
   refunded: Refunded
   orderUnpaidTitle: Your payment was not completed
   orderUnpaidDescription: Your selection is still in your cart. Return to shopping to start a new checkout.
+  sets: Sets
+  boxes: boxes
+  patches: patches
+  packWord: Pack
+  choosePack: Choose Your Pack
+  packTotal: Pack Total
+  invalidPack: This pack selection is unavailable. The standard pack is selected instead.
+  shippingLine: Free Standard Shipping within the contiguous U.S. No minimum order.
+  shippingLink: Shipping Details
+  guaranteeLine: Try your first order with confidence. Every box is covered by our 30-Day Money-Back Guarantee, including multi-box orders.
+  guaranteeLink: Read Our Refund Policy
+  guaranteeDetail: Contact us within 30 days of delivery. Opened or partially used boxes are eligible. See our refund policy for full terms.
+  shippingAddressRequired: Enter your delivery address before continuing to payment.
+  shippingAddressError: We could not accept this delivery address. Check the address and choose a state within the contiguous United States.
+  loadingAddress: Loading your cart…
+  shippingAddressTitle: Delivery address
+  shippingAddressNote: Standard shipping is free within the contiguous United States, with no minimum order. We verify your delivery address before opening payment. Your delivery address cannot be changed during payment; cancel checkout first to enter a different address.
+  recipientName: Full recipient name
+  addressLineOne: Street address
+  addressLineTwo: Apartment, suite, etc. (optional)
+  addressCity: City
+  addressState: State
+  addressZip: ZIP code
+  chooseState: Choose a state
+  countryUnitedStates: United States (contiguous states and District of Columbia)
+  continuePayment: Continue to secure payment
+  checkoutReloadRequired: Please enter your delivery address to start a new checkout. Your cart is saved.
 
 admin:
+  salesTerms: Sales terms
+  effectiveFrom: Effective from
   loading: Loading…
   refresh: Refresh
   closeOrder: Close order
@@ -742,8 +800,8 @@ admin:
   errors:
     NOT_FOUND: This record is no longer available.
     INVALID_RANGE: The start date must be before the end date.
-    VERSION_CONFLICT: This record changed. The latest version has been loaded; review it before saving again.
-    STOCK_RESERVED: Stock cannot be lower than the reserved quantity.
+    VERSION_CONFLICT: The catalog changed. Your draft is preserved. Review the current record before saving against its new version.
+    STOCK_RESERVED: Total stock cannot be lower than the quantity reserved for checkout.
     FULFILLMENT_BLOCKED: This order is not eligible for fulfillment.
     INVALID_TRANSITION: The requested status change is not available.
     TRACKING_REQUIRED: Enter the carrier and tracking number.
@@ -763,6 +821,74 @@ admin:
     RESTOCK_LIMIT: The selected quantity exceeds the items available for restocking.
     INVALID_INPUT: Check the form fields and try again.
     NOTIFICATION_RETRY_BLOCKED: This email cannot be retried. Review its delivery state and recipient settings.
+    INVENTORY_VERSION_CONFLICT: Inventory changed. Your adjustment draft is preserved. Refresh and review the current stock before applying it again.
+    INVENTORY_ADJUSTMENT_REQUIRED: Use the separate inventory adjustment form to change physical stock.
+    INVALID_QUANTITY: The inventory quantity is invalid.
+    OFFER_LIMIT: The offer limit has been reached. Archive unused offers or review the product catalog.
+    OFFER_TRANSITION: This offer cannot make that status change. Archived offers can only be duplicated.
+    OFFER_UNAVAILABLE: This offer is unavailable. Refresh the record and review the selected home offers.
+  catalogUi:
+    editVersion: Draft version
+    currentVersion: Current version
+    changedDraft: The saved record changed. Your draft is preserved. Review the current record before applying your draft to its current version.
+    reviewVersion: I reviewed the current record; keep my draft
+    standardNote: "The SKU is immutable. This base USD price belongs to the virtual standard offer: 1 box, 60 patches. Inventory is managed separately."
+    inventoryNote: Inventory is shared by every pack and is counted in physical boxes. Review reserved stock before applying an adjustment.
+    boxes: boxes
+    adjustmentMode: Inventory adjustment
+    delta: Add or remove boxes
+    set: Set total stock
+    deltaQuantity: Change in boxes (negative to remove)
+    targetQuantity: Target total stock (boxes)
+    invalidQuantity: Enter a safe whole number of boxes. A target stock cannot be negative.
+    adjustInventory: Apply inventory adjustment
+    refreshNote: Inventory and saved catalog records refresh every 30 seconds while visible and when you return to this window. Draft forms stay unchanged.
+    refreshedAt: Last refreshed
+    refreshError: Refresh failed. The displayed record may be out of date. Your drafts are preserved.
+    offers: Additional offers
+    offersNote: Offers share this product’s stock. Create a draft, review its pack total and publish it when ready. Archiving removes an offer from the home page and prevents new purchases; historical orders keep their original details.
+    offer: Offer
+    createOffer: New offer
+    unitsPerPack: Physical boxes per pack
+    packTotal: Total pack price (USD)
+    sortOrder: Display order
+    previewBoxes: Boxes per pack
+    previewPatches: Patches per pack
+    boxPrice: Derived price per box (USD)
+    previewAvailable: Packs available from current stock
+    purchasable: Available for new purchases
+    previewNote: Preview uses the draft quantity and price with the latest shared stock. Draft and archived offers cannot be purchased.
+    invalidOffer: Use 1–99 boxes per pack and a whole display order between 0 and 9999.
+    createDraft: Create draft
+    publish: Publish offer
+    archive: Archive offer
+    duplicate: Duplicate as draft
+    statuses:
+      draft: Draft
+      active: Published
+      archived: Archived
+    storefront: Home page offers
+    storefrontNote: Choose up to three unique published offers in display order. The highlighted offer must be in one of these slots. Badge wording is selected explicitly.
+    homeSlot: Home slot
+    none: None
+    standard: Standard
+    unavailableOffer: Unavailable saved offer
+    highlightOffer: Highlighted offer
+    highlightBadge: Highlight badge
+    bestValue: Best Value
+    recommended: Recommended
+    invalidStorefront: Choose unique published offers and highlight only an offer selected in a home slot.
+    savedName: Saved product name
+    savedPrice: Saved base price
+    savedSales: Saved sales availability
+    savedDescription: Saved description
+    savedPack: Saved pack
+    savedSlots: Saved home slots
+    uncertainWrite: The result of this exact operation is not yet confirmed. Your request and operation ID are preserved. Editing and version review are locked until its result is resolved.
+    retryExactOperation: Check or retry the same operation
+    acceptedRefreshFailed: The change was accepted, but refreshing the saved record failed. Refresh to confirm the saved record; the change will not be sent again.
+  sets: Sets
+  taxIncluded: Tax included
 
 contactPage:
   title: Contact Us
@@ -816,9 +942,9 @@ shippingPage:
         paragraph1: Standard delivery typically takes 3–7 business days after your order has shipped.
         paragraph2: Delivery estimates do not include order processing time and are not guaranteed. Weather, carrier disruptions, holidays, and other circumstances may affect delivery.
     section4:
-      title: Shipping Rates
+      title: Free Standard Shipping
       paragraphs:
-        paragraph1: Shipping charges, including any applicable free shipping offers, are included in product cost.
+        paragraph1: We offer free standard shipping on all orders delivered within the contiguous United States. No minimum order is required. This applies to our 1-Pack, 2-Pack, and 3-Pack offers. No standard shipping charge is added at checkout.
     section5:
       title: Order Tracking
       paragraphs:
@@ -841,8 +967,8 @@ shippingPage:
 
 returnsPage:
   title: Returns & Refunds Policy
-  description: Read Luvlae’s 30-Day Money-Back Guarantee, refund eligibility, refund processing times, and order cancellation policy for direct purchases.
-  lead: At Luvlae, we want you to feel confident about your purchase. We offer a 30-Day Money-Back Guarantee on eligible first-time purchases made directly through www.luvlae.com.
+  description: Read Luvlae’s 30-Day Money-Back Guarantee for your entire first order, including multi-box packs, plus refund terms and how to contact support.
+  lead: At Luvlae, we want you to feel confident about your purchase. Our 30-Day Money-Back Guarantee covers your entire eligible first order placed directly through www.luvlae.com, including every box in a 2-Pack or 3-Pack.
   links:
     contact:
       label: Contact Us
@@ -857,8 +983,8 @@ returnsPage:
     guarantee:
       title: 30-Day Money-Back Guarantee
       paragraphs:
-        first: If you are not satisfied with your first purchase of a Luvlae product, contact us within 30 days of delivery to request a refund. Opened or partially used products are eligible.
-        second: The guarantee applies once per customer or household, to one unit of each product in your first order. Additional units purchased in the same order and repeat purchases are not covered by the satisfaction guarantee.
+        first: If you are not satisfied with your first Luvlae order, contact us within 30 days of delivery to request a refund. The guarantee covers all boxes in that first order, including all boxes purchased as part of a 2-Pack or 3-Pack. Opened or partially used boxes are eligible.
+        second: The satisfaction guarantee is available once per customer or household and applies to the first order placed directly through www.luvlae.com. Repeat orders are not covered by this satisfaction guarantee.
         third: You do not need to continue using a product that causes irritation or discomfort. Stop using it and contact our support team.
     request:
       title: How to Request a Refund
@@ -882,8 +1008,9 @@ returnsPage:
     processing:
       title: Refund Amounts and Processing
       paragraphs:
-        first: For approved satisfaction-guarantee requests, we refund the amount paid for the eligible product, including applicable product taxes. Original shipping charges are non-refundable unless the refund results from our error or applicable law requires otherwise.
+        first: For an approved satisfaction-guarantee request covering your first order, we refund the amount you paid for all products in that order, including applicable product taxes. This includes the full amount paid for eligible 2-Pack and 3-Pack offers. Any amount already refunded will be deducted so that the total refunded does not exceed the amount you paid.
         second: Refunds are issued to the original payment method. We process approved refunds within 5 business days. Your bank or payment provider may require additional time to post the credit.
+        shipping: Standard shipping within the contiguous United States is free, so there is no standard shipping charge to deduct from your refund.
     retailers:
       title: Purchases From Other Retailers
       paragraphs:
@@ -1103,3 +1230,49 @@ privacyPage:
         item1: "We may update this Privacy Policy as our business or practices change. Updates will be published on this page with a revised “Last updated” date. Where required by law, we will provide additional notice."
       items: {}
       after: {}
+aboutPage:
+  title: About Luvlae
+  eyebrow: ABOUT LUVLAE
+  headline: Small steps. A routine of your own.
+  lead: We believe self-care should leave room for real life. Luvlae is about making space for simple, considered choices in your everyday routine.
+  imageAlt: Woman holding a Luvlae Berberine Patches box, with a patch on her upper arm
+  idea:
+    title: The idea behind Luvlae
+    paragraphs:
+      paragraph1: "Daily routines are personal. They change with our schedules, our preferences, and the way we move through the day. Our starting point is a simple question: how can an everyday product fit more naturally into that routine?"
+      paragraph2: With Luvlae Berberine Patches, we focus on a discreet, pill-free format that’s easy to apply. Each box contains 60 patches, and you can choose the pack that works for you.
+  simplicity:
+    title: Simplicity with purpose
+    paragraphs:
+      paragraph1: "For us, simplicity means making the essentials easier to understand: what a product is, what comes in the box, how to follow its directions, and what to expect when you order."
+      paragraph2: We want the experience of choosing and buying from Luvlae to feel clear from the first visit to the moment your order arrives.
+  values:
+    title: What matters to us
+    items:
+      value1:
+        title: Everyday practicality
+        description: A product should fit into your life, with a format that respects your preferences and routine.
+      value2:
+        title: Clear choices
+        description: Straightforward pack sizes, visible prices, and accessible shipping and refund information help you decide what works for you.
+      value3:
+        title: Honest information
+        description: We distinguish information about individual ingredients from evidence about a finished patch. Research on an ingredient does not, by itself, establish the effects of a topical product.
+      value4:
+        title: Care beyond the order
+        description: We make it easy to find our support team and understand the terms of our first-order money-back guarantee.
+  approach:
+    title: Our approach to product development
+    paragraphs:
+      paragraph1: "Our approach starts with the everyday experience: the format, how it fits into a routine, and how clearly the product is explained. We value practical choices and clear communication over complicated promises."
+      paragraph2: We also believe that product information should be specific about what is known. When exploring Luvlae, read the ingredients and directions on your current package, and use our guides to learn more about the patch format and the evidence around it.
+  support:
+    title: Here when you need us
+    paragraphs:
+      paragraph1: Questions about the product, your order, or our policies? Contact our support team. Your entire first order is covered by our 30-Day Money-Back Guarantee, including every box in a multi-box pack. Full terms are available in our refund policy.
+  productButton: Explore Berberine Patches
+  contactButton: Contact Us
+  refundLink: Read Our Refund Policy
+aboutPageMetadata:
+  title: About Luvlae | A Simpler Everyday Routine
+  description: "Get to know Luvlae’s philosophy: simple routines, thoughtful product choices, and clear information about our berberine patch format."

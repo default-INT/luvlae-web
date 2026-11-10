@@ -6,6 +6,9 @@ import test from 'node:test';
 
 import { getDeployment, verifyArtifact } from './cloudflare.mjs';
 
+const salesTerms = { policyVersion: '', effectiveAt: '' };
+const salesTermsBindings = { SALES_TERMS_POLICY_VERSION: { value: '' }, SALES_TERMS_EFFECTIVE_AT: { value: '' } };
+
 test('stage and production have distinct Workers; unknown environments fail closed', () => {
   assert.equal(getDeployment('stage').worker, 'luvlae-web-stage');
   assert.equal(getDeployment('stage').stripe.disabled, 'false');
@@ -20,17 +23,17 @@ test('refuses missing or mismatched deployment artifacts', () => {
     const output = path.join(root, '.cloudflare/output/v0/workers/default');
     mkdirSync(output, { recursive: true });
     assert.throws(() => verifyArtifact(root, getDeployment('stage')));
-    writeFileSync(path.join(output, 'worker.config.json'), JSON.stringify({ name: 'luvlae-web-stage', env: { STRIPE_MODE: { value: 'test' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' } } }));
-    writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({ environment: 'stage', stripe: { mode: 'test', disabled: 'false' } }));
+    writeFileSync(path.join(output, 'worker.config.json'), JSON.stringify({ name: 'luvlae-web-stage', env: { ...salesTermsBindings, STRIPE_MODE: { value: 'test' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' } } }));
+    writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({ environment: 'stage', salesTerms, stripe: { mode: 'test', disabled: 'false' } }));
     assert.throws(() => verifyArtifact(root, getDeployment('stage')));
     mkdirSync(path.join(output, 'assets'));
     writeFileSync(path.join(output, 'assets/_headers'), '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n');
     assert.equal(verifyArtifact(root, getDeployment('stage')), output);
     assert.throws(() => verifyArtifact(root, getDeployment('production')), /Rebuild/);
-    writeFileSync(path.join(output, 'worker.config.json'), JSON.stringify({ name: 'luvlae-web', env: { STRIPE_MODE: { value: 'test' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' } } }));
+    writeFileSync(path.join(output, 'worker.config.json'), JSON.stringify({ name: 'luvlae-web', env: { ...salesTermsBindings, STRIPE_MODE: { value: 'test' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' } } }));
     assert.throws(() => verifyArtifact(root, getDeployment('stage')), /Rebuild/);
     assert.throws(() => verifyArtifact(root, getDeployment('production')), /Rebuild/);
-    writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({ environment: 'production', stripe: { mode: 'test', disabled: 'false' } }));
+    writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({ environment: 'production', salesTerms, stripe: { mode: 'test', disabled: 'false' } }));
     assert.throws(() => verifyArtifact(root, getDeployment('production')), /static headers/);
     rmSync(path.join(output, 'assets/_headers'));
     assert.equal(verifyArtifact(root, getDeployment('production')), output);
@@ -52,9 +55,9 @@ test('Stripe deployment rejects invalid/live-stage inputs and never reuses artif
     mkdirSync(output, { recursive: true });
     const stripe = { mode: 'live', disabled: 'false' };
     writeFileSync(path.join(output, 'worker.config.json'), JSON.stringify({ name: 'luvlae-web', env: {
-      STRIPE_MODE: { value: 'live' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' },
+      ...salesTermsBindings, STRIPE_MODE: { value: 'live' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' },
     } }));
-    writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({ environment: 'production', stripe }));
+    writeFileSync(path.join(output, 'deployment.json'), JSON.stringify({ environment: 'production', salesTerms, stripe }));
     const live = getDeployment('production', { STRIPE_MODE: 'live', STRIPE_CHEKOUT_DISABLED: 'false' });
     assert.equal(verifyArtifact(root, live), output);
     assert.throws(() => verifyArtifact(root, getDeployment('production', {
@@ -62,7 +65,7 @@ test('Stripe deployment rejects invalid/live-stage inputs and never reuses artif
     })), /Stripe/);
     assert.throws(() => verifyArtifact(root, getDeployment('production')), /Stripe/);
     writeFileSync(path.join(output, 'worker.config.json'), JSON.stringify({ name: 'luvlae-web', env: {
-      STRIPE_MODE: { value: 'test' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' },
+      ...salesTermsBindings, STRIPE_MODE: { value: 'test' }, STRIPE_CHEKOUT_DISABLED: { value: 'false' },
     } }));
     assert.throws(() => verifyArtifact(root, live), /Stripe/);
   } finally {

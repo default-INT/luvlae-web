@@ -1,7 +1,7 @@
 import { siteOrigin } from '@/shared/config/site';
 
 export interface AnalyticsItem {
-  item_id: string; item_name: string; price: number; quantity: number;
+  item_id: string; item_name: string; item_variant?: string; price: number; quantity: number;
 }
 
 export interface EcommerceParameters {
@@ -83,6 +83,7 @@ export const trackEcommerceEvent = (name: EcommerceEventName, parameters: Ecomme
   const event = {
     currency: parameters.currency, value: parameters.value,
     items: parameters.items.map(item => ({
+      ...(item.item_variant ? { item_variant: item.item_variant } : {}),
       item_id: item.item_id, item_name: item.item_name, price: item.price, quantity: item.quantity,
     })),
     ...(name === 'purchase' ? { transaction_id: parameters.transaction_id } : {}),
@@ -100,6 +101,32 @@ export const trackEcommerceEvent = (name: EcommerceEventName, parameters: Ecomme
     try { localStorage.setItem(key, '1'); }
     catch { /* Analytics must never prevent shopping or payment recovery. */ }
   }
+
+  return true;
+};
+
+export interface ItemListParameters {
+  item_list_id: string;
+  item_list_name: string;
+  currency: 'USD';
+  items: (AnalyticsItem & { index: number })[];
+}
+export type ItemListEventName = 'view_item_list' | 'select_item';
+
+export const trackItemListEvent = (name: ItemListEventName, parameters: ItemListParameters) => {
+  if (!initializeAnalytics() || !parameters.items.length || (name === 'select_item' && parameters.items.length !== 1)) {
+    return false;
+  }
+
+  const event = { item_list_id: parameters.item_list_id, item_list_name: parameters.item_list_name,
+    currency: parameters.currency,
+    items: parameters.items.map(item => ({ item_id: item.item_id, item_name: item.item_name,
+      ...(item.item_variant ? { item_variant: item.item_variant } : {}),
+      price: item.price, quantity: item.quantity, index: item.index })),
+    ...pageParameters() };
+
+  try { (window as AnalyticsWindow).gtag!('event', name, event); }
+  catch { return false; }
 
   return true;
 };

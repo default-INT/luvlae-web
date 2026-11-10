@@ -1,0 +1,12 @@
+.card { padding: clamp(22px, 4vw, 40px); border: 1px solid var(--color-border); border-radius: var(--radius-card);
+  background: white; box-shadow: var(--shadow-card); p { color: var(--color-text); line-height: 1.7; } }
+.form, .fields { display: grid; gap: 20px; }
+.fields { min-width: 0; margin: 0; padding: 0; border: 0; }
+.fields label { display: grid; gap: 8px; font-size: .85rem; font-weight: 650;
+  input, select { width: 100%; min-width: 0; min-height: 44px; padding: 12px; border: 1px solid var(--color-border);
+    border-radius: 10px; background: white; color: var(--color-navy); font: inherit; } }
+.button, .secondary { min-height: 46px; padding: 12px 20px; border: 1px solid var(--color-navy); border-radius: 999px;
+  background: var(--color-navy); color: white; font: 700 .85rem var(--font-sans); cursor: pointer;
+  &:disabled { opacity: .55; cursor: wait; } }
+.secondary { background: transparent; color: var(--color-navy); }
+.error { padding: 14px; border-radius: 10px; background: #fff0f0; color: #963535; }

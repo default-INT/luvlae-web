@@ -6,6 +6,7 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { MongoClient, ObjectId } from 'mongodb';
 
 import { login, requireAdmin, sessionCookie } from '../src/_app/commerce/auth.server';
+import { adjustInventory } from '../src/_app/commerce/catalog-mutations.server';
 import { collections } from '../src/_app/commerce/collections.server';
 import {
   createProductSchema, fulfillmentSchema, quoteSchema, restockSchema, updateProductSchema,
@@ -18,6 +19,8 @@ import { reserveOrder } from '../src/_app/commerce/reservations.server';
 import { ApiError, readJson, requireOrigin } from '../src/shared/lib/api/index.server';
 import { inTransaction } from '../src/shared/lib/mongodb/index.server';
 import { hashPassword, hashToken, randomToken, verifyPassword } from '../src/shared/lib/security/index.server';
+
+import { withShipping } from './helpers/shipping';
 
 import type { DatabaseContext } from '../src/shared/lib/mongodb/index.server';
 
@@ -136,9 +139,9 @@ test('reservation retries preserve snapshots and stock reductions cannot steal h
   const retry = await reserveOrder(context, input);
   assert.equal(first.orderId.toHexString(), retry.orderId.toHexString());
   assert.equal(retry.replayed, true);
-  await assert.rejects(updateProduct(context, adminId, 'RESERVE', updateProductSchema.parse({
-    stockQuantity: 0, version: 1, operationId: randomUUID(), reason: 'Invalid stock reduction',
-  })), hasCode('STOCK_RESERVED'));
+  await assert.rejects(adjustInventory(context, adminId, 'RESERVE', {
+    mode: 'set', quantity: 0, expectedInventoryVersion: 2, operationId: randomUUID(), reason: 'Invalid stock reduction',
+  }), hasCode('STOCK_RESERVED'));
   await updateProduct(context, adminId, 'RESERVE', updateProductSchema.parse({
     unitAmount: 4000, version: 1, operationId: randomUUID(), reason: 'New catalog price',
   }));
@@ -329,7 +332,11 @@ test('distributed login throttling blocks repeated failures across requests', as
 });
 
 test('mock checkout is gated, atomic, replayable, and usable by manager without invented Stripe payments', async () => {
-  const { createMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+  const { createMockOrder: rawCreateMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+
+  const createMockOrder = (context: DatabaseContext, input: Parameters<typeof rawCreateMockOrder>[1]) =>
+    rawCreateMockOrder(context, withShipping(input));
+
   const { seedTestProduct } = await import('../src/_app/commerce/mock-migration.server');
   const previous = process.env.MOCK_CHECKOUT_ENABLED;
 
@@ -374,7 +381,11 @@ test('mock checkout is gated, atomic, replayable, and usable by manager without 
 });
 
 test('mock checkout prevents overselling and rolls back all items when a price changes', async () => {
-  const { createMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+  const { createMockOrder: rawCreateMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+
+  const createMockOrder = (context: DatabaseContext, input: Parameters<typeof rawCreateMockOrder>[1]) =>
+    rawCreateMockOrder(context, withShipping(input));
+
   const previous = process.env.MOCK_CHECKOUT_ENABLED;
   process.env.MOCK_CHECKOUT_ENABLED = 'true';
 
@@ -412,7 +423,11 @@ test('mock checkout prevents overselling and rolls back all items when a price c
 
 test('SSR guest access is scoped, expires and never returns customer/address or access secrets', async () => {
   const { findGuestOrder, getGuestOrder, guestOrderCookie } = await import('../src/entities/order/index.server');
-  const { createMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+  const { createMockOrder: rawCreateMockOrder } = await import('../src/_app/commerce/mock-checkout.server');
+
+  const createMockOrder = (context: DatabaseContext, input: Parameters<typeof rawCreateMockOrder>[1]) =>
+    rawCreateMockOrder(context, withShipping(input));
+
   const previous = process.env.MOCK_CHECKOUT_ENABLED;
   process.env.MOCK_CHECKOUT_ENABLED = 'true';
 

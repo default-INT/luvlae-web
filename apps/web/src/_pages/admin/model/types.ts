@@ -1,10 +1,13 @@
-import type { ProductOffer } from '@/entities/product';
+import type { ProductOffer, ProductOfferSnapshot } from '@/entities/product';
 import type { Dictionary } from '@/shared/config/i18n';
 
 export type AdminCopy = Dictionary['admin'];
 export interface PageResult<T> { items: T[]; nextCursor: string | null }
 export interface AdminProduct extends ProductOffer {
-  inventory: { stockQuantity: number; reservedQuantity: number }; updatedAt: string;
+  inventory: { stockQuantity: number; reservedQuantity: number; version?: number };
+  offers?: ProductOfferSnapshot[];
+  storefront?: { homeOfferIds: string[]; highlightedOfferId: string | null; highlightBadge: 'bestValue' | 'recommended' };
+  updatedAt: string;
 }
 export interface AdminOrder {
   id: string; orderNumber: string; version: number; createdAt: string; updatedAt?: string;
@@ -13,6 +16,7 @@ export interface AdminOrder {
   reconciliationRequired: boolean; disputed: boolean;
 }
 export interface OrderDetail extends AdminOrder {
+  salesTerms?: { policyVersion: string; effectiveAt: string };
   emails?: OrderEmail[];
   payment: { provider: 'stripe' | 'mock'; status: string; amountPaid: number; amountRefunded: number };
   refundableAmount: number;
@@ -20,7 +24,10 @@ export interface OrderDetail extends AdminOrder {
   canRefund: boolean;
   refunds: OrderRefund[];
   cancellationRequest?: { status: 'pending' | 'succeeded'; reason: string; operationId: string };
-  items: { sku: string; name: string; quantity: number; unitAmount: number; lineSubtotal: number }[];
+  items: {
+    sku: string; name: string; quantity: number; unitAmount: number; lineSubtotal: number;
+    offerId?: string; unitsPerPack?: number; inventoryQuantity?: number;
+  }[];
   customer?: { name: string; email: string; phone?: string };
   shippingAddress?: { recipientName: string; line1: string; line2?: string; city: string;
     state: string; postalCode: string; country: string };

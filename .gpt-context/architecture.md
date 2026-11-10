@@ -1,5 +1,19 @@
 # Luvlae.com architecture and technology
 
+## DTC offers implementation — 2026-11-09 (local, not deployed)
+
+One physical SKU shares box inventory across virtual `standard` and embedded Product.offers. Stable IDs, catalog versions and independent inventory versions support audited admin CRUD, draft/publish/archive, homepage slots and stock adjustments. Checkout quantities are sets; reservations, commitment and restock aggregate physical boxes across same-SKU lines. Historical snapshots and exact persisted checkout requests remain compatible.
+
+Home reads the catalog at request time, keeps View Product links and passes an offer ID to the PDP selector. Cart v3 uses composite SKU/offer keys, explicit replacement/merging and atomic physical-stock limits. New checkout uses packs-v2 with a server-normalized contiguous-US shipping address, frozen Customer/Session requests and ownership-protected lookup recovery. Policies/About use the existing design/images and YAML string/keyed-record dictionary. See [technical solution](dtc-bundles-technical-solution.md), [execution evidence](dtc-bundles-execution.md) and [rollout](dtc-bundles-rollout.md).
+
+Additive migrations008/009 and catalog provisioning are separate operations; neither has been applied remotely. `SALES_TERMS_POLICY_VERSION` and `SALES_TERMS_EFFECTIVE_AT` activate optional new-order policy snapshots only at/after the explicit timestamp; both blank means no activation, a malformed pair blocks new creation, and exact replays preserve old snapshots. The same behavior covers Stripe reservations and mock orders. Cloudflare bindings, Turbo task hashes and artifact reuse checks include both settings. Admin order details show captured policy version/date. No activation date was invented.
+
+Real Stripe sandbox address locking, inclusive-tax semantics and restricted-key permissions remain release prerequisites, alongside policy date/legacy applicability and the requested 2-Pack Best Value wording despite 3-Pack's lower per-box price. External warehouse/Amazon stock synchronization is not implemented.
+
+### Dictionary runtime shape
+
+The current [dictionary loader](../apps/web/src/shared/lib/i18n/getDictionary.server.ts) accepts only string leaves and keyed records, not arrays/numbers/booleans. YAML content lists must use keyed objects and render through Object.values. Dictionary generation and TypeScript alone do not validate this runtime invariant; test actual getDictionary loading. An initial About array-based draft caused a global rendering failure during local QA and was converted to keyed records before acceptance.
+
 ## Canonical storefront and analytics — 2026-10-27
 
 The canonical public origin is centralized at `apps/web/src/shared/config/site` as `https://www.luvlae.com`. App metadata/discovery/JSON-LD use it, and Next config has an apex-only 308 preserving path/query. Upstream domain redirects still need verification after deployment; the audit observed an external 307 before this change. Product Offer markup shares the existing request-scoped MongoDB offer with the visible UI, so catalog edits update both on the next SSR request. The user confirmed USD 19.99 as production retail pricing; no DB price write was needed here.
