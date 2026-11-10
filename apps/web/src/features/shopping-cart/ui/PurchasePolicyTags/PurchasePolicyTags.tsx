@@ -4,13 +4,13 @@ import styles from './styles.module.scss';
 
 import type { Dictionary } from '@/shared/config/i18n';
 
-interface Props { copy: Dictionary['commerce']; onNavigate?: () => void; compact?: boolean }
+interface Props { copy: Dictionary['commerce']; onNavigate?: () => void; compact?: boolean; className?: string }
 
 export const PurchasePolicyTags = (props: Props) => {
-  const { copy, onNavigate, compact } = props;
+  const { copy, onNavigate, compact, className = '' } = props;
 
   return (
-    <div className={`${styles.policies} ${compact ? styles.compact : ''}`}>
+    <div className={`${styles.policies} ${compact ? styles.compact : ''} ${className}`}>
       <Link onClick={onNavigate} href='/shipping' className={styles.policy} title={copy.shippingLine}>
         <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.7' aria-hidden='true'>
           <path d='M3 5h11v12H3zM14 9h4l3 4v4h-7'/><path d='M3 10H1m2 4H1'/>

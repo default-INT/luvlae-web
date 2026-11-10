@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { startTransition, useOptimistic, useState } from 'react';
 
 import { product } from '@/entities/product';
 import { money } from '@/shared/lib/money';
@@ -29,20 +29,29 @@ export const ProductPurchase = (props: Props) => {
 
   if (search) requested = search.getAll('offer').length > 1 ? '' : search.get('offer') ?? 'standard';
 
+  const [optimisticRequested, setOptimisticRequested] = useOptimistic(requested);
   const offers = offer?.purchaseOffers ?? [];
-  const { selected, invalid } = selectPurchaseOffer(offers, requested);
+  const { selected, invalid } = selectPurchaseOffer(offers, optimisticRequested);
   const available = !!offer?.salesEnabled && !!selected && selected.availableQuantity > 0;
 
   return (
     <div className={styles.purchase}>
-      <PackSelector storefront={offer?.storefront} offers={offers} selected={selected?.offerId ?? 'standard'}
-        disabled={busy || !!pending} copy={copy}
+      <PackSelector
+        storefront={offer?.storefront}
+        offers={offers}
+        selected={selected?.offerId ?? 'standard'}
+        disabled={busy || !!pending}
+        copy={copy}
         onChange={id => {
           const query = new URLSearchParams(search?.toString());
           query.set('offer', id);
           setAddError(false);
-          router.push(`${pathname}?${query}`, { scroll: false });
-        }}/>
+          startTransition(() => {
+            setOptimisticRequested(id);
+            router.push(`${pathname}?${query}`, { scroll: false });
+          });
+        }}
+      />
       {offer && invalid && <p role='alert'>{copy.invalidPack}</p>}
       <p className={styles.price} aria-live='polite'>
         {copy.packTotal}: {selected ? money(selected.price.unitAmount) : copy.priceUnavailable}

@@ -70,3 +70,9 @@ CartDrawer shows an optional Apply offer suggestion when a cheaper in-stock comb
 `_pages/home/ui/PurchaseOffers/styles.module.scss` matches the PDP highlight palette (warm #fff9eb surface, #d5b66c border and gold badge). The badge sits absolutely on the card's top border, so highlighted and ordinary card headings/descriptions use identical layout spacing.
 
 The homepage's first promo section also uses the shared `PurchasePolicyTags` via the shopping-cart public API, replacing its shipping/guarantee paragraphs with the same linked icon tags as the PDP.
+
+Homepage promo mockup applied: its View Product CTA is 50% of the copy width (220px minimum capped at available width), 56px high and left-aligned. Promo-only policy tags have a 36px top gap, 48px minimum height, larger text/20px icons and wrap within the copy width on small screens. Shared tags accept a className; PDP/cart sizing is unchanged.
+
+## Optimistic PDP pack selection — 2026-11-10 (local)
+
+`ProductPurchase` uses React `useOptimistic` inside the router navigation transition. Pack radio state, total, availability and Add to cart payload immediately derive from the optimistic offer ID while the query-string navigation is pending. The committed URL remains the base state for back/forward, failed/interrupted transitions and refreshed catalog validation; existing unavailable-offer fallback remains in place. Selection stays interactive during navigation; cart busy/pending-checkout locks still apply.

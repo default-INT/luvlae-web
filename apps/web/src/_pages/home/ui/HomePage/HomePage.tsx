@@ -91,7 +91,6 @@ export const HomePage = (props: HomePageProps) => {
               </h1>
               <p className={styles.promoDescription}>{home.promo.supportingLine}</p>
               <p className={styles.promoDescription}>{home.promo.description}</p>
-              <p className={styles.promoNote}>{home.promo.featureOne} · {home.promo.featureTwo} · {home.promo.featureThree}</p>
               <ActionLink
                 href={product.path}
                 variant='outline'
@@ -99,8 +98,7 @@ export const HomePage = (props: HomePageProps) => {
               >
                 {home.promo.button}
               </ActionLink>
-              <p className={styles.promoNote}>{home.promo.note}</p>
-              <PurchasePolicyTags copy={dictionary.commerce}/>
+              <PurchasePolicyTags copy={dictionary.commerce} className={styles.promoPolicies}/>
             </div>
           </div>
         </section>
