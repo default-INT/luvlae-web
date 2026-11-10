@@ -14,7 +14,7 @@ import { collections } from './collections.server';
 import { checkoutRequestSchema } from './contracts';
 import { reserveOrder } from './reservations.server';
 import {
-  stripeShipping, prepareCustomerProvision, provisionShippingCustomer, freezeShippingSession,
+  prepareCustomerProvision, provisionShippingCustomer, freezeShippingSession,
 } from './shipping-checkout.server';
 import { stripeRequestMigrationName } from './stripe-request-migration.server';
 import { validateCheckoutAssociation, validateCheckoutSession } from './stripe-checkout-policy.server';
@@ -28,6 +28,12 @@ export const checkoutSessionSchema = checkoutRequestSchema;
 const pricingPolicy = { shipping: 'included-us-v1', tax: 'included-v1', discount: 'none-v1' as const };
 const dayMilliseconds = 86400000;
 const mismatch = () => fail(409, 'PAYMENT_ASSOCIATION_MISMATCH', 'Checkout references do not match the order.');
+const rejectedShippingRequestMessage = 'You cannot enable automatic tax calculation with `payment_intent_data[shipping]` set.';
+
+export const isKnownRejectedShippingSessionRequest = (error: unknown): error is Stripe.errors.StripeInvalidRequestError =>
+  error instanceof Stripe.errors.StripeInvalidRequestError && error.statusCode === 400 &&
+  error.rawType === 'invalid_request_error' && error.message === rejectedShippingRequestMessage &&
+  typeof error.requestId === 'string' && error.requestId.length > 0;
 
 // Parameters are built exclusively from the immutable persisted quote, never from retry-time configuration.
 export const checkoutSessionParameters = (attempt: CheckoutAttempt): Stripe.Checkout.SessionCreateParams => ({
@@ -43,8 +49,8 @@ export const checkoutSessionParameters = (attempt: CheckoutAttempt): Stripe.Chec
   allow_promotion_codes: false,
   client_reference_id: attempt.orderId.toHexString(),
   metadata: { orderId: attempt.orderId.toHexString(), attemptId: attempt._id.toHexString() },
-  payment_intent_data: { ...(attempt.shippingSnapshot ? { shipping: stripeShipping(attempt.shippingSnapshot) } : {}),
-    metadata: { orderId: attempt.orderId.toHexString(), attemptId: attempt._id.toHexString() } },
+  // Automatic tax reads the frozen Customer shipping; Stripe rejects an explicit PaymentIntent shipping override.
+  payment_intent_data: { metadata: { orderId: attempt.orderId.toHexString(), attemptId: attempt._id.toHexString() } },
   expires_at: Math.floor(attempt.inventoryReservation.expiresAt.getTime() / 1000),
   line_items: attempt.quoteSnapshot.items.map(item => ({
     quantity: item.quantity,

@@ -1,5 +1,9 @@
 # Luvlae.com architecture and technology
 
+## Stage migration applied — 2026-11-10
+
+At the user’s explicit request, the existing `apps/web/.env.local` connection was verified as `luvlae_stage` and the standard CLI `migrate` then `check` commands completed successfully under Node22. Remote `_migrations` confirms008-dtc-bundles and009-locked-shipping applied on2026-11-10; earlier001–007 markers were already present. No migration locks remain. No catalog provisioning, price/stock adjustment, deploy, provider operation or production migration was performed. Historical statements below about no remote migration describe the earlier implementation phase; this stage verification supersedes them.
+
 ## DTC offers implementation — 2026-11-09 (local, not deployed)
 
 One physical SKU shares box inventory across virtual `standard` and embedded Product.offers. Stable IDs, catalog versions and independent inventory versions support audited admin CRUD, draft/publish/archive, homepage slots and stock adjustments. Checkout quantities are sets; reservations, commitment and restock aggregate physical boxes across same-SKU lines. Historical snapshots and exact persisted checkout requests remain compatible.

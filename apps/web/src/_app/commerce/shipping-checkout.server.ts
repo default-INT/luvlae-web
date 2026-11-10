@@ -5,7 +5,7 @@ import Stripe from 'stripe';
 import { fail } from '@/shared/lib/api/index.server';
 import { inTransaction } from '@/shared/lib/mongodb/index.server';
 
-import { appendAudit } from './audit.server';
+import { appendAudit, requestFingerprint } from './audit.server';
 import { collections } from './collections.server';
 
 import type { CheckoutAttempt } from './models';
@@ -100,15 +100,45 @@ export const freezeShippingSession = async (
   return { ...current, stripeRequest };
 });
 
-// No Session request has ever existed, so Customer creation alone cannot accept a payment.
-// This transaction competes with Session freezing on the same attempt document.
-export const cancelUnopenedShippingCheckout = (context: DatabaseContext, initial: CheckoutAttempt) =>
+export interface KnownRejectedShippingSessionRequest {
+  frozenRequestFingerprint: string;
+  idempotencyKey: string;
+  providerRequestId: string;
+}
+
+const hasKnownRejectedShippingRequest = (attempt: CheckoutAttempt) => {
+  const parameters = attempt.stripeRequest?.parameters;
+  return Boolean(attempt.shippingSnapshot && parameters?.automatic_tax?.enabled === true &&
+    parameters.payment_intent_data?.shipping && !attempt.stripeSessionId);
+};
+
+// No Session can accept payment after this exact immutable request is rejected by Stripe.
+// The transaction competes with any Session association and releases the reservation once.
+export const cancelUnopenedShippingCheckout = (
+  context: DatabaseContext, initial: CheckoutAttempt, rejectedRequest?: KnownRejectedShippingSessionRequest,
+) =>
   inTransaction(context, async session => {
     const { attempts, products, orders } = collections(context.db);
     const attempt = await attempts.findOne({ _id: initial._id }, { session });
 
-    if (!attempt?.shippingSnapshot || attempt.stripeRequest || attempt.stripeSessionId) {
+    if (!attempt?.shippingSnapshot || attempt.stripeSessionId) {
       return fail(409, 'CHECKOUT_NOT_READY', 'Resume checkout before trying cancellation again.');
+    }
+
+    if (attempt.stripeRequest) {
+      const currentFingerprint = requestFingerprint(attempt.stripeRequest);
+      const initialFingerprint = initial.stripeRequest ? requestFingerprint(initial.stripeRequest) : null;
+
+      const proofMatches = rejectedRequest && hasKnownRejectedShippingRequest(attempt) &&
+        hasKnownRejectedShippingRequest(initial) && initialFingerprint === rejectedRequest.frozenRequestFingerprint &&
+        currentFingerprint === rejectedRequest.frozenRequestFingerprint &&
+        initial.stripeIdempotencyKey === rejectedRequest.idempotencyKey &&
+        attempt.stripeIdempotencyKey === rejectedRequest.idempotencyKey &&
+        /^req_[A-Za-z0-9]+$/.test(rejectedRequest.providerRequestId);
+
+      if (!proofMatches) return fail(409, 'CHECKOUT_NOT_READY', 'Resume checkout before trying cancellation again.');
+    } else if (rejectedRequest) {
+      return fail(409, 'CHECKOUT_NOT_READY', 'The rejected provider request no longer matches this checkout.');
     }
 
     if (attempt.inventoryReservation.state === 'released') return { cancelled: true };
@@ -117,9 +147,15 @@ export const cancelUnopenedShippingCheckout = (context: DatabaseContext, initial
       return fail(409, 'CHECKOUT_RECOVERY_REQUIRED', 'The checkout requires recovery.');
     }
 
+    if (rejectedRequest && (Date.now() - attempt.createdAt.getTime() >= 23 * 60 * 60 * 1000 ||
+      attempt.createdAt.getTime() > Date.now())) {
+      return fail(409, 'CHECKOUT_RECOVERY_REQUIRED', 'The provider idempotency window requires reconciliation.');
+    }
+
     const order = await orders.findOne({ _id: attempt.orderId }, { session });
 
-    if (!order || order.payment.amountPaid || order.payment.settledAttemptId) {
+    if (!order || order.payment.amountPaid || order.payment.settledAttemptId ||
+      order.payment.activeAttemptId?.toHexString() !== attempt._id.toHexString()) {
       return fail(409, 'CHECKOUT_CANNOT_CANCEL', 'This order cannot be cancelled.');
     }
 
@@ -142,6 +178,8 @@ export const cancelUnopenedShippingCheckout = (context: DatabaseContext, initial
     }, $unset: { 'payment.activeAttemptId': '' }, $inc: { version: 1 } }, { session });
     await appendAudit(context.db, session, { operationId: `guest-cancel-${attempt._id.toHexString()}`,
       requestHash: attempt.requestHash, actor: { type: 'system' }, entityType: 'order', entityId: order._id,
-      action: 'order.guest_cancel_checkout', changes: { orderStatus: 'cancelled' } });
+      action: 'order.guest_cancel_checkout', changes: { orderStatus: 'cancelled',
+        ...(rejectedRequest ? { providerRequestId: rejectedRequest.providerRequestId,
+          rejectedRequestFingerprint: rejectedRequest.frozenRequestFingerprint } : {}) } });
     return { cancelled: true };
   });

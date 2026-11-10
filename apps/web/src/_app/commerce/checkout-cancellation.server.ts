@@ -7,7 +7,8 @@ import { inTransaction } from '@/shared/lib/mongodb/index.server';
 import { hashToken } from '@/shared/lib/security/index.server';
 import { createStripeClient } from '@/shared/lib/stripe/index.server';
 
-import { appendAudit } from './audit.server';
+import { appendAudit, requestFingerprint } from './audit.server';
+import { isKnownRejectedShippingSessionRequest } from './checkout-session.server';
 import { collections } from './collections.server';
 import { cancelUnopenedShippingCheckout } from './shipping-checkout.server';
 import { applyCheckoutTransition } from './stripe-checkout-persistence.server';
@@ -28,8 +29,40 @@ export const cancelGuestCheckout = async (database: DatabaseContext, id: string,
 
   const attempt = await attempts.findOne({ orderId: order._id });
 
+  if (attempt?.state === 'cancelled' && attempt.inventoryReservation.state === 'released'
+    && order.orderStatus === 'cancelled' && !order.payment.amountPaid && !order.payment.settledAttemptId) {
+    return { cancelled: true };
+  }
+
   if (attempt?.shippingSnapshot && !attempt.stripeRequest && !attempt.stripeSessionId) {
     return cancelUnopenedShippingCheckout(database, attempt);
+  }
+
+  if (attempt?.shippingSnapshot && attempt.stripeRequest && !attempt.stripeSessionId &&
+    attempt.stripeRequest.parameters.automatic_tax?.enabled && attempt.stripeRequest.parameters.payment_intent_data?.shipping) {
+    const age = Date.now() - attempt.createdAt.getTime();
+
+    if (!attempt.active || attempt.state !== 'creating' || age < 0 || age >= 23 * 3600000) {
+      return fail(409, 'CHECKOUT_RECOVERY_REQUIRED', 'The original checkout requires provider reconciliation.');
+    }
+
+    const provider = stripe ?? createStripeClient();
+    let rejection: Stripe.errors.StripeInvalidRequestError | undefined;
+
+    try {
+      await provider.checkout.sessions.create(attempt.stripeRequest.parameters, {
+        idempotencyKey: attempt.stripeIdempotencyKey, apiVersion: attempt.stripeRequest.apiVersion,
+      });
+    } catch (error) {
+      if (isKnownRejectedShippingSessionRequest(error)) rejection = error;
+    }
+
+    if (!rejection?.requestId) return fail(409, 'CHECKOUT_RECOVERY_REQUIRED', 'The original checkout requires reconciliation.');
+
+    return cancelUnopenedShippingCheckout(database, attempt, {
+      frozenRequestFingerprint: requestFingerprint(attempt.stripeRequest),
+      idempotencyKey: attempt.stripeIdempotencyKey, providerRequestId: rejection.requestId,
+    });
   }
 
   if (!attempt?.stripeSessionId) return fail(409, 'CHECKOUT_NOT_READY', 'Resume checkout before trying again.');

@@ -1,5 +1,9 @@
 # DTC bundle catalog rollout
 
+## Stage migration applied — 2026-11-10
+
+At the user’s explicit request, the existing `apps/web/.env.local` connection was verified as `luvlae_stage` and the standard CLI `migrate` then `check` commands completed successfully under Node22. Remote `_migrations` confirms008-dtc-bundles and009-locked-shipping applied on2026-11-10; earlier001–007 markers were already present. No migration locks remain. No catalog provisioning, price/stock adjustment, deploy, provider operation or production migration was performed. Historical statements below about no remote migration describe the earlier implementation phase; this stage verification supersedes them.
+
 This is an operator runbook for the additive schema and one-time catalog initialization. The provisioning command has not been run against a remote database. It never changes stock/reserved quantities, orders, checkout attempts, Stripe, email or any provider configuration.
 
 ## Preconditions

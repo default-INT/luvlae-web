@@ -178,7 +178,8 @@ test('lost Customer response retries exact frozen request; normalized address is
   assert.equal(parameters.shipping_address_collection, undefined);
   assert.equal(parameters.customer_creation, undefined);
   assert.deepEqual(parameters.customer_update, { shipping: 'never' });
-  assert.equal(parameters.payment_intent_data?.shipping?.address?.state, 'NY');
+  assert.equal(parameters.payment_intent_data?.shipping, undefined);
+  assert.equal(parameters.automatic_tax?.enabled, true);
   await assert.rejects(createCheckoutSession(context, { ...f.input,
     shippingAddress: { ...syntheticShipping, city: 'Changed destination' } }, f.stripe), hasCode('IDEMPOTENCY_CONFLICT'));
   const order = await collections(context.db).orders.findOne({ _id: new ObjectId(result.id) });
@@ -352,4 +353,78 @@ test('checkout identity lookup is scoped to operation, guest ownership and acces
   }));
 
   assert.equal(malformed.status, 400);
+});
+
+const rejectedSessionFixture = async () => {
+  const f = await fixture();
+  f.stripe.checkout.sessions.create = async () => { throw new Error('Synthetic lost response'); };
+  await assert.rejects(createCheckoutSession(context, f.input, f.stripe), hasCode('STRIPE_CHECKOUT_UNAVAILABLE'));
+  const attempt = (await collections(context.db).attempts.findOne({ 'quoteSnapshot.items.sku': f.sku }))!;
+
+  const parameters = { ...attempt.stripeRequest!.parameters, payment_intent_data: {
+    ...attempt.stripeRequest!.parameters.payment_intent_data,
+    shipping: { name: 'Synthetic recipient', address: { line1: '123 Example St', city: 'New York',
+      state: 'NY', postal_code: '10001', country: 'US' } },
+  } };
+
+  await collections(context.db).attempts.updateOne({ _id: attempt._id }, {
+    $set: { 'stripeRequest.parameters': parameters },
+  });
+  return { ...f, attempt, parameters };
+};
+
+const knownRejection = () => Object.assign(new Stripe.errors.StripeInvalidRequestError({
+  type: 'invalid_request_error',
+  message: 'You cannot enable automatic tax calculation with `payment_intent_data[shipping]` set.',
+}), { statusCode: 400, requestId: 'req_synthetic', rawType: 'invalid_request_error' });
+
+test('explicit cancellation confirms exact rejection, releases once and preserves frozen payload', async () => {
+  const f = await rejectedSessionFixture();
+  let calls = 0;
+
+  f.stripe.checkout.sessions.create = async (parameters, options) => {
+    calls++;
+    assert.deepEqual(parameters, f.parameters);
+    assert.equal(options?.idempotencyKey, f.attempt.stripeIdempotencyKey);
+    assert.equal(options?.apiVersion, f.attempt.stripeRequest!.apiVersion);
+    throw knownRejection();
+  };
+
+  const cancel = () => cancelGuestCheckout(context, f.attempt.orderId.toHexString(), f.input.guestToken, f.stripe);
+  assert.deepEqual(await cancel(), { cancelled: true });
+  assert.deepEqual(await cancel(), { cancelled: true });
+  assert.equal(calls, 1);
+  const current = (await collections(context.db).attempts.findOne({ _id: f.attempt._id }))!;
+  assert.equal(current.state, 'cancelled');
+  assert.deepEqual(current.stripeRequest!.parameters, f.parameters);
+  assert.equal((await collections(context.db).products.findOne({ sku: f.sku }))?.inventory.reservedQuantity, 0);
+});
+
+test('unknown result and concurrent frozen-request change retain reservations', async () => {
+  const f = await rejectedSessionFixture();
+  f.stripe.checkout.sessions.create = async () => { throw new Error('Unknown provider result'); };
+  const cancel = () => cancelGuestCheckout(context, f.attempt.orderId.toHexString(), f.input.guestToken, f.stripe);
+  await assert.rejects(cancel(), hasCode('CHECKOUT_RECOVERY_REQUIRED'));
+  assert.equal((await collections(context.db).products.findOne({ sku: f.sku }))?.inventory.reservedQuantity, 1);
+
+  f.stripe.checkout.sessions.create = async () => {
+    await collections(context.db).attempts.updateOne({ _id: f.attempt._id }, {
+      $set: { 'stripeRequest.parameters.locale': 'fr' },
+    });
+    throw knownRejection();
+  };
+
+  await assert.rejects(cancel(), hasCode('CHECKOUT_NOT_READY'));
+  assert.equal((await collections(context.db).products.findOne({ sku: f.sku }))?.inventory.reservedQuantity, 1);
+});
+
+test('aged rejected requests require reconciliation without provider replay', async () => {
+  const f = await rejectedSessionFixture();
+  await collections(context.db).attempts.updateOne({ _id: f.attempt._id }, {
+    $set: { createdAt: new Date(Date.now() - 24 * 3600000) },
+  });
+  f.stripe.checkout.sessions.create = async () => { assert.fail('Must not replay a potentially pruned key'); };
+  await assert.rejects(cancelGuestCheckout(context, f.attempt.orderId.toHexString(), f.input.guestToken, f.stripe),
+    hasCode('CHECKOUT_RECOVERY_REQUIRED'));
+  assert.equal((await collections(context.db).products.findOne({ sku: f.sku }))?.inventory.reservedQuantity, 1);
 });
