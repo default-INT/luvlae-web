@@ -76,3 +76,5 @@ Homepage promo mockup applied: its View Product CTA is 50% of the copy width (22
 ## Optimistic PDP pack selection — 2026-11-10 (local)
 
 `ProductPurchase` uses React `useOptimistic` inside the router navigation transition. Pack radio state, total, availability and Add to cart payload immediately derive from the optimistic offer ID while the query-string navigation is pending. The committed URL remains the base state for back/forward, failed/interrupted transitions and refreshed catalog validation; existing unavailable-offer fallback remains in place. Selection stays interactive during navigation; cart busy/pending-checkout locks still apply.
+
+Homepage promo policy tags join the initial text entrance sequence with the same 800ms easing and 880/1000ms stagger after the CTA. They stay visible afterward; reduced motion skips the entrance and keyboard focus reveals a tag immediately.
