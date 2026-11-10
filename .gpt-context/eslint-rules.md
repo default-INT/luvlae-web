@@ -15,11 +15,22 @@ These conventions are distilled from the user's example at `ai-slots-app-git/esl
 - Keep multiline object braces consistent and put a blank line between imports and following code. Import statements are separated by one blank line after the import block.
 - Separate logical operations with blank lines: put a blank line before `if`/`switch` control-flow blocks and other complex constructs, and after a multiline statement or construct when another operation follows. Do not add blank lines inside a construct solely to satisfy this rule. Keep the existing limit of one consecutive blank line.
 
+## SCSS code style
+
+- Use 2-space indentation and expanded blocks. Put each declaration on its own line; never compress a rule or nested selector into one line.
+- Put the opening brace on the selector's line and the closing brace on its own line. End every declaration with a semicolon.
+- Separate sibling rules and nested selector blocks with one blank line. Keep related declarations together and preserve meaningful property ordering rather than sorting mechanically.
+- Keep nesting shallow and local to the component. Use `&` for pseudo-classes and modifiers; avoid unnecessarily specific selectors.
+- Format media queries, pseudo-classes and responsive overrides using the same expanded style. Split long selector lists and declaration values over multiple lines when needed to stay readable.
+- Reuse shared design tokens for colors, spacing and motion where available. Respect `prefers-reduced-motion` for transitions and animations.
+- Formatting-only changes must preserve compiled CSS behavior. Do not add a formatter or stylelint dependency unless tooling changes are requested.
+
 ## JavaScript and TypeScript
 
 - Do not use `var`; prefer `const` when a binding is not reassigned.
 - Prefer `const` arrow functions for utilities and React components. Use named exports for public functions, for example, `export const myUtil = () => { ... };` and `export const MyComponent = (props: Props) => { ... };`. Use another declaration form when a framework contract or a concrete technical need requires it.
 - Use strict equality except in the limited cases allowed by the sample's `eqeqeq: smart` rule.
+- Simplify complex conditions: extract meaningful predicates into named booleans or focused helpers, and split independent validation into guard clauses. Avoid long chains mixing `&&`, `||`, negation and ternaries; preserve short-circuit behavior and evaluation order when refactoring.
 - Avoid nested ternaries, useless concatenation/returns, `new` for side effects, and reassignment of function parameters.
 - Prefer object shorthand, object spread, template strings, and radix-free `parseInt` when applicable.
 - Require a final `default` branch in switches and put it last. Require curly braces for multiline control-flow bodies.
@@ -40,6 +51,7 @@ These conventions are distilled from the user's example at `ai-slots-app-git/esl
 - Put React components in `.tsx` files and define no more than one React component per file.
 - Enable duplicate JSX prop checks, React Hooks rules-of-hooks, and exhaustive-deps.
 - Prefer shorthand boolean props, omit unnecessary curly braces around string props and text children, and use self-closing tags for components/elements with no children.
+- Keep short JSX opening tags on one line only while they remain easy to scan. When an opening tag becomes long (including exceeding the 130-character limit) or has multiline attribute values, start **every attribute on a new line**, one attribute per line; do not leave the first attribute beside the tag name. Put the closing `>` or `/>` on its own line, aligned with the opening tag. Do not split child content merely to keep a long opening tag on one line.
 - Use two-space JSX indentation. Keep imports compatible with the automatic JSX runtime.
 - TypeScript replaces PropTypes; avoid adding PropTypes to TSX components.
 - Use JSX accessibility linting. The sample disables several checks (`label-has-associated-control`, `control-has-associated-label`, `click-events-have-key-events`, and `no-autofocus`); do not copy those accessibility suppressions without a concrete reason and an accessible alternative.

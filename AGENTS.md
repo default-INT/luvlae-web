@@ -6,6 +6,7 @@
 
 - Before making project changes, read `.gpt-context/README.md` and the relevant notes it links to.
 - For architecture, tooling, rendering, data flow, or deployment work, read `.gpt-context/architecture.md`.
+- For code and style changes, follow `.gpt-context/eslint-rules.md`, including SCSS formatting, simplified conditions and multiline JSX attributes.
 - Before adding or reorganizing application code, read `.gpt-context/fsd-rules.md` and follow its FSD boundaries.
 - When creating or changing lint configuration, read `.gpt-context/eslint-rules.md` and adapt its conventions to the actual Next.js/Turborepo stack.
 - For work involving the Luvlae Berberine Patches product (ASIN `B0H6FQFJL8`), read `.gpt-context/products/luvlae-berberine-patches.md` before writing product copy, answering product questions, or changing related project content.

@@ -7,7 +7,7 @@ This directory holds concise, durable context for work in this repository. The p
 - `project.md` — current project profile and known unknowns.
 - `architecture.md` — agreed technology requirements, planned application boundaries, rendering, and open decisions.
 - `fsd-rules.md` — placement and dependency rules for future FSD application code.
-- `eslint-rules.md` — lint and formatting conventions extracted from the user's ESLint example.
+- `eslint-rules.md` — code-style conventions for TypeScript, JSX and SCSS, plus ESLint preferences.
 - `products/luvlae-berberine-patches.md` — product research for Luvlae Berberine Patches (ASIN `B0H6FQFJL8`).
 - `seo-requirements.md` — SEO, content, evidence, architecture, structured data, and measurement requirements for luvlae.com.
 
