@@ -15,8 +15,10 @@ import { checkoutResolveSchema, resolveGuestCheckout } from './checkout-resolve.
 import { checkoutSessionSchema, createCheckoutSession } from './checkout-session.server';
 import { cancellationSchema, createProductSchema, fulfillmentSchema, idSchema,
   loginSchema, quoteSchema, restockSchema, skuSchema, updateProductSchema,
-  createOfferSchema, updateOfferSchema, duplicateOfferSchema, storefrontSchema, inventoryAdjustmentSchema } from './contracts';
-import { createOffer, updateOffer, duplicateOffer, updateStorefront, adjustInventory } from './catalog-mutations.server';
+  createOfferSchema, updateOfferSchema, reorderOffersSchema, duplicateOfferSchema, storefrontSchema,
+  inventoryAdjustmentSchema } from './contracts';
+import { createOffer, updateOffer, reorderOffers, duplicateOffer, updateStorefront,
+  adjustInventory } from './catalog-mutations.server';
 import { createMockOrder, mockCheckoutSchema, requireMockCheckout } from './mock-checkout.server';
 import { cancelOrder, orderDetailDto, orderSummaryDto, restockOrder, updateFulfillment } from './orders.server';
 import { orderListFilter } from './order-filters.server';
@@ -270,6 +272,10 @@ export const postOffer = (request: Request, route: RouteParams) => admin(request
   const sku = skuSchema.parse((await route.params).sku);
   const result = await createOffer(context, adminId, sku, await readJson(request, createOfferSchema));
   return json(result, result.replayed ? 200 : 201);
+});
+export const patchOfferOrder = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
+  const sku = skuSchema.parse((await route.params).sku);
+  return json(await reorderOffers(context, adminId, sku, await readJson(request, reorderOffersSchema)));
 });
 export const patchOffer = (request: Request, route: RouteParams) => admin(request, async (context, adminId) => {
   const params = await route.params;

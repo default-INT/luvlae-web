@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 
@@ -10,6 +9,7 @@ import { money } from '@/shared/lib/money';
 import { selectPurchaseOffer, toCartOffer } from '../../model/cart';
 import { useCart } from '../../model/useCart';
 import { PackSelector } from '../PackSelector';
+import { PurchasePolicyTags } from '../PurchasePolicyTags';
 
 import styles from './styles.module.scss';
 
@@ -35,7 +35,8 @@ export const ProductPurchase = (props: Props) => {
 
   return (
     <div className={styles.purchase}>
-      <PackSelector offers={offers} selected={selected?.offerId ?? 'standard'} disabled={busy || !!pending} copy={copy}
+      <PackSelector storefront={offer?.storefront} offers={offers} selected={selected?.offerId ?? 'standard'}
+        disabled={busy || !!pending} copy={copy}
         onChange={id => {
           const query = new URLSearchParams(search?.toString());
           query.set('offer', id);
@@ -46,6 +47,7 @@ export const ProductPurchase = (props: Props) => {
       <p className={styles.price} aria-live='polite'>
         {copy.packTotal}: {selected ? money(selected.price.unitAmount) : copy.priceUnavailable}
       </p>
+      <PurchasePolicyTags copy={copy}/>
       {!offer && <p role='alert'>{copy.offerError} <a href={product.path}>{copy.retry}</a></p>}
       {selected && <p className={styles.availability}>{available ? copy.inStock : copy.soldOut}</p>}
       <div className={styles.actions}>
@@ -53,9 +55,6 @@ export const ProductPurchase = (props: Props) => {
           onClick={() => { if (offer && selected) setAddError(!add(toCartOffer(offer, selected), 1)); }}>{copy.addToCart}</button>
       </div>
       {addError && <p role='alert'>{copy.cartLimit}</p>}
-      <p>{copy.shippingLine} <Link href='/shipping'>{copy.shippingLink}</Link></p>
-      <p>{copy.guaranteeLine} <Link href='/returns'>{copy.guaranteeLink}</Link></p>
-      <p>{copy.guaranteeDetail}</p>
     </div>
   );
 };

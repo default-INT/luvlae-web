@@ -1,0 +1,28 @@
+.select { min-width: 0; margin: 16px 0; }
+.label { display: block; margin-bottom: 8px; font-size: .78rem; font-weight: 650; }
+.trigger { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 12px;
+  border: 1px solid var(--color-border); border-radius: 12px; background: white; color: var(--color-navy);
+  font-size: .82rem; text-align: left; transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+  > span { flex: 1; min-width: 0; overflow-wrap: anywhere; } strong { white-space: nowrap; font-size: .8rem; }
+  svg { flex-shrink: 0; transition: transform 180ms ease; }
+  &[aria-expanded='true'] { border-color: var(--color-blue); background: var(--color-surface-muted); } }
+.rotated { transform: rotate(180deg); }
+.panel { display: grid; grid-template-rows: 0fr; opacity: 0; visibility: hidden;
+  transition: grid-template-rows 180ms ease, opacity 180ms ease, visibility 180ms; }
+.open { grid-template-rows: 1fr; opacity: 1; visibility: visible; }
+.clip { overflow: hidden; min-height: 0; }
+.list { max-height: 260px; overflow-y: auto; overscroll-behavior: contain; margin-top: 8px; padding: 5px;
+  border: 1px solid var(--color-border); border-radius: 12px; background: white; }
+.option { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 52px; padding: 10px 8px;
+  border: 0; border-radius: 8px; background: white; color: var(--color-navy); text-align: left; font-size: .82rem;
+  transition: background-color 160ms ease, color 160ms ease;
+  > span:not(.check) { flex: 1; } strong { white-space: nowrap; font-size: .8rem; }
+  small { display: block; margin-top: 3px; color: var(--color-text); font-size: .7rem; }
+  &[aria-selected='true'] { background: var(--color-surface-muted); color: var(--color-blue); } }
+.check { width: 14px; flex-shrink: 0; color: var(--color-blue); }
+.trigger:focus-visible, .option:focus-visible { outline: 2px solid var(--color-blue); outline-offset: -2px; }
+@media (hover: hover) {
+  .trigger:not(:disabled):hover { border-color: var(--color-blue); box-shadow: 0 0 0 3px #527bea12; }
+  .option:not(:disabled):hover { background: var(--color-surface-muted); color: var(--color-blue); }
+}
+@media (prefers-reduced-motion: reduce) { .trigger, .trigger svg, .panel, .option { transition: none; } }

@@ -1,8 +1,28 @@
 .selector { display: grid; gap: 10px; min-width: 0; margin: 0; padding: 0; border: 0;
   legend { padding: 0; margin-bottom: 12px; font-size: .9rem; font-weight: 750; } }
-.option { display: flex; gap: 12px; align-items: center; padding: 16px;
+.option { cursor: pointer; position: relative; display: flex; gap: 12px; align-items: center; padding: 16px;
   border: 1px solid var(--color-border); border-radius: 12px; font-size: .85rem;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
   &:has(input:checked) { border-color: var(--color-blue); background: var(--color-surface-muted); }
-  input { accent-color: var(--color-navy); }
+  input { accent-color: var(--color-navy); cursor: inherit; }
   span { flex: 1; } strong { white-space: nowrap; } small { display: block; margin-top: 5px; } }
 @media (max-width: 420px) { .option { flex-wrap: wrap; strong { margin-left: 26px; } } }
+
+.option.highlighted { border-color: #d5b66c; background: #fff9eb;
+  box-shadow: 0 0 0 3px #d5b66c14;
+  &:has(input:checked) { border-color: var(--color-blue); background: #fff9eb;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-blue) 15%, transparent); } }
+.option .badge { position: absolute; top: 0; right: 16px; transform: translateY(-50%);
+  margin: 0; padding: 2px 8px; border: 1px solid #d5b66c; border-radius: 50px;
+  background: #fff0c7; color: #725018; font-size: .62rem; line-height: 1.4; font-weight: 750; white-space: nowrap; }
+
+@media (hover: hover) {
+  .option:not(:has(input:disabled)):hover { border-color: var(--color-blue);
+    background: var(--color-surface-muted);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-blue) 8%, transparent); }
+  .option.highlighted:not(:has(input:disabled)):hover { background: #fff3d6; border-color: #c6a14e;
+    box-shadow: 0 0 0 3px #d5b66c26; }
+  .option.highlighted:has(input:checked):not(:has(input:disabled)):hover { border-color: var(--color-blue);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-blue) 12%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) { .option { transition: none; } }

@@ -48,3 +48,15 @@ Implemented 2026-10-18 following user approval of a temporary paid-order simulat
 - `POST /api/orders/:id/checkout/cancel` requires same-origin JSON and the guest Bearer token. The server authenticates ownership, expires an open Stripe Session, retrieves its current state, and releases held stock transactionally only after confirmed unpaid expiry. It marks the order/fulfillment cancelled and writes one guest-cancellation audit. Repeated cancellation/webhooks cannot release stock twice; completed/processing/paid payments keep the cart locked for status recovery. Cancellation can run while new checkout creation is paused.
 - An uncertain creation response is resolved through the original exact request before cancellation. Network/storage failures retain the pending request for retry.
 - Shared `QuantityInput` is used by CartDrawer and ProductPurchase on the product page. It uses 44px minus/plus buttons, editable numeric text and keyboard controls; the product selector retains its stock-minus-cart cap, up to 99. Cart controls wrap on small screens; the summary has an explicit 18px gap.
+
+## Product purchase presentation — 2026-11-10 (local)
+
+The PDP pack selector uses the catalog's storefront highlighted offer/badge (Best Value or Recommended) with a compact gold badge positioned on the top border and a warm gold container highlight; selection remains indicated by the blue border and radio. Pack Total has 20px top spacing. Immediately below it, icon tags link to `/shipping` (free shipping within contiguous U.S.) and `/returns` (30-day guarantee for the first order); full existing qualifications remain in link titles and the policy pages. No catalog prices, highlight configuration or policy terms were changed.
+
+## Cart pack selector — 2026-11-10 (local)
+
+CartDrawer uses page-local `ui/CartPackSelect` instead of a native select. The list expands in normal flow inside the scrollable Drawer (no clipped overlay on small screens), with 48px trigger/52px options, bounded list scrolling, hover/open transitions and reduced-motion support. It exposes listbox/option semantics, arrow/Home/End navigation, Enter/Space selection, Escape dismissal with focus restoration, and outside/blur dismissal. Existing checkout cancellation before pack replacement remains unchanged; unavailable packs are disabled.
+
+## Cart feedback and policy tags — 2026-11-10 (local)
+
+`PurchasePolicyTags` shares the PDP's shipping/first-order guarantee links and icons with the CartDrawer checkout summary. Pack selection waits for the selector's closing CSS transitions before replacing a line. Merging into an existing cart offer collapses/fades the source toward the destination, then briefly highlights the destination; competing cart edits are disabled during the merge. Reduced-motion skips animated merging. Existing stock validation and cancellation-before-replacement rules remain in the cart store. Scoped ESLint/TypeScript and 27 cart/pack tests passed; animations have not been visually verified in this change.

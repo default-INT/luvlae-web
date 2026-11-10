@@ -1,5 +1,12 @@
 # Admin interface
 
+## Additional offers table — 2026-11-10 (local, not deployed)
+
+ProductEditor lists additional offers in one compact table filtered by horizontal All, Active (default), Archived and Drafts tabs with status, boxes per pack, total USD price and display order. Row buttons open the shared Drawer for editing/details; creation uses the same Drawer. Archived offers remain read-only with duplication available. Pending/uncertain writes block Drawer dismissal until resolved.
+
+Pointer drag-and-drop (including touch handles) and up/down keys reorder within Active or Draft. A reason and explicit Save order persist all non-archived IDs atomically through `PATCH /api/admin/products/[sku]/offers/reorder`, using catalog version, operation ID and audit/replay checks. Archived records, stock and independently configured homepage slots stay unchanged. Background refresh preserves pending order drafts; conflicts require explicit review. Implementation: `apps/web/src/_pages/admin/ui/ProductEditor/ui/OffersSection/`; server coverage: `apps/web/tests/dtc-catalog.test.ts`.
+
+
 ## Offers and inventory extension — 2026-11-09 (local, not deployed)
 
 ProductEditor has independent catalog, inventory adjustment, offer lifecycle and homepage-slot forms. Quantity/total-price offers are reusable templates; stable server IDs support arbitrary pack sizes without JSX changes. Stock changes use a separate version and audited delta/set action. Uncertain mutations freeze the exact request/operation ID; accepted writes with failed refresh retry the read only. Drafts survive background refresh and version conflicts require explicit review. Order details distinguish sets/boxes, included tax and optional sales-terms version/date.

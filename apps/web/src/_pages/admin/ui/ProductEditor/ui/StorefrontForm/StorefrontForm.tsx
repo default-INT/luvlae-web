@@ -4,6 +4,8 @@ import styles from '../../../styles.module.scss';
 import { useProductForm } from '../../utils/useProductForm';
 import { ProductFormStatus } from '../ProductFormStatus';
 
+import local from './styles.module.scss';
+
 import type { AdminCopy, AdminProduct } from '../../../../model/types';
 import type { FormEvent } from 'react';
 
@@ -44,13 +46,15 @@ export const StorefrontForm = (props: Props) => {
 
   return (
     <form className={`${styles.card} ${styles.form}`} onSubmit={submit}>
-      <h2>{ui.storefront}</h2>
-      <p className={styles.note}>{ui.storefrontNote}</p>
-      <p className={styles.note}>
-        {ui.savedSlots}: {product.storefront?.homeOfferIds.join(', ') || ui.none}
-        {' · '}{ui.highlightOffer}: {product.storefront?.highlightedOfferId || ui.none}
-        {' · '}{ui.highlightBadge}: {product.storefront?.highlightBadge === 'recommended' ? ui.recommended : ui.bestValue}
-      </p>
+      <header className={local.header}>
+        <h2>{ui.storefront}</h2>
+        <p className={styles.note}>{ui.storefrontNote}</p>
+        <div className={`${styles.note} ${local.saved}`}>
+          <span>{ui.savedSlots}: {product.storefront?.homeOfferIds.join(', ') || ui.none}</span>
+          <span>{ui.highlightOffer}: {product.storefront?.highlightedOfferId || ui.none}</span>
+          <span>{ui.highlightBadge}: {product.storefront?.highlightBadge === 'recommended' ? ui.recommended : ui.bestValue}</span>
+        </div>
+      </header>
       <fieldset className={`${styles.fieldset} ${styles.form}`} disabled={busy}>
         {slots.map((id, index) => (
           <label className={styles.field} key={index}>{ui.homeSlot} {index + 1}
@@ -62,6 +66,7 @@ export const StorefrontForm = (props: Props) => {
             </select>
           </label>
         ))}
+        <hr className={local.divider}/>
         <label className={styles.field}>{ui.highlightOffer}<select disabled={form.locked} value={highlight}
           onChange={event => setHighlight(event.target.value)}>
           <option value=''>{ui.none}</option>

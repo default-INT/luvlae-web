@@ -102,6 +102,10 @@ export const updateOfferSchema = z.strictObject({
   ...mutationFields, ...z.object(offerFields).partial().shape,
   status: z.enum(['draft', 'active', 'archived']).optional(),
 }).refine(value => ['unitsPerPack', 'unitAmount', 'sortOrder', 'status'].some(key => key in value));
+export const reorderOffersSchema = z.strictObject({
+  ...mutationFields,
+  offerIds: z.array(z.uuid()).max(20).refine(ids => new Set(ids).size === ids.length),
+});
 export const duplicateOfferSchema = z.strictObject(mutationFields);
 export const storefrontSchema = z.strictObject({
   ...mutationFields,

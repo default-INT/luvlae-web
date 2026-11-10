@@ -6,11 +6,11 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { MongoClient, ObjectId } from 'mongodb';
 
 import {
-  adjustInventory, createOffer, duplicateOffer, updateOffer, updateStorefront,
+  adjustInventory, createOffer, duplicateOffer, reorderOffers, updateOffer, updateStorefront,
 } from '../src/_app/commerce/catalog-mutations.server';
 import { collections } from '../src/_app/commerce/collections.server';
 import {
-  createProductSchema, updateProductSchema, createOfferSchema, storefrontSchema, inventoryAdjustmentSchema,
+  createProductSchema, updateProductSchema, createOfferSchema, reorderOffersSchema, storefrontSchema, inventoryAdjustmentSchema,
 } from '../src/_app/commerce/contracts';
 import { migrateDtcBundles } from '../src/_app/commerce/dtc-bundles-migration.server';
 import { migrateCommerce } from '../src/_app/commerce/migrations.server';
@@ -109,6 +109,7 @@ test('inventory adjustment is independent, replayable and rejects stale or reser
 test('new admin routes enforce authentication, same-origin and no-store before database access', async () => {
   const routes = await Promise.all([
     import('../app/api/admin/products/[sku]/offers/route').then(route => route.POST),
+    import('../app/api/admin/products/[sku]/offers/reorder/route').then(route => route.PATCH),
     import('../app/api/admin/products/[sku]/offers/[offerId]/route').then(route => route.PATCH),
     import('../app/api/admin/products/[sku]/offers/[offerId]/duplicate/route').then(route => route.POST),
     import('../app/api/admin/products/[sku]/storefront/route').then(route => route.PATCH),
@@ -147,4 +148,38 @@ test('catalog contracts reject forged IDs, invalid counts, unsafe prices and inv
     highlightedOfferId: 'standard', highlightBadge: 'recommended' }).success, false);
   assert.equal(inventoryAdjustmentSchema.safeParse({ mode: 'set', quantity: -1, expectedInventoryVersion: 1,
     operationId: randomUUID(), reason: 'Invalid stock' }).success, false);
+});
+
+test('offer reorder is atomic, replayable, versioned and preserves archived offers and homepage slots', async () => {
+  const sku = await fixture('REORDER');
+
+  const create = (version: number) => createOffer(context, admin, sku, {
+    ...mutation(version), unitsPerPack: 2, unitAmount: 2999, sortOrder: 10,
+  });
+
+  const first = (await create(1)).offerId!;
+  const second = (await create(2)).offerId!;
+  const archived = (await create(3)).offerId!;
+  await updateOffer(context, admin, sku, first, { ...mutation(4), status: 'active' });
+  await updateStorefront(context, admin, sku, { ...mutation(5), homeOfferIds: [first, 'standard'],
+    highlightedOfferId: first, highlightBadge: 'recommended' });
+  await updateOffer(context, admin, sku, archived, { ...mutation(6), status: 'archived' });
+  const before = await read(sku);
+  const input = { ...mutation(7), offerIds: [second, first] };
+
+  await assert.rejects(reorderOffers(context, admin, sku, { ...input, offerIds: [first] }), code('VERSION_CONFLICT'));
+  await assert.rejects(reorderOffers(context, admin, sku, { ...input, offerIds: [first, archived] }), code('VERSION_CONFLICT'));
+  await assert.rejects(reorderOffers(context, admin, sku, { ...input, version: 6 }), code('VERSION_CONFLICT'));
+  await reorderOffers(context, admin, sku, input);
+  const replay = await reorderOffers(context, admin, sku, input);
+  assert.equal(replay.replayed, true);
+  const after = await read(sku);
+  assert.equal(after.version, 8);
+  assert.equal(after.offers?.find(offer => offer.id === second)?.sortOrder, 0);
+  assert.equal(after.offers?.find(offer => offer.id === first)?.sortOrder, 1);
+  assert.deepEqual(after.offers?.find(offer => offer.id === archived), before.offers?.find(offer => offer.id === archived));
+  assert.deepEqual(after.storefront, before.storefront);
+  assert.deepEqual(after.inventory, before.inventory);
+  assert.equal(reorderOffersSchema.safeParse({ ...mutation(8), offerIds: [first, first] }).success, false);
+  assert.equal(reorderOffersSchema.safeParse({ ...mutation(8), offerIds: ['standard'] }).success, false);
 });

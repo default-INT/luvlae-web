@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { priceInCents } from '../../../../model/types';
 import styles from '../../../styles.module.scss';
@@ -12,15 +12,17 @@ import type { FormEvent } from 'react';
 interface Props {
   product: AdminProduct; offer?: ProductOfferSnapshot; copy: AdminCopy; busy: boolean;
   reload: () => Promise<void>; onBusyChange: (busy: boolean) => void;
+  onLockedChange?: (locked: boolean) => void;
 }
 
 export const OfferForm = (props: Props) => {
-  const { product, offer, copy, busy, reload, onBusyChange } = props;
+  const { product, offer, copy, busy, reload, onBusyChange, onLockedChange } = props;
   const ui = copy.catalogUi;
   const [units, setUnits] = useState(String(offer?.unitsPerPack ?? 2));
   const [price, setPrice] = useState(offer ? (offer.price.unitAmount / 100).toFixed(2) : '');
   const [sortOrder, setSortOrder] = useState(String(offer?.sortOrder ?? 0));
   const form = useProductForm(copy, product.version, reload, onBusyChange);
+  useEffect(() => { onLockedChange?.(form.locked); }, [form.locked, onLockedChange]);
   const unitAmount = priceInCents(price);
   const boxes = Number(units);
   const validUnits = Number.isSafeInteger(boxes) && boxes >= 1 && boxes <= 99;
@@ -60,7 +62,6 @@ export const OfferForm = (props: Props) => {
 
   return (
     <form className={`${styles.card} ${styles.form}`} onSubmit={submit}>
-      <h2>{offer ? `${ui.offer} · ${offer.unitsPerPack} ${ui.boxes}` : ui.createOffer}</h2>
       {offer && (
         <p className={styles.note}>
           {offer.id} · {ui.statuses[offer.status]} · {ui.savedPack}: {offer.unitsPerPack} {ui.boxes}

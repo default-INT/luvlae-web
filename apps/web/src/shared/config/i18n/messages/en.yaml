@@ -613,6 +613,10 @@ commerce:
   boxes: boxes
   patches: patches
   packWord: Pack
+  bestValue: Best Value
+  recommended: Recommended
+  shippingTag: Free Shipping · Contiguous U.S.
+  guaranteeTag: 30-Day Guarantee · First Order
   choosePack: Choose Your Pack
   packTotal: Pack Total
   invalidPack: This pack selection is unavailable. The standard pack is selected instead.
@@ -847,6 +851,15 @@ admin:
     refreshError: Refresh failed. The displayed record may be out of date. Your drafts are preserved.
     offers: Additional offers
     offersNote: Offers share this product’s stock. Create a draft, review its pack total and publish it when ready. Archiving removes an offer from the home page and prevents new purchases; historical orders keep their original details.
+    allOffers: All
+    drafts: Drafts
+    offerStatus: Status
+    noOffers: No offers in this status.
+    reorderHelp: Drag the handle or focus it and use the up and down arrow keys to reorder offers within a status. Save to apply. Home page slots are managed separately.
+    reorderOffer: Reorder offer
+    saveOrder: Save order
+    resetOrder: Discard order changes
+    closeOffer: Close offer
     offer: Offer
     createOffer: New offer
     unitsPerPack: Physical boxes per pack
@@ -865,7 +878,7 @@ admin:
     duplicate: Duplicate as draft
     statuses:
       draft: Draft
-      active: Published
+      active: Active
       archived: Archived
     storefront: Home page offers
     storefrontNote: Choose up to three unique published offers in display order. The highlighted offer must be in one of these slots. Badge wording is selected explicitly.

@@ -11,7 +11,7 @@ import { collections } from './collections.server';
 import type { ObjectId } from 'mongodb';
 import type { z } from 'zod';
 import type {
-  createOfferSchema, updateOfferSchema, duplicateOfferSchema, storefrontSchema, inventoryAdjustmentSchema,
+  createOfferSchema, updateOfferSchema, reorderOffersSchema, duplicateOfferSchema, storefrontSchema, inventoryAdjustmentSchema,
 } from './contracts';
 import type { Product, ProductOfferRecord } from './models';
 import type { DatabaseContext } from '@/shared/lib/mongodb/index.server';
@@ -90,6 +90,20 @@ export const updateOffer = (context: DatabaseContext, adminId: ObjectId, sku: st
       homeOfferIds: storefront.homeOfferIds.filter(id => id !== offerId),
       highlightedOfferId: storefront.highlightedOfferId === offerId ? null : storefront.highlightedOfferId } } : {}) } };
 }, { offerId });
+
+export const reorderOffers = (context: DatabaseContext, adminId: ObjectId, sku: string,
+  input: z.infer<typeof reorderOffersSchema>) => catalogMutation(context, adminId, sku, 'offers.reorder', input, product => {
+  const offers = product.offers ?? [];
+  const editable = offers.filter(offer => offer.status !== 'archived');
+
+  if (input.offerIds.length !== editable.length || editable.some(offer => !input.offerIds.includes(offer.id))) {
+    fail(409, 'VERSION_CONFLICT', 'Reload the product before reordering offers.');
+  }
+
+  return { fields: { offers: offers.map(offer => offer.status === 'archived' ? offer : {
+    ...offer, sortOrder: input.offerIds.indexOf(offer.id), updatedAt: new Date(),
+  }) } };
+});
 
 export const duplicateOffer = (context: DatabaseContext, adminId: ObjectId, sku: string, offerId: string,
   input: z.infer<typeof duplicateOfferSchema>) => catalogMutation(context, adminId, sku, 'offer.duplicate', input, product => {

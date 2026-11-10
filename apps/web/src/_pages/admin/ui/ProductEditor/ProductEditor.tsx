@@ -8,7 +8,7 @@ import styles from '../styles.module.scss';
 
 import { CatalogForm } from './ui/CatalogForm';
 import { InventoryForm } from './ui/InventoryForm';
-import { OfferForm } from './ui/OfferForm';
+import { OffersSection } from './ui/OffersSection';
 import { StorefrontForm } from './ui/StorefrontForm';
 
 import type { AdminCopy, AdminProduct } from '../../model/types';
@@ -82,10 +82,7 @@ export const ProductEditor = (props: Props) => {
       <div className={styles.stack}>
         <div className={styles.columns}><CatalogForm {...formProps}/><InventoryForm {...formProps}/></div>
         <StorefrontForm {...formProps}/>
-        <h2>{copy.catalogUi.offers}</h2>
-        <p className={styles.note}>{copy.catalogUi.offersNote}</p>
-        <OfferForm {...formProps}/>
-        {(product.offers ?? []).map(offer => <OfferForm key={offer.id} {...formProps} offer={offer}/>)}
+        <OffersSection {...formProps}/>
       </div>
     </>
   );
