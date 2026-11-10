@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { siteUrl } from '@/shared/config/site';
 import { product } from '@/entities/product';
+import { PurchasePolicyTags } from '@/features/shopping-cart';
 import { ActionLink } from '@/shared/ui/ActionLink';
 import { LineBreakText } from '@/shared/ui/LineBreakText';
 import { Reveal } from '@/shared/ui/Reveal';
@@ -99,8 +100,7 @@ export const HomePage = (props: HomePageProps) => {
                 {home.promo.button}
               </ActionLink>
               <p className={styles.promoNote}>{home.promo.note}</p>
-              <p className={styles.promoNote}>{home.promo.shipping} <Link href='/shipping'>{home.promo.shippingLink}</Link></p>
-              <p className={styles.promoNote}>{home.promo.guarantee} <Link href='/returns'>{home.promo.guaranteeLink}</Link></p>
+              <PurchasePolicyTags copy={dictionary.commerce}/>
             </div>
           </div>
         </section>
@@ -135,7 +135,6 @@ export const HomePage = (props: HomePageProps) => {
                 <ActionLink href='/about-product' variant='text'>{home.hero.details}</ActionLink>
               </div>
               <p className={styles.destination}>{home.hero.destination}</p>
-              <p className={styles.offerNote}>{home.hero.offerNote}</p>
             </div>
           </div>
         </section>

@@ -60,3 +60,13 @@ CartDrawer uses page-local `ui/CartPackSelect` instead of a native select. The l
 ## Cart feedback and policy tags — 2026-11-10 (local)
 
 `PurchasePolicyTags` shares the PDP's shipping/first-order guarantee links and icons with the CartDrawer checkout summary. Pack selection waits for the selector's closing CSS transitions before replacing a line. Merging into an existing cart offer collapses/fades the source toward the destination, then briefly highlights the destination; competing cart edits are disabled during the merge. Reduced-motion skips animated merging. Existing stock validation and cancellation-before-replacement rules remain in the cart store. Scoped ESLint/TypeScript and 27 cart/pack tests passed; animations have not been visually verified in this change.
+
+## Better-price pack suggestions — 2026-11-10 (local)
+
+CartDrawer shows an optional Apply offer suggestion when a cheaper in-stock combination covers exactly the same physical box count for a SKU, including all existing lines. Bounded dynamic programming in `model/best-pack.ts` compares integer-cent totals and permits mixed packs; it never rounds up boxes. Equal-price changes are not suggested. Application rechecks current cart state, respects stock/99-box/20-line bounds and checkout cancellation, then replaces the SKU's lines atomically through `optimizePacks`. Quantities remain sets per selected pack; Subtotal also shows total physical boxes. Recommendations use existing catalog snapshots; checkout still verifies live prices/stock. Tests: `tests/cart-best-pack.test.ts` plus existing cart suites (31 passed). User chose explicit Apply instead of automatic replacement.
+
+## Homepage highlighted pack presentation — 2026-11-10 (local)
+
+`_pages/home/ui/PurchaseOffers/styles.module.scss` matches the PDP highlight palette (warm #fff9eb surface, #d5b66c border and gold badge). The badge sits absolutely on the card's top border, so highlighted and ordinary card headings/descriptions use identical layout spacing.
+
+The homepage's first promo section also uses the shared `PurchasePolicyTags` via the shopping-cart public API, replacing its shipping/guarantee paragraphs with the same linked icon tags as the PDP.

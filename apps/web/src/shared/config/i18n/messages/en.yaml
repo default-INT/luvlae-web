@@ -617,6 +617,12 @@ commerce:
   recommended: Recommended
   shippingTag: Free Shipping · Contiguous U.S.
   guaranteeTag: 30-Day Guarantee · First Order
+  betterPack: A better price for the same number of boxes
+  saveLabel: Save
+  savedLabel: Saved
+  applyPack: Apply offer
+  packApplied: Better-price packs applied.
+  totalCount: Total count
   choosePack: Choose Your Pack
   packTotal: Pack Total
   invalidPack: This pack selection is unavailable. The standard pack is selected instead.

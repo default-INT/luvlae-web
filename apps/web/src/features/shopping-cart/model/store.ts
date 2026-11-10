@@ -5,6 +5,7 @@ import { trackEcommerceEvent } from '@/shared/lib/analytics';
 
 import { commerceRequest } from '../api/commerce';
 
+import { packSuggestion } from './pack-suggestion';
 import { cartKey, parseCart, parseOffers, pendingKey, pendingRequest, storageKey, toCartOffer } from './cart';
 
 import type { CartItem, Offer, PendingCheckout } from './cart';
@@ -19,6 +20,7 @@ interface CartState {
   setOpen: (open: boolean) => void;
   add: (offer: Offer, quantity: number) => boolean;
   update: (sku: string, quantity: number, offerId?: string) => void;
+  optimizePacks: (sku: string) => number;
   replaceOffer: (sku: string, sourceOfferId: string, destination: Offer) => boolean;
   remove: (sku: string, offerId?: string) => void;
   checkout: (copy: Dictionary['commerce'], address?: ShippingAddress) => Promise<string | null>;
@@ -120,6 +122,36 @@ export const createCartStore = (dependencies: Dependencies = {}) => {
         trackEcommerceEvent(quantity > previous ? 'add_to_cart' : 'remove_from_cart',
           cartAnalytics(latest, Math.abs(quantity - previous)));
       }
+    },
+    optimizePacks: sku => {
+      const state = get();
+
+      if (state.busy || state.pending) return 0;
+
+      const suggestion = packSuggestion(state.items, state.offers, sku);
+
+      if (!suggestion) return 0;
+
+      const { plan, lines, product, stock, savings } = suggestion;
+      const offers = { ...state.offers };
+
+      const replacements = plan.selections.map(({ offer, quantity }) => {
+        const converted = toCartOffer({ ...product, availableQuantity: stock }, offer);
+        offers[cartKey(converted)] = converted;
+        return { sku, offerId: offer.offerId, quantity };
+      });
+
+      const items = state.items.flatMap(item => {
+        if (item === lines[0]) return replacements;
+
+        return item.sku === sku ? [] : [item];
+      });
+
+      const offerErrors = Object.fromEntries(Object.entries(state.offerErrors).filter(([key]) =>
+        !lines.some(item => cartKey(item) === key)));
+
+      set({ items, offers, offerErrors, error: '' });
+      return savings;
     },
     replaceOffer: (sku, sourceOfferId, destination) => {
       const state = get();

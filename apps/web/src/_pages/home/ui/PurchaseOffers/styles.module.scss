@@ -70,19 +70,25 @@
 }
 
 .highlighted {
-  border-color: #87b8e5;
-  box-shadow: 0 16px 42px rgb(8 47 99 / 13%);
+  border-color: #d5b66c;
+  background: #fff9eb;
+  box-shadow: var(--shadow-card), 0 0 0 3px #d5b66c14;
 }
 
 .badge {
+  position: absolute;
+  top: 0;
+  right: 20px;
+  transform: translateY(-50%);
+  border: 1px solid #d5b66c;
   display: inline-flex;
   min-height: 28px;
   align-items: center;
   justify-content: center;
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
-  background: var(--color-blue-soft);
-  color: var(--color-navy-strong);
+  background: #fff0c7;
+  color: #725018;
   font-size: 0.72rem;
   font-weight: 800;
   line-height: 1.2;

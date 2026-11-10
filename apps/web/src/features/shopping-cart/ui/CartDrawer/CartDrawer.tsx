@@ -11,6 +11,7 @@ import { Drawer } from '@/shared/ui/Drawer';
 import { QuantityInput } from '@/shared/ui/QuantityInput';
 
 import { cartKey, toCartOffer } from '../../model/cart';
+import { packSuggestion } from '../../model/pack-suggestion';
 import { useCart } from '../../model/useCart';
 import { PurchasePolicyTags } from '../PurchasePolicyTags';
 
@@ -26,15 +27,17 @@ export const CartDrawer = (props: Props) => {
 
   const {
     open, setOpen, items, offers, offerErrors, update, replaceOffer, remove, busy: cartBusy, cancelling, pending, error,
-    checkout, cancelCheckout,
+    checkout, cancelCheckout, optimizePacks,
   } = useCart();
 
+  const [savingsNotice, setSavingsNotice] = useState('');
   const [merging, setMerging] = useState(false);
   const changing = useRef(false);
   const itemElements = useRef(new Map<string, HTMLElement>());
   const busy = cartBusy || merging;
   const router = useRouter();
   const knownPrices = items.every(item => offers[cartKey(item)]);
+  const totalBoxes = items.reduce((sum, item) => sum + (offers[cartKey(item)]?.unitsPerPack ?? 1) * item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + (offers[cartKey(item)]?.price.unitAmount ?? 0) * item.quantity, 0);
   const checkoutLabel = pending ? copy.resumeCheckout : copy.checkout;
   const busyLabel = cancelling ? copy.cancellingCheckout : copy.creatingOrder;
@@ -53,6 +56,9 @@ export const CartDrawer = (props: Props) => {
         {items.map(item => {
           const offer = offers[cartKey(item)];
 
+          const suggestion = items.find(line => line.sku === item.sku) === item
+            ? packSuggestion(items, offers, item.sku) : null;
+
           return (
             <article className={styles.item} key={cartKey(item)} ref={element => {
               if (element) itemElements.current.set(cartKey(item), element);
@@ -68,6 +74,7 @@ export const CartDrawer = (props: Props) => {
                 {offer && item.quantity > offer.availableQuantity && <p role='alert'>{copy.stockError}</p>}
                 {!!offer?.purchaseOffers?.length && <CartPackSelect offers={offer.purchaseOffers}
                   value={item.offerId ?? 'standard'} disabled={busy} copy={copy} onChange={async offerId => {
+                    setSavingsNotice('');
                     const selected = offer.purchaseOffers?.find(value => value.offerId === offerId);
 
                     if (!selected || changing.current) return;
@@ -113,12 +120,35 @@ export const CartDrawer = (props: Props) => {
                   <QuantityInput label={copy.sets} value={item.quantity} disabled={busy}
                     decreaseLabel={copy.decreaseQuantity} increaseLabel={copy.increaseQuantity}
                     onChange={async quantity => {
+                      setSavingsNotice('');
+
                       if (await cancelCheckout(copy)) update(item.sku, quantity, item.offerId);
                     }}/>
                   <button className={styles.remove} disabled={busy} onClick={async () => {
                     if (await cancelCheckout(copy)) remove(item.sku, item.offerId);
                   }}>{copy.remove}</button>
                 </div>
+                {suggestion && <div className={styles.suggestion}>
+                  <p><strong>{copy.betterPack}</strong></p>
+                  <p>{suggestion.plan.selections.map(({ offer: pack, quantity }) =>
+                    `${quantity} × ${pack.unitsPerPack}-${copy.packWord}`).join(' + ')}
+                  {' · '}{suggestion.boxes} {copy.boxes}{' · '}{money(suggestion.plan.total)}</p>
+                  <p>{copy.saveLabel} {money(suggestion.savings)}</p>
+                  <button type='button' disabled={busy} onClick={async () => {
+                    if (changing.current) return;
+
+                    changing.current = true;
+                    setMerging(true);
+
+                    try {
+                      if (!await cancelCheckout(copy)) return;
+
+                      const saved = optimizePacks(item.sku);
+
+                      if (saved > 0) setSavingsNotice(`${copy.packApplied} ${copy.savedLabel} ${money(saved)}`);
+                    } finally { changing.current = false; setMerging(false); }
+                  }}>{copy.applyPack}</button>
+                </div>}
                 {offer && <strong>{money(offer.price.unitAmount * item.quantity)}</strong>}
               </div>
             </article>
@@ -126,7 +156,10 @@ export const CartDrawer = (props: Props) => {
         })}
       </div>
       {!!items.length && <div className={styles.summary}>
-        <div className={styles.subtotal}><span>{copy.subtotal}</span><strong>{knownPrices ? money(subtotal) : '—'}</strong></div>
+        <div className={styles.subtotal}><span>{copy.subtotal}
+          <small>{copy.totalCount}: {knownPrices ? totalBoxes : '—'} {copy.boxes}</small></span>
+        <strong>{knownPrices ? money(subtotal) : '—'}</strong></div>
+        {savingsNotice && <p role='status'>{savingsNotice}</p>}
         {pending && <p className={styles.pending}>{copy.pendingCheckout}</p>}
         {error && <p role='alert' className={styles.error}>{error === 'CART_LIMIT' ? copy.cartLimit : error}</p>}
         <button className={styles.checkout} disabled={busy}
