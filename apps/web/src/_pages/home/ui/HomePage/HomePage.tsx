@@ -75,7 +75,7 @@ export const HomePage = (props: HomePageProps) => {
           <div className={styles.promoInner}>
             <div className={styles.promoImage}>
               <Image
-                src='/images/luvlae-promo-woman-patches-extended.png'
+                src='/images/luvlae-promo-woman-patches-extended.webp'
                 alt={home.promo.imageAlt}
                 width={1774}
                 height={887}

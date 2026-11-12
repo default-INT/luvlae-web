@@ -68,3 +68,18 @@ test('information pages keep search titles and descriptions within recommended l
     assert.ok(description.length >= 110 && description.length <= 160, `${content.path} description length ${description.length}`);
   }
 });
+
+test('every indexable path has a real, non-future sitemap lastmod date', async () => {
+  const { pageLastModified } = await import('../src/shared/config/site');
+  const { indexableInformationPaths } = await import('../src/_pages/information/model/pages');
+
+  const paths = ['/', '/contact', '/shipping', '/returns', '/terms', '/privacy', '/about-product',
+    '/products/berberine-patches', '/ingredients', ...indexableInformationPaths];
+
+  for (const path of paths) {
+    const date = pageLastModified[path];
+
+    assert.match(String(date), /^\d{4}-\d{2}-\d{2}$/, `${path} has no lastmod`);
+    assert.ok(new Date(date).getTime() <= Date.now(), `${path} lastmod is in the future`);
+  }
+});

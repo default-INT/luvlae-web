@@ -1,4 +1,4 @@
-import { siteUrl } from '@/shared/config/site';
+import { pageLastModified, siteUrl } from '@/shared/config/site';
 import { indexableInformationPaths } from '@/_pages/information';
 import { isStage } from '@/shared/config/environment';
 
@@ -15,5 +15,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return paths.map(path => ({
     url: siteUrl(path),
+    lastModified: pageLastModified[path],
   }));
 }
