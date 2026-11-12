@@ -41,6 +41,7 @@ Add focused notes here when the project gains durable architecture, development 
 - [SEO requirements for Luvlae.com](seo-requirements.md)
 - [SEO audit for direct storefront sales — 2026-10-27](seo-audit-2026-10-27.md)
 - [How-to impressions investigation — 2026-10-30](seo-how-to-audit-2026-10-30.md)
+- [SEO audit and remediation plan — 2026-11-12](seo-audit-2026-11-12.md)
 
 - [Commerce server implementation and API runbook](../apps/web/docs/commerce-api.md)
 

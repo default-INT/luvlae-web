@@ -17,6 +17,7 @@ export interface InformationPageContent {
   path: string;
   eyebrow: string;
   title: string;
+  metaTitle?: string;
   description: string;
   lead: string;
   headline?: string;
@@ -31,8 +32,9 @@ export const informationPages: Record<string, InformationPageContent> = {
     path: '/how-to-use-berberine-patches',
     eyebrow: 'How to use',
     title: 'How to Use',
+    metaTitle: 'How to Use Berberine Patches: Apply & Remove',
     headline: 'Your daily patch routine<br>in four simple steps',
-    description: 'A few easy steps to apply and remove your Luvlae Berberine Patch. Read the package directions before your first use.',
+    description: 'A few easy steps to apply and remove your Luvlae Berberine Patch. Read the package directions before your first use, plus skin care tips.',
     lead: 'A few easy steps to apply and remove your Luvlae Berberine Patch. Read the package directions before your first use.',
     // TODO: Re-check application area and wear-time details against the current product label.
     sections: [
@@ -72,8 +74,9 @@ export const informationPages: Record<string, InformationPageContent> = {
     path: '/berberine-patch-safety',
     eyebrow: 'Safety first',
     title: 'Safety',
+    metaTitle: 'Berberine Patch Safety: Skin Care & Precautions',
     headline: 'Before you apply',
-    description: 'Read the ingredients, directions, and warnings on your package before using Luvlae Berberine Patches.',
+    description: 'Read the ingredients, directions, and warnings on your package before using Luvlae Berberine Patches, including skin care and precautions.',
     lead: 'Read the ingredients, directions, and warnings on your package before using Luvlae Berberine Patches.',
     // TODO: Re-check safety copy against the current label and obtain qualified review where needed.
     sections: [
@@ -127,8 +130,9 @@ export const informationPages: Record<string, InformationPageContent> = {
     path: '/science/berberine-patches',
     eyebrow: 'Science & ingredients',
     title: 'Science & Ingredients',
+    metaTitle: 'Berberine Patch Science: What Research Covers',
     headline: 'Understanding the science<br>behind berberine',
-    description: 'Berberine has a long history of traditional use and is an active area of scientific research. Understanding that research starts with looking at the formulation, dose, and method of use.',
+    description: 'Berberine is an active area of research. Learn how formulation, dose, and method of use shape what studies can and cannot say about patches.',
     lead: 'Berberine has a long history of traditional use and is an active area of scientific research. Understanding that research starts with looking at the formulation, dose, and method of use.',
     // TODO: Re-check evidence, references, and route-specific claims before the next content review.
     sections: [
@@ -172,8 +176,9 @@ export const informationPages: Record<string, InformationPageContent> = {
     path: '/faq',
     eyebrow: 'FAQ',
     title: 'FAQ',
+    metaTitle: 'Berberine Patches FAQ: Use, Skin Care & Buying',
     headline: 'Your questions, answered',
-    description: 'Everything you need to know about your daily patch routine.',
+    description: 'Answers about Luvlae Berberine Patches: what they are, how to apply them, sensitive skin, storage, and where to buy them.',
     lead: 'Everything you need to know about your daily patch routine.',
     sections: [
       {

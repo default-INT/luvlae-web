@@ -256,14 +256,14 @@
       "metadata": {
         "siteName": "Luvlae",
         "title": "Berberine Patches — 60-Count Format | Luvlae",
-        "description": "Explore Luvlae Berberine Patches, a 60-count pill-free format for your daily wellness routine.",
+        "description": "Explore Luvlae Berberine Patches, a 60-count pill-free format for your daily wellness routine, with ingredients, use and safety guides.",
         "ogTitle": "Luvlae Berberine Patches — 60 Count",
         "ogDescription": "Discover Luvlae Berberine Patches in a convenient 60-count format."
       }
     },
     "metadata": {
       "title": "Luvlae Berberine Patches | 60-Count Pill-Free Format",
-      "description": "Explore Luvlae Berberine Patches, a convenient 60-count pill-free format for your daily wellness routine."
+      "description": "Explore Luvlae Berberine Patches, a convenient 60-count pill-free format for your daily wellness routine. See ingredients, how to use, and safety."
     },
     "siteHeader": {
       "homeLabel": "Luvlae home",
@@ -323,7 +323,7 @@
       "eyebrow": "Ingredient guide",
       "title": "Berberine Patch Ingredients",
       "headline": "Get to know<br>\nwhat’s inside",
-      "description": "Explore the 11 ingredients and per-patch amounts in Luvlae Berberine Patches.",
+      "description": "Explore the 11 ingredients and per-patch amounts in Luvlae Berberine Patches, with a text list of each ingredient and its amount.",
       "lead": "Luvlae Berberine Patches combine berberine with botanical extracts, vitamins, minerals, and L-carnitine in one easy-to-use patch.",
       "detail": "Explore the full ingredient list and amounts per patch, then discover more about each ingredient below.",
       "exploreLink": "Explore the ingredients",
@@ -989,7 +989,8 @@
     },
     "contactPage": {
       "title": "Contact Us",
-      "description": "Contact Luvlae customer support for questions about products, orders, shipping, returns, and refunds.",
+      "metaTitle": "Contact Luvlae Support: Orders, Shipping & Returns",
+      "description": "Contact Luvlae customer support for questions about products, orders, shipping, returns, and refunds. We typically reply in 1–2 business days.",
       "eyebrow": "Here to help",
       "lead": "Have a question about Luvlae products, your order, shipping, or returns? Please contact our customer support team.",
       "supportTitle": "Customer Support",

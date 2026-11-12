@@ -1,1 +1,1 @@
-export { siteOrigin, siteUrl } from './site';
+export { defaultOgImage, siteOrigin, siteUrl } from './site';

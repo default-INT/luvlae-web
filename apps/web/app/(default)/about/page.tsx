@@ -1,5 +1,6 @@
 import { AboutPage } from '@/_pages/about';
 import { defaultLocale } from '@/shared/config/i18n';
+import { defaultOgImage } from '@/shared/config/site';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 
 import type { Metadata } from 'next';
@@ -19,12 +20,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
       url: '/about',
       siteName: 'Luvlae',
       type: 'website',
-      images: [{
-        url: '/images/luvlae-berberine-patches-woman-holding-box.jpg',
-        width: 512,
-        height: 279,
-        alt: 'Illustrative image of a woman holding Luvlae Berberine Patches',
-      }],
+      images: [defaultOgImage],
     },
     twitter: { card: 'summary_large_image' },
   };

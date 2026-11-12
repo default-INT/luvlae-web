@@ -39,3 +39,32 @@ test('discovery URLs use the final host and the host redirect is permanent', asy
   assert.equal(redirect.destination, `${siteOrigin}/:path*`);
   assert.deepEqual(redirect.has, [{ type: 'host', value: 'luvlae.com' }]);
 });
+
+test('information and About metadata reference an Open Graph image that exists in public', async () => {
+  const { existsSync } = await import('node:fs');
+  const { defaultOgImage } = await import('../src/shared/config/site');
+  const { getInformationMetadata } = await import('../src/_pages/information/model/getInformationMetadata');
+  const { informationPages } = await import('../src/_pages/information/model/pages');
+  const urls = new Set<string>([defaultOgImage.url]);
+
+  for (const content of Object.values(informationPages)) {
+    const images = getInformationMetadata(content).openGraph!.images as { url: string }[];
+
+    for (const image of images) urls.add(image.url);
+  }
+
+  for (const url of urls) assert.ok(existsSync(new URL(`../public${url}`, import.meta.url)), `${url} is missing`);
+});
+
+test('information pages keep search titles and descriptions within recommended lengths', async () => {
+  const { getInformationMetadata } = await import('../src/_pages/information/model/getInformationMetadata');
+  const { informationPages } = await import('../src/_pages/information/model/pages');
+
+  // /about is served by its own dictionary-based route; its entry here is unused metadata.
+  for (const content of Object.values(informationPages).filter(page => page.path !== '/about')) {
+    const { title, description } = getInformationMetadata(content) as { title: string; description: string };
+
+    assert.ok(title.length >= 40 && title.length <= 60, `${content.path} title length ${title.length}`);
+    assert.ok(description.length >= 110 && description.length <= 160, `${content.path} description length ${description.length}`);
+  }
+});
