@@ -49,6 +49,26 @@ export interface HomePageProps {
 export const HomePage = (props: HomePageProps) => {
   const { dictionary, offer } = props;
   const { home } = dictionary;
+
+  const videoSchema = {
+    '@type': 'VideoObject',
+    '@id': siteUrl('/#product-film'),
+    name: home.video.label,
+    description: home.video.description,
+    thumbnailUrl: siteUrl('/video/product-video-poster.webp'),
+    contentUrl: siteUrl('/video/product-video.mp4'),
+    uploadDate: home.video.uploadDate,
+    duration: 'PT37.717S',
+    inLanguage: 'en',
+    publisher: { '@id': siteUrl('/#organization') },
+    mainEntityOfPage: siteUrl('/'),
+  };
+
+  const pageSchema = {
+    ...websiteSchema,
+    '@graph': [...websiteSchema['@graph'], ...(home.video.uploadDate ? [videoSchema] : [])],
+  };
+
   const reviews = Object.values(home.reviews.items);
 
   const offers = (offer?.storefront?.homeOfferIds ?? []).flatMap(id => {
@@ -287,7 +307,7 @@ export const HomePage = (props: HomePageProps) => {
         </aside>
       </HomeMotion>
       <SiteFooter dictionary={dictionary}/>
-      <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}/>
+      <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(pageSchema) }}/>
     </>
   );
 };
