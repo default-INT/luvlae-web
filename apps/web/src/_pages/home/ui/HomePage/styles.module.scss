@@ -105,13 +105,19 @@
   flex-shrink: 0;
   margin-top: 16px;
   margin-bottom: 0;
-  width: 50%;
-  min-width: min(220px, 100%);
-  min-height: 56px;
+  width: min(300px, 100%);
+  min-height: 64px;
+  padding: 1.1rem 2rem;
   justify-content: center;
-  font-size: 1rem;
-  border-color: rgb(8 47 99 / 45%);
-  background: rgb(255 255 255 / 25%);
+  font-size: 1.125rem;
+  background: var(--color-blue);
+  color: white;
+  box-shadow: 0 10px 24px rgb(20 100 141 / 22%);
+
+  &:hover {
+    background: var(--color-navy-strong);
+    box-shadow: 0 12px 28px rgb(8 47 99 / 26%);
+  }
 }
 
 .promoCopy .promoPolicies {
@@ -303,12 +309,6 @@
     max-width: 350px;
     margin: 0;
   }
-}
-
-.storiesGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
 }
 
 .storyReveal {
@@ -694,6 +694,10 @@
   margin: auto;
 }
 
+.feedbackSection {
+  padding-top: clamp(64px, 7vw, 100px);
+}
+
 .reviewDisclosure {
   margin: -0.75rem 0 2rem;
   color: var(--color-text);
@@ -763,10 +767,6 @@
   .promoDescription {
     max-width: 450px;
     margin-bottom: 1.4rem;
-  }
-
-  .storiesGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .story {
@@ -884,17 +884,6 @@
 
   .heroActions {
     gap: 1.25rem;
-  }
-
-  .storiesGrid {
-    grid-template-columns: none;
-    grid-auto-flow: column;
-    grid-auto-columns: 84%;
-    overflow-x: auto;
-    padding-bottom: 1rem;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-blue) var(--color-surface-muted);
   }
 
   .story {

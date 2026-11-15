@@ -1,3 +1,6 @@
+import { postInventoryAdjustment } from '@/_app/commerce/handlers.server';
+import { withStorefrontRevalidation } from '@/_app/commerce/storefront-cache.server';
+
 export const dynamic = 'force-dynamic';
 
-export { postInventoryAdjustment as POST } from '@/_app/commerce/handlers.server';
+export const POST = withStorefrontRevalidation(postInventoryAdjustment);

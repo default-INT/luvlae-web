@@ -1,0 +1,68 @@
+.carousel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: white;
+    color: var(--color-navy-strong);
+    font: inherit;
+    font-size: 1.4rem;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-blue);
+      background: var(--color-blue);
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+}
+
+.track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 3rem) / 4);
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: none;
+  padding-block: 4px 1rem;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-blue) var(--color-surface-muted);
+
+  > * {
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 1040px) {
+  .track {
+    grid-auto-columns: calc((100% - 1rem) / 2);
+  }
+}
+
+@media (max-width: 640px) {
+  .track {
+    grid-auto-columns: 84%;
+  }
+}

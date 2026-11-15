@@ -13,6 +13,8 @@ import { SiteHeader } from '@/widgets/SiteHeader';
 import { PurchaseOffers } from '../PurchaseOffers';
 import { MoreReviews } from '../MoreReviews';
 import { ReviewRow } from '../ReviewRow';
+import { StoriesCarousel } from '../StoriesCarousel';
+import { FeedbackOverview } from '../FeedbackOverview';
 
 import styles from './styles.module.scss';
 
@@ -52,11 +54,21 @@ export const HomePage = (props: HomePageProps) => {
     return selected ? [selected] : [];
   });
 
+  const highlightedOffer = offers.find(value => value.offerId === offer?.storefront?.highlightedOfferId);
+
+  const productHref = highlightedOffer
+    ? `${product.path}?offer=${encodeURIComponent(highlightedOffer.offerId)}`
+    : product.path;
+
   const stories = [
-    { ...home.stories.one, image: 'luvlae-routine-1.webp', height: 960 },
-    { ...home.stories.two, image: 'luvlae-routine-2.webp', height: 960 },
-    { ...home.stories.three, image: 'luvlae-routine-3.webp', height: 1280 },
-    { ...home.stories.four, image: 'luvlae-routine-4.webp', height: 960 },
+    { ...home.stories.one, image: 'luvlae-routine-1.webp', width: 720, height: 960 },
+    { ...home.stories.two, image: 'luvlae-routine-2.webp', width: 720, height: 960 },
+    { ...home.stories.three, image: 'luvlae-routine-3.webp', width: 720, height: 1280 },
+    { ...home.stories.four, image: 'luvlae-routine-4.webp', width: 720, height: 960 },
+    { ...home.stories.five, image: 'luvlae-routine-5.webp', width: 960, height: 1280 },
+    { ...home.stories.six, image: 'luvlae-routine-6.webp', width: 960, height: 1280 },
+    { ...home.stories.seven, image: 'luvlae-routine-7.webp', width: 960, height: 1280 },
+    { ...home.stories.eight, image: 'luvlae-routine-8.webp', width: 960, height: 1280 },
   ];
 
   const guides = [
@@ -92,8 +104,7 @@ export const HomePage = (props: HomePageProps) => {
               <p className={styles.promoDescription}>{home.promo.supportingLine}</p>
               <p className={styles.promoDescription}>{home.promo.description}</p>
               <ActionLink
-                href={product.path}
-                variant='outline'
+                href={productHref}
                 className={styles.promoButton}
               >
                 {home.promo.button}
@@ -125,7 +136,7 @@ export const HomePage = (props: HomePageProps) => {
               </ul>
               <div className={styles.heroActions}>
                 <ActionLink
-                  href={product.path}
+                  href={productHref}
                   className={styles.cartButton}
                 >
                   {home.hero.button}
@@ -149,14 +160,18 @@ export const HomePage = (props: HomePageProps) => {
               </div>
               <p>{home.stories.description}</p>
             </Reveal>
-            <div className={styles.storiesGrid}>
-              {stories.map((story, index) => (
-                <Reveal className={styles.storyReveal} delay={index * 90} key={story.image}>
+            <StoriesCarousel
+              label={home.stories.title}
+              previousLabel={home.stories.previous}
+              nextLabel={home.stories.next}
+            >
+              {stories.map(story => (
+                <div className={styles.storyReveal} key={story.image}>
                   <figure className={styles.story}>
                     <Image
                       src={`/images/main/${story.image}`}
                       alt={story.imageAlt}
-                      width={720}
+                      width={story.width}
                       height={story.height}
                       sizes='(max-width: 640px) 80vw, (max-width: 1040px) 45vw, 24vw'
                     />
@@ -166,9 +181,9 @@ export const HomePage = (props: HomePageProps) => {
                       <span className={styles.storyLabel}>{story.label}</span>
                     </figcaption>
                   </figure>
-                </Reveal>
+                </div>
               ))}
-            </div>
+            </StoriesCarousel>
           </div>
         </section>
 
@@ -215,7 +230,7 @@ export const HomePage = (props: HomePageProps) => {
                 <p>{home.cta.description}</p>
                 <div className={styles.ctaActions}>
                   <ActionLink
-                    href={product.path}
+                    href={productHref}
                     variant='light'
                     className={styles.cartButton}
                   >
@@ -227,6 +242,12 @@ export const HomePage = (props: HomePageProps) => {
                   {' · '}<Link href='/returns'>{home.cta.guaranteeLink}</Link></small>
               </div>
             </Reveal>
+          </div>
+        </section>
+
+        <section className={styles.feedbackSection} aria-labelledby='feedback-heading'>
+          <div className={styles.reviewContainer}>
+            <FeedbackOverview copy={home.feedback}/>
           </div>
         </section>
 

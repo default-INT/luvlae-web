@@ -2,29 +2,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { siteUrl } from '@/shared/config/site';
-import { getOfferSchema, getProductAnalytics, product } from '@/entities/product';
+import { getOfferSchema, product } from '@/entities/product';
 import { getProductOffer } from '@/entities/product/index.server';
 import { ProductPurchase } from '@/features/shopping-cart';
 import { defaultLocale } from '@/shared/config/i18n';
 import { getDictionary } from '@/shared/lib/i18n/index.server';
 import { ActionLink } from '@/shared/ui/ActionLink';
 import { Reveal } from '@/shared/ui/Reveal';
-import { EcommerceEvent } from '@/shared/ui/EcommerceEvent';
 import { SiteFooter } from '@/widgets/SiteFooter';
 import { SiteHeader } from '@/widgets/SiteHeader';
 
 import { ProductFaq } from '../ProductFaq';
 import { ProductGallery } from '../ProductGallery';
+import { ProductViewEvent } from '../ProductViewEvent';
 
 import styles from './styles.module.scss';
 
-interface Props { initialOfferId?: string }
-
-export const ProductPage = async (props: Props) => {
-  const { initialOfferId } = props;
-
+export const ProductPage = async () => {
   const [dictionary, offer] = await Promise.all([
-    getDictionary(defaultLocale), getProductOffer(product.sku).catch(() => null),
+    getDictionary(defaultLocale), getProductOffer(product.sku),
   ]);
 
   const { productPage: page } = dictionary;
@@ -116,7 +112,7 @@ export const ProductPage = async (props: Props) => {
                 <div><dt>{page.hero.detailThreeLabel}</dt><dd>{page.hero.detailThreeValue}</dd></div>
                 <div><dt>{page.hero.detailFourLabel}</dt><dd>{page.hero.detailFourValue}</dd></div>
               </dl>
-              <ProductPurchase offer={offer} copy={dictionary.commerce} initialOfferId={initialOfferId}/>
+              <ProductPurchase offer={offer} copy={dictionary.commerce}/>
               <p className={styles.purchaseNote}>{page.hero.purchaseNote}</p>
               <Link className={styles.inlineLink} href='#product-details'>{page.hero.secondaryAction} ↗</Link>
             </div>
@@ -242,7 +238,7 @@ export const ProductPage = async (props: Props) => {
         </section>
       </main>
       <SiteFooter dictionary={dictionary}/>
-      {offer && <EcommerceEvent name='view_item' parameters={getProductAnalytics(offer, 1, initialOfferId)}/>}
+      {offer && <ProductViewEvent offer={offer}/>}
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}/>
     </>

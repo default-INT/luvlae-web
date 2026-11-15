@@ -16,16 +16,16 @@ import styles from './styles.module.scss';
 import type { ProductOffer } from '@/entities/product';
 import type { Dictionary } from '@/shared/config/i18n';
 
-interface Props { offer: ProductOffer | null; copy: Dictionary['commerce']; initialOfferId?: string }
+interface Props { offer: ProductOffer | null; copy: Dictionary['commerce'] }
 
 export const ProductPurchase = (props: Props) => {
-  const { offer, copy, initialOfferId } = props;
+  const { offer, copy } = props;
   const { busy, pending, add } = useCart();
   const [addError, setAddError] = useState(false);
   const search = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  let requested = initialOfferId ?? 'standard';
+  let requested = 'standard';
 
   if (search) requested = search.getAll('offer').length > 1 ? '' : search.get('offer') ?? 'standard';
 

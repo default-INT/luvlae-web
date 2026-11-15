@@ -1,6 +1,7 @@
+import { createWorkersCacheConfig } from '@vinext/cloudflare/cache/config';
 import { bindings, defineConfig, defineWorker, triggers } from 'cf/config';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   if (mode && !['stage', 'production', 'development'].includes(mode)) {
     throw new Error(`Unsupported Cloudflare mode: ${mode}`);
   }
@@ -15,8 +16,11 @@ export default defineConfig(({ mode }) => {
     throw new Error('Stripe mode must be test, or live in production only.');
   }
 
+  const cache = await createWorkersCacheConfig();
+
   return {
     worker: defineWorker({
+      ...cache,
       name: mode === 'stage' ? 'luvlae-web-stage' : 'luvlae-web',
       ...(mode === 'stage' ? { workersDev: true, previewUrls: false } : {}),
       ...(production ? { workersDev: true, previewUrls: true } : {}),
@@ -29,9 +33,9 @@ export default defineConfig(({ mode }) => {
       compatibilityFlags: ['nodejs_compat'],
       assets: {
         notFoundHandling: 'none',
-        runWorkerFirst: ['/_vinext/static-cache/*'],
       },
       env: {
+        ...cache.env,
         ASSETS: bindings.assets(),
         APP_ENV: bindings.text(environment),
         MOCK_CHECKOUT_ENABLED: bindings.text(mode === 'stage' ? 'true' : 'false'),

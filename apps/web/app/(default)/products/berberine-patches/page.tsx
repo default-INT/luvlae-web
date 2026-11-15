@@ -4,7 +4,8 @@ import { getDictionary } from '@/shared/lib/i18n/index.server';
 
 import type { Metadata } from 'next';
 
-export const dynamic = 'force-dynamic';
+// Edge ISR: purged by revalidateStorefront() on catalog/stock writes; TTL is a fallback.
+export const revalidate = 300;
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const dictionary = await getDictionary(defaultLocale);
@@ -31,11 +32,6 @@ export const generateMetadata = async (): Promise<Metadata> => {
   };
 };
 
-export default async function ProductRoute(props: {
-  searchParams: Promise<{ offer?: string | string[] }>;
-}) {
-  const query = await props.searchParams;
-  const initialOfferId = Array.isArray(query.offer) ? '' : query.offer;
-
-  return <ProductPage initialOfferId={initialOfferId}/>;
+export default function ProductRoute() {
+  return <ProductPage/>;
 }

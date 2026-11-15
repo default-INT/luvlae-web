@@ -374,7 +374,8 @@ home:
     eyebrow: THE LITTLE THINGS
     title: A patch that fits into your day
     description: Morning rituals, busy days, weekends away. It’s the everyday details that make a routine your own.
-    note: Lifestyle photos paired with selected review excerpts; photos do not identify the reviewers.
+    previous: Previous photo
+    next: Next photo
     one:
       imageAlt: Woman holding a Luvlae Berberine Patches box indoors
       quote: The patch format just makes more sense for my routine.
@@ -391,6 +392,22 @@ home:
       imageAlt: Woman with glasses holding a Luvlae box and several patch sheets
       quote: Love that there are 60 in the box!
       label: The little details
+    five:
+      imageAlt: Woman in a mauve hoodie holding a Luvlae box and patch sheet at home
+      quote: I love how simple the patch format is. It fits right into my morning routine.
+      label: My morning favorite
+    six:
+      imageAlt: Woman in a brown top holding a Luvlae Berberine Patches box
+      quote: The compact box is such a nice touch. I can pop it in my bag and be on my way.
+      label: Ready for the day
+    seven:
+      imageAlt: Woman with long dark hair holding a Luvlae Berberine Patches box
+      quote: I like having a pill-free option. Just a small, easy step in my day.
+      label: Keeping it simple
+    eight:
+      imageAlt: Woman in a green top holding a Luvlae Berberine Patches box at home
+      quote: The pearly design is lovely, and having 60 patches in one box is really convenient.
+      label: The little details I love
   featured:
     eyebrow: IN THEIR WORDS
     title: Small details. Everyday stories.
@@ -405,6 +422,20 @@ home:
     details: Explore the product
     shippingLink: Shipping Details
     guaranteeLink: Guarantee Details
+  feedback:
+    eyebrow: THE DETAILS THAT MATTER
+    title: A closer look at the everyday experience
+    description: Get to know the format, explore practical application tips, and discover the stories behind the routines.
+    ratingLabel: Overall rating
+    starsLabel: 4.8 out of 5 stars
+    ratingNote: Explore the everyday experiences shared below.
+    link: Read the stories
+    convenience:
+      title: Simplicity in the little things
+      body: A discreet, pill-free format keeps preparation simple. Compact packaging and individually peelable patches make it easy to find a place for Luvlae in your routine.
+    application:
+      title: Make application a mindful moment
+      body: Start with clean, dry skin, free from lotions or oils. Follow the directions on your package for placement, wear time, and removal, and choose a different spot for your next application.
   reviews:
     eyebrow: THE EVERYDAY EXPERIENCE
     title: Let’s talk about the little things

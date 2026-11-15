@@ -6,7 +6,8 @@ import { getDictionary } from '@/shared/lib/i18n/index.server';
 
 import type { Metadata } from 'next';
 
-export const dynamic = 'force-dynamic';
+// Edge ISR: purged by revalidateStorefront() on catalog/stock writes; TTL is a fallback.
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const dictionary = await getDictionary(defaultLocale);
@@ -36,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomeRoute() {
   const [dictionary, offer] = await Promise.all([
-    getDictionary(defaultLocale), getProductOffer(product.sku).catch(() => null),
+    getDictionary(defaultLocale), getProductOffer(product.sku),
   ]);
 
   return <HomePage dictionary={dictionary} offer={offer}/>;
