@@ -92,3 +92,9 @@ Recheck the live listing before using any price, promotion, availability, sales,
 
 - User-supplied hero copy adds “Your Body Goals. Your Daily Routine.” and four bullets about appetite balance, snacking, body confidence and consistency, including a once-daily usage line. These are campaign statements, not newly verified finished-product outcomes or current-label verification; existing evidence and wear-direction uncertainties remain. H1 remains “Luvlae Berberine Patches”.
 - `entities/product/ui/ProductRating` now supplies the same user-specified 4.8/5 display on Home and beneath the PDP gallery and thumbnail selector in the left column. PDP’s story link points to `/#reviews-heading`; no rating schema or count was added.
+
+## Product gallery assets — 2026-11-15
+
+- Six user-supplied graphics replace the storefront PDP gallery in attachment order: box/sheet, format features, four-step application, lifestyle uses, routine collage, application areas. Files are `public/images/luvlae-product-gallery-1.webp` through `-6.webp`, converted at original dimensions with WebP quality 85. Original assets remain available for other pages. Admin product editing has no gallery configuration and was not changed.
+- The supplied application graphic states 6–8 hours; other graphics contain suitability, adhesion and outcome messaging. These are user-supplied campaign assets, not independent verification or a complete current package label; existing direction/evidence uncertainties remain. Alt text describes the artwork rather than adopting its claims.
+- ProductGallery uses client state synchronized with six radio/thumbnail controls and looping previous/next buttons. Arrows appear on hover or keyboard focus and stay visible on touch devices. Images retain contain sizing to preserve graphic text; thumbnails use three columns on small phones. Motion respects prefers-reduced-motion.

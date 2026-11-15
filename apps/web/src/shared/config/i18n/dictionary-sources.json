@@ -140,8 +140,18 @@
         "imageOneAlt": "Luvlae Berberine Patches box beside a sheet of iridescent patches",
         "imageTwoAlt": "Open Luvlae Berberine Patches box with a sheet of patches",
         "imageThreeAlt": "Close view of the Luvlae Berberine Patches box and patch sheet",
+        "galleryImages": {
+          "one": "Luvlae Berberine Patches box beside a sheet of pearly patches",
+          "two": "Luvlae promotional graphic showing the patch design and format features",
+          "three": "Four-step illustration showing peeling, applying, wearing, and replacing a patch",
+          "four": "Lifestyle collage showing patches at work, at home, at the gym, and while sleeping",
+          "five": "Luvlae promotional collage with everyday activities and routine messaging",
+          "six": "Illustration showing upper arm, lower back, abdomen, and thigh application areas"
+        },
         "galleryLabel": "Product images",
         "galleryImageLabel": "Show product image {{number}}",
+        "galleryPrevious": "Previous product image",
+        "galleryNext": "Next product image",
         "galleryNote": "Explore the Luvlae Berberine Patches collection.",
         "detailOneLabel": "Format",
         "detailOneValue": "Topical patches",

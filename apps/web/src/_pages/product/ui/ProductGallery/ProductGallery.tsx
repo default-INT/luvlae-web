@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useState } from 'react';
 
 import { interpolate } from '@/shared/lib/i18n';
 
@@ -12,30 +15,16 @@ interface Props {
 
 export const ProductGallery = (props: Props) => {
   const { dictionary } = props;
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const images = [
-    {
-      src: '/images/luvlae-berberine-patches-front-box-and-patch-sheet.webp',
-      alt: dictionary.imageThreeAlt,
-      id: 'product-image-1',
-      imageClass: styles.imageOne,
-      optionClass: styles.optionOne,
-    },
-    {
-      src: '/images/luvlae-berberine-patches-open-box-and-patch-sheets.webp',
-      alt: dictionary.imageTwoAlt,
-      id: 'product-image-2',
-      imageClass: styles.imageTwo,
-      optionClass: styles.optionTwo,
-    },
-    {
-      src: '/images/luvlae-berberine-patches-box-and-patch-sheet.webp',
-      alt: dictionary.imageOneAlt,
-      id: 'product-image-3',
-      imageClass: styles.imageThree,
-      optionClass: styles.optionThree,
-    },
-  ];
+  const images = Object.values(dictionary.galleryImages).map((alt, index) => ({
+    src: `/images/luvlae-product-gallery-${index + 1}.webp`,
+    alt,
+    id: `product-image-${index + 1}`,
+    height: [1378, 1500, 1500, 1500, 1493, 1500][index],
+    imageClass: styles[`image${index + 1}`],
+    optionClass: styles[`option${index + 1}`],
+  }));
 
   return (
     <div className={styles.gallery} aria-label={dictionary.galleryLabel}>
@@ -48,7 +37,8 @@ export const ProductGallery = (props: Props) => {
             id={item.id}
             key={item.id}
             aria-label={interpolate(dictionary.galleryImageLabel, { number: index + 1 })}
-            defaultChecked={index === 0}
+            checked={index === activeIndex}
+            onChange={() => setActiveIndex(index)}
           />
         ))}
         <div className={styles.mainImage}>
@@ -57,13 +47,29 @@ export const ProductGallery = (props: Props) => {
               className={item.imageClass}
               src={item.src}
               alt={item.alt}
-              width={2500}
-              height={2500}
+              width={1500}
+              height={item.height}
               priority={index === 0}
               sizes='(max-width: 800px) 100vw, 56vw'
               key={item.id}
             />
           ))}
+          <button
+            className={`${styles.galleryArrow} ${styles.previous}`}
+            type='button'
+            aria-label={dictionary.galleryPrevious}
+            onClick={() => setActiveIndex(index => (index - 1 + images.length) % images.length)}
+          >
+            <span aria-hidden='true'>‹</span>
+          </button>
+          <button
+            className={`${styles.galleryArrow} ${styles.next}`}
+            type='button'
+            aria-label={dictionary.galleryNext}
+            onClick={() => setActiveIndex(index => (index + 1) % images.length)}
+          >
+            <span aria-hidden='true'>›</span>
+          </button>
         </div>
         <div className={styles.thumbnails}>
           {images.map((item, index) => (
