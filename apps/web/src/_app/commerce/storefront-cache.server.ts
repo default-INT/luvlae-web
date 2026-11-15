@@ -15,12 +15,10 @@ export const revalidateStorefront = async () => {
   }
 };
 
-type RouteHandler<Context> = (request: Request, context: Context) => Promise<Response>;
-
 /** Wrap a mutating route so a successful response purges storefront HTML. */
-export const withStorefrontRevalidation = <Context>(handler: RouteHandler<Context>): RouteHandler<Context> =>
-  async (request, context) => {
-    const response = await handler(request, context);
+export const withStorefrontRevalidation = <Args extends unknown[]>(handler: (...args: Args) => Promise<Response>) =>
+  async (...args: Args) => {
+    const response = await handler(...args);
 
     if (response.ok) await revalidateStorefront();
 

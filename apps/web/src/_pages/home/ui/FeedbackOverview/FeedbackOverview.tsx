@@ -1,3 +1,4 @@
+import { ProductRating } from '@/entities/product';
 import { Reveal } from '@/shared/ui/Reveal';
 
 import styles from './styles.module.scss';
@@ -24,18 +25,7 @@ export const FeedbackOverview = (props: Props) => {
         <p className={styles.description}>{copy.description}</p>
       </Reveal>
       <div className={styles.layout}>
-        <Reveal className={styles.rating}>
-          <p className={styles.ratingLabel}>{copy.ratingLabel}</p>
-          <p className={styles.score}><strong>4.8</strong><span>/ 5.0</span></p>
-          <span className={styles.stars} role='img' aria-label={copy.starsLabel}>
-            <span aria-hidden='true'>★★★★★</span>
-            <span className={styles.starsFill} aria-hidden='true'>★★★★★</span>
-          </span>
-          <p className={styles.ratingNote}>{copy.ratingNote}</p>
-          <a className={styles.link} href='#reviews-heading'>
-            {copy.link}<span aria-hidden='true'>↗</span>
-          </a>
-        </Reveal>
+        <ProductRating copy={copy} href='#reviews-heading'/>
         <div className={styles.insights}>
           {insights.map((insight, index) => (
             <Reveal className={styles.card} delay={index * 100} key={insight.title}>

@@ -1,5 +1,15 @@
 # Luvlae.com architecture and technology
 
+## Storefront edge cache — 2026-11-15 (local, not deployed)
+
+`/` and `/products/berberine-patches` changed from `force-dynamic` to `revalidate = 300`. `vite.config.ts` now uses `workersCacheCdnAdapter()` (was `staticAssetsAdapter()`; only one CDN slot exists), and `cloudflare.config.ts` spreads `createWorkersCacheConfig()` (cached/uncached response entrypoints, `CF_VERSION_METADATA`). Cached HTML is served by Workers Cache without starting the app; stale entries revalidate in the background inside our Worker.
+
+Freshness: mutating commerce routes are wrapped with `withStorefrontRevalidation` ([storefront-cache.server.ts](../apps/web/src/_app/commerce/storefront-cache.server.ts)), which calls `revalidatePath` for both pages after a 2xx response (admin product/offer/storefront/inventory, order cancel/restock/refund, checkout session/resolve/mock/cancel, Stripe webhook). `tests/storefront-cache.test.ts` enforces the list; add new stock/price writers there. Writes outside a request (scheduled handler) cannot purge, since purge needs `ctx.cache`; the TTL bounds them. A purge deletes the entry, so the next visitor pays one SSR. Purge failures are logged and do not fail the write.
+
+The PDP no longer reads `searchParams` on the server (it would make it dynamic); `?offer=` is applied on the client behind `<Suspense>` in `ProductPurchase`/`ProductViewEvent`, and server HTML renders the `standard` pack. Mongo errors now propagate (no `.catch(() => null)`), so a priceless page is never cached; on a cold miss with Mongo down the visitor gets an error.
+
+Unverified until stage deploy: actual edge HIT (`cf-cache-status`), whether `ctx.cache.purge` by tag is global across data centres, and TTFB gain. Local `vite preview` does not emulate Workers Cache.
+
 ## Production migrations applied — 2026-11-10
 
 After the user updated permissions and explicitly requested a retry, the standard migrate and check commands succeeded using `apps/web/.env.production.local`, with target verified as `luvlae_production`. Remote markers confirm008-dtc-bundles and009-locked-shipping applied on2026-11-10; remaining migration locks0. Transaction rollback check passed. This supersedes the earlier failed collMod attempt and historical no-production-migration statements. No catalog provisioning, price/stock adjustment, deployment or provider operation was performed.
@@ -201,3 +211,7 @@ If on-site payment is approved, begin with server-side operations and Route Hand
 - `/privacy` statically renders the user-supplied privacy text with its supplied update date October 20, 2026. Descriptive section headings organize the original paragraphs/lists; support-email placeholders resolve to the established `luvlae.care@gmail.com`. No development notes are displayed.
 - Composition: `apps/web/src/_pages/privacy/`; English YAML: `privacyPage`. Includes page metadata/canonical, visible/schema breadcrumbs, and sitemap entry. Contact Us Helpful Links, Terms Related Policies, and the footer all link to `/privacy`. Website and Stripe privacy links use HTTPS; support links use `mailto:`.
 - Policy copy is user-supplied, not an independent audit of privacy practices. This content change does not enable analytics, advertising, marketing subscriptions, cookie consent, or privacy-request automation.
+
+## Header navigation — 2026-11-15
+
+SiteHeader product links use `?offer=best-value`, resolved client-side against the current PDP catalog highlight (fallback: standard). Product view analytics resolves the same alias to the real offer ID and price. The header does not fetch catalog data, preserving existing page caching. HeaderLink uses usePathname and aria-current for desktop/mobile active navigation, independently of offer query strings.

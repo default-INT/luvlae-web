@@ -87,3 +87,8 @@ Recheck the live listing before using any price, promotion, availability, sales,
 
 - The user supplied 15 first-person review texts about routine, convenience, appearance, and application, plus lifestyle photos under `apps/web/public/images/main/`. Reviewer names, ratings, dates, verified purchases, and photo-to-review associations are unknown. These are user-supplied campaign materials, not newly verified Amazon reviews.
 - The user requested a “buy 2, save 20%” badge. The current Amazon fetch did not expose this promotion; the implementation relies on the user's campaign instruction and links readers to Amazon to check eligibility and current terms. No current price or availability claim was added.
+
+## Product page campaign update — 2026-11-15
+
+- User-supplied hero copy adds “Your Body Goals. Your Daily Routine.” and four bullets about appetite balance, snacking, body confidence and consistency, including a once-daily usage line. These are campaign statements, not newly verified finished-product outcomes or current-label verification; existing evidence and wear-direction uncertainties remain. H1 remains “Luvlae Berberine Patches”.
+- `entities/product/ui/ProductRating` now supplies the same user-specified 4.8/5 display on Home and beneath the PDP gallery and thumbnail selector in the left column. PDP’s story link points to `/#reviews-heading`; no rating schema or count was added.

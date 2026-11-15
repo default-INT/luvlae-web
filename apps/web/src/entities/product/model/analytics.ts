@@ -1,10 +1,13 @@
 import { product } from './product';
+import { resolveOfferRequest } from './resolve-offer-request';
 
 import type { ProductOffer, PurchaseOffer } from './offer';
 import type { EcommerceParameters, ItemListParameters } from '@/shared/lib/analytics';
 
 export const getProductAnalytics = (offer: ProductOffer, quantity = 1, initialOfferId = 'standard'): EcommerceParameters => {
-  const selected = offer.purchaseOffers?.find(item => item.offerId === initialOfferId)
+  const resolvedId = resolveOfferRequest(offer, initialOfferId);
+
+  const selected = offer.purchaseOffers?.find(item => item.offerId === resolvedId)
     ?? offer.purchaseOffers?.find(item => item.offerId === 'standard');
 
   const price = selected?.price ?? offer.price;

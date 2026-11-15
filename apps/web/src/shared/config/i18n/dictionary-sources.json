@@ -113,7 +113,25 @@
       "hero": {
         "eyebrow": "60 patches per box",
         "title": "Luvlae Berberine Patches",
-        "subtitle": "A discreet, pill-free format for your everyday routine.",
+        "subtitle": "Your Body Goals. Your Daily Routine.",
+        "benefits": {
+          "appetite": {
+            "title": "Appetite Balance",
+            "description": "For those seeking a more balanced relationship with hunger and eating habits."
+          },
+          "snacking": {
+            "title": "Fewer Snack Temptations",
+            "description": "Keep your mindful eating goals front and center."
+          },
+          "confidence": {
+            "title": "Body Confidence",
+            "description": "Build everyday habits that align with your personal body goals."
+          },
+          "consistency": {
+            "title": "Effortless Consistency",
+            "description": "One discreet patch a day, without pills or complicated routines."
+          }
+        },
         "description": "Bring simplicity to your everyday routine with Luvlae Berberine Patches. A discreet, pill-free format combining berberine with botanical extracts and other ingredients — easy to apply at home or on the go.",
         "badge": "60 patches per box",
         "primaryAction": "Add to cart",
@@ -483,7 +501,7 @@
         "description": "Get to know the format, explore practical application tips, and discover the stories behind the routines.",
         "ratingLabel": "Overall rating",
         "starsLabel": "4.8 out of 5 stars",
-        "ratingNote": "Explore the everyday experiences shared below.",
+        "ratingNote": "Explore stories from everyday routines.",
         "link": "Read the stories",
         "convenience": {
           "title": "Simplicity in the little things",

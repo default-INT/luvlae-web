@@ -1,8 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 import { siteUrl } from '@/shared/config/site';
-import { getOfferSchema, product } from '@/entities/product';
+import { getOfferSchema, product, ProductRating } from '@/entities/product';
 import { getProductOffer } from '@/entities/product/index.server';
 import { ProductPurchase } from '@/features/shopping-cart';
 import { defaultLocale } from '@/shared/config/i18n';
@@ -100,12 +101,25 @@ export const ProductPage = async () => {
             <span aria-current='page'>{page.breadcrumbCurrent}</span>
           </nav>
           <section id='purchase' className={styles.hero} aria-labelledby='product-title'>
-            <ProductGallery dictionary={page.hero}/>
+            <div className={styles.heroMedia}>
+              <ProductGallery dictionary={page.hero}/>
+              <div className={styles.productRating}>
+                <ProductRating copy={dictionary.home.feedback} href='/#reviews-heading'/>
+              </div>
+            </div>
             <div className={styles.heroCopy}>
               <p className={styles.eyebrow}>{page.hero.eyebrow}</p>
               <h1 id='product-title'>{page.hero.title}</h1>
               <p className={styles.subtitle}>{page.hero.subtitle}</p>
               <p className={styles.description}>{page.hero.description}</p>
+              <ul className={styles.benefits}>
+                {Object.values(page.hero.benefits).map(benefit => (
+                  <li key={benefit.title}>
+                    <span aria-hidden='true'>✓</span>
+                    <p><strong>{benefit.title}</strong> — {benefit.description}</p>
+                  </li>
+                ))}
+              </ul>
               <dl className={styles.details}>
                 <div><dt>{page.hero.detailOneLabel}</dt><dd>{page.hero.detailOneValue}</dd></div>
                 <div><dt>{page.hero.detailTwoLabel}</dt><dd>{page.hero.detailTwoValue}</dd></div>
@@ -238,7 +252,7 @@ export const ProductPage = async () => {
         </section>
       </main>
       <SiteFooter dictionary={dictionary}/>
-      {offer && <ProductViewEvent offer={offer}/>}
+      {offer && <Suspense><ProductViewEvent offer={offer}/></Suspense>}
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}/>
     </>

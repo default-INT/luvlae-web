@@ -56,6 +56,13 @@
     &:hover {
       color: var(--color-blue);
     }
+
+    &[aria-current='page'] {
+      color: var(--color-blue);
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 7px;
+    }
   }
 }
 
@@ -133,6 +140,13 @@
 
       &:hover {
         background: var(--color-surface-muted);
+      }
+
+      &[aria-current='page'] {
+        background: var(--color-surface-muted);
+        color: var(--color-blue);
+        text-decoration: underline;
+        text-underline-offset: 4px;
       }
     }
   }

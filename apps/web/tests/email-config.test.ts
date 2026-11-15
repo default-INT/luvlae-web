@@ -22,16 +22,16 @@ afterEach(() => {
   }
 });
 
-const emailSecrets = (mode: string) => Object.entries(config({ mode, isPreview: false }).worker.env)
+const emailSecrets = async (mode: string) => Object.entries((await config({ mode, isPreview: false })).worker.env)
   .filter(([name, binding]) => /^(EMAIL_|RESEND_)/.test(name) && binding.type === 'secret')
   .map(([name]) => name).sort();
 
-test('stage and production declare the same email runtime bindings and scheduler', () => {
-  const stage = config({ mode: 'stage', isPreview: false });
-  const production = config({ mode: 'production', isPreview: false });
+test('stage and production declare the same email runtime bindings and scheduler', async () => {
+  const stage = await config({ mode: 'stage', isPreview: false });
+  const production = await config({ mode: 'production', isPreview: false });
 
   for (const [mode, worker] of [['stage', stage.worker], ['production', production.worker]] as const) {
-    assert.deepEqual(emailSecrets(mode), ['RESEND_API_KEY', 'RESEND_WEBHOOK_SECRET']);
+    assert.deepEqual(await emailSecrets(mode), ['RESEND_API_KEY', 'RESEND_WEBHOOK_SECRET']);
     assert.equal(worker.env.EMAIL_FROM?.type, 'text');
     assert.equal(worker.env.EMAIL_REPLY_TO?.type, 'text');
     assert.equal(worker.env.APP_ORIGIN?.type, 'text');
