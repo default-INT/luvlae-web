@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { money } from '@/shared/lib/money';
+import { Reveal } from '@/shared/ui/Reveal';
 
 import { OfferListAnalytics } from './ui/OfferListAnalytics';
 import styles from './styles.module.scss';
@@ -42,7 +43,7 @@ export const PurchaseOffers = (props: PurchaseOffersProps) => {
 
   return (
     <section className={styles.section} aria-labelledby='purchase-offers-heading'>
-      <div className={styles.container}>
+      <Reveal className={styles.container}>
         <header className={styles.header}>
           <p className={styles.eyebrow}>{copy.eyebrow}</p>
           <h2 id='purchase-offers-heading'>{copy.title}</h2>
@@ -80,7 +81,7 @@ export const PurchaseOffers = (props: PurchaseOffersProps) => {
           <p>{copy.shipping} <Link href='/shipping'>{copy.shippingLink}</Link></p>
           <p>{copy.guarantee} <Link href='/returns'>{copy.guaranteeLink}</Link></p>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 };

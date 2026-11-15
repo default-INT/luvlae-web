@@ -46,8 +46,11 @@
   overscroll-behavior-x: none;
   padding-block: 4px 1rem;
   scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-blue) var(--color-surface-muted);
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   > * {
     min-width: 0;

@@ -22,9 +22,9 @@ export const generateMetadata = async (): Promise<Metadata> => {
       siteName: 'Luvlae',
       type: 'website',
       images: [{
-        url: '/images/luvlae-ingredients-per-patch.webp',
-        width: 2500,
-        height: 2500,
+        url: '/images/luvlae-og-ingredients.webp',
+        width: 1200,
+        height: 630,
         alt: page.imageAlt,
       }],
     },

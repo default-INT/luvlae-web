@@ -215,3 +215,7 @@ If on-site payment is approved, begin with server-side operations and Route Hand
 ## Header navigation — 2026-11-15
 
 SiteHeader product links use `?offer=best-value`, resolved client-side against the current PDP catalog highlight (fallback: standard). Product view analytics resolves the same alias to the real offer ID and price. The header does not fetch catalog data, preserving existing page caching. HeaderLink uses usePathname and aria-current for desktop/mobile active navigation, independently of offer query strings.
+
+## Homepage section motion — 2026-11-15
+
+`_pages/home/ui/HomeMotion` keeps the main landmark and SSR children, then observes its direct section/aside children for one-time opacity fades. A child-list MutationObserver also registers sections inserted later by streamed rendering/hydration; a WeakSet prevents duplicate registration. The promo retains its existing load animation and is excluded from observer hiding to preserve its LCP path. Below-fold sections fade on entry; keyboard focus reveals its section immediately. No JavaScript/IntersectionObserver and reduced-motion visitors retain visible content. Existing nested Reveal details remain. PurchaseOffers also wraps its own content container in Reveal so the heading, cards and policies animate together on viewport entry. The effect changes opacity only, without layout movement or additional dependencies.

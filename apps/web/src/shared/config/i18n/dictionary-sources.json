@@ -442,6 +442,14 @@
         "featureTwo": "Discreet design",
         "featureThree": "Easy to apply"
       },
+      "video": {
+        "label": "Luvlae Berberine Patches product film",
+        "play": "Play product film",
+        "pause": "Pause product film",
+        "mute": "Mute product film",
+        "unmute": "Unmute product film",
+        "fallback": "Watch the product film"
+      },
       "stories": {
         "eyebrow": "THE LITTLE THINGS",
         "title": "A patch that fits into your day",

@@ -25,9 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'Luvlae',
       type: 'website',
       images: [{
-        url: '/images/luvlae-berberine-patches-front-box-and-patch-sheet.webp',
-        width: 2500,
-        height: 2500,
+        url: '/images/luvlae-og-home.webp',
+        width: 1200,
+        height: 630,
         alt: 'Luvlae Berberine Patches box and pearly patch sheet',
       }],
     },

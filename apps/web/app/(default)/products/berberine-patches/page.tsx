@@ -22,9 +22,9 @@ export const generateMetadata = async (): Promise<Metadata> => {
       siteName: metadata.siteName,
       type: 'website',
       images: [{
-        url: '/images/luvlae-berberine-patches-box-and-patch-sheet.webp',
-        width: 2500,
-        height: 2500,
+        url: '/images/luvlae-og-home.webp',
+        width: 1200,
+        height: 630,
         alt: hero.imageOneAlt,
       }],
     },

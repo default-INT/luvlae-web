@@ -15,6 +15,8 @@ Add focused notes here when the project gains durable architecture, development 
 
 ## Index
 
+- [Homepage product film and media delivery](home-video.md)
+
 - [Project profile](project.md)
 - [Architecture and technology](architecture.md)
 - [Cloudflare deployment audit](deployment.md)

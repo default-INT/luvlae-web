@@ -15,6 +15,8 @@ import { MoreReviews } from '../MoreReviews';
 import { ReviewRow } from '../ReviewRow';
 import { StoriesCarousel } from '../StoriesCarousel';
 import { FeedbackOverview } from '../FeedbackOverview';
+import { ProductVideo } from '../ProductVideo';
+import { HomeMotion } from '../HomeMotion';
 
 import styles from './styles.module.scss';
 
@@ -82,7 +84,7 @@ export const HomePage = (props: HomePageProps) => {
   return (
     <>
       <SiteHeader dictionary={dictionary}/>
-      <main>
+      <HomeMotion>
         <section className={styles.promo} aria-labelledby='promo-heading'>
           <div className={styles.promoInner}>
             <div className={styles.promoImage}>
@@ -187,6 +189,8 @@ export const HomePage = (props: HomePageProps) => {
           </div>
         </section>
 
+        <ProductVideo copy={home.video}/>
+
         <section className={styles.featuredSection} aria-labelledby='featured-heading'>
           <div className={styles.container}>
             <Reveal className={styles.centeredHeading}>
@@ -281,7 +285,7 @@ export const HomePage = (props: HomePageProps) => {
             <div>{guides.map(guide => <Link key={guide.href} href={guide.href}>{guide.label} ↗</Link>)}</div>
           </Reveal>
         </aside>
-      </main>
+      </HomeMotion>
       <SiteFooter dictionary={dictionary}/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}/>
     </>

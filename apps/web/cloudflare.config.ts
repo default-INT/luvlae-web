@@ -33,6 +33,7 @@ export default defineConfig(async ({ mode }) => {
       compatibilityFlags: ['nodejs_compat'],
       assets: {
         notFoundHandling: 'none',
+        runWorkerFirst: ['/video/product-video.webm', '/video/product-video.mp4'],
       },
       env: {
         ...cache.env,
