@@ -15,6 +15,8 @@ Add focused notes here when the project gains durable architecture, development 
 
 ## Index
 
+- [Live Rich Results verification — 2026-11-15](rich-results-2026-11-15.md)
+
 - [Homepage product film and media delivery](home-video.md)
 
 - [Project profile](project.md)
