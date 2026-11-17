@@ -31,7 +31,7 @@ export const CheckoutPage = async (props: Props) => {
         <section className={styles.heading}>
           <p>{copy.checkoutEyebrow}</p><h1>{copy.checkoutTitle}</h1>
           <p>{copy.checkoutDescription}</p>
-          <Link href={product.path}>{copy.backToCart}</Link>
+          <Link href={product.bestValuePath}>{copy.backToCart}</Link>
         </section>
         <section className={styles.payment} aria-label={copy.paymentForm}>
           {!checkout && <p role='alert'>{copy.checkoutUnavailable}</p>}

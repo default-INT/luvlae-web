@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { product } from '@/entities/product';
 import { money } from '@/shared/lib/money';
 import { Reveal } from '@/shared/ui/Reveal';
 
@@ -54,7 +55,6 @@ export const PurchaseOffers = (props: PurchaseOffersProps) => {
             const highlighted = offer.offerId === highlightOfferId;
             const label = `${offer.unitsPerPack}-${copy.packWord}`;
             const boxLabel = offer.unitsPerPack === 1 ? copy.boxSingular : copy.boxPlural;
-            const href = `/products/berberine-patches?offer=${encodeURIComponent(offer.offerId)}`;
 
             return (
               <article className={`${styles.card} ${highlighted ? styles.highlighted : ''}`} key={offer.offerId}
@@ -69,7 +69,7 @@ export const PurchaseOffers = (props: PurchaseOffersProps) => {
                 <p className={styles.price}>{money(offer.price.unitAmount)}</p>
                 <p className={styles.supportingLine}>{copy.supportingLine}</p>
                 {offer.availableQuantity === 0 ? <p className={styles.soldOut}>{copy.soldOut}</p> : null}
-                <Link className={styles.link} href={href} aria-label={`${copy.viewProduct}: ${label}`}
+                <Link className={styles.link} href={product.bestValuePath} aria-label={`${copy.viewProduct}: ${label}`}
                   data-purchase-offer-link={offer.offerId}>
                   {copy.viewProduct}
                 </Link>

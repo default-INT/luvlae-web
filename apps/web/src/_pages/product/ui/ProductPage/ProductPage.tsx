@@ -111,7 +111,6 @@ export const ProductPage = async () => {
               <p className={styles.eyebrow}>{page.hero.eyebrow}</p>
               <h1 id='product-title'>{page.hero.title}</h1>
               <p className={styles.subtitle}>{page.hero.subtitle}</p>
-              <p className={styles.description}>{page.hero.description}</p>
               <ul className={styles.benefits}>
                 {Object.values(page.hero.benefits).map(benefit => (
                   <li key={benefit.title}>
@@ -242,7 +241,7 @@ export const ProductPage = async () => {
                 <small>{page.cta.note}</small>
               </div>
               <ActionLink
-                href='#purchase'
+                href={`${product.bestValuePath}#purchase`}
                 variant='light'
               >
                 {page.cta.button}

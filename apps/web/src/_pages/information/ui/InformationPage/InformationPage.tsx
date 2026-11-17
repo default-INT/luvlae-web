@@ -83,14 +83,14 @@ export const InformationPage = async (props: InformationPageProps) => {
               <h2>{informationUi.informedChoice}</h2>
               <p>{informationUi.sidebarDescription}</p>
               <div className={styles.asideLinks}>
-                <Link href='/products/berberine-patches'>{informationUi.productDetails}</Link>
+                <Link href='/products/berberine-patches?offer=best-value'>{informationUi.productDetails}</Link>
                 <Link href='/ingredients'>{informationUi.ingredients}</Link>
                 <Link href='/how-to-use-berberine-patches'>{informationUi.howToUse}</Link>
                 <Link href='/berberine-patch-safety'>{informationUi.safety}</Link>
                 <Link href='/science/berberine-patches'>{informationUi.science}</Link>
               </div>
               <ActionLink
-                href={product.path}
+                href={product.bestValuePath}
               >
                 {informationUi.viewOnAmazon}
               </ActionLink>

@@ -117,7 +117,6 @@ productPage:
       consistency:
         title: Effortless Consistency
         description: One discreet patch a day, without pills or complicated routines.
-    description: Bring simplicity to your everyday routine with Luvlae Berberine Patches. A discreet, pill-free format combining berberine with botanical extracts and other ingredients — easy to apply at home or on the go.
     badge: 60 patches per box
     primaryAction: Add to cart
     secondaryAction: Explore product details
@@ -459,6 +458,7 @@ home:
     description: Get to know the format, explore practical application tips, and discover the stories behind the routines.
     ratingLabel: Overall rating
     starsLabel: 4.8 out of 5 stars
+    reviewCountLabel: 500+ reviews
     ratingNote: Explore stories from everyday routines.
     link: Read the stories
     convenience:

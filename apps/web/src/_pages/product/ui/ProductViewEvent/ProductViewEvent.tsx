@@ -16,5 +16,5 @@ export const ProductViewEvent = (props: Props) => {
   const offers = search?.getAll('offer') ?? [];
   const offerId = offers.length === 1 ? offers[0] : undefined;
 
-  return <EcommerceEvent name='view_item' parameters={getProductAnalytics(offer, 1, offerId)}/>;
+  return <EcommerceEvent name='view_item' parameters={getProductAnalytics(offer, 1, offerId ?? 'best-value')}/>;
 };

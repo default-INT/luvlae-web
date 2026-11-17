@@ -9,7 +9,7 @@ import type { PurchaseProps } from './PurchaseForm';
 
 // The PDP HTML is edge-cached for every query string, so ?offer= is applied on the client.
 export const ProductPurchase = (props: PurchaseProps) => (
-  <Suspense fallback={<PurchaseForm {...props} requested='standard'/>}>
+  <Suspense fallback={<PurchaseForm {...props} requested='best-value'/>}>
     <PurchaseFromQuery {...props}/>
   </Suspense>
 );

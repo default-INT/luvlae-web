@@ -38,7 +38,7 @@ export const CheckoutStatus = (props: Props) => {
       <h2>{checkout.status === 'expired' ? copy.checkoutExpiredTitle : copy.paymentPendingTitle}</h2>
       <p role='status'>{settled ? copy.checkoutExpiredDescription : pendingDescription}</p>
       {!settled && <button onClick={() => router.refresh()}>{copy.checkPaymentStatus}</button>}
-      <Link href={product.path}>{copy.backToCart}</Link>
+      <Link href={product.bestValuePath}>{copy.backToCart}</Link>
     </div>
   );
 };

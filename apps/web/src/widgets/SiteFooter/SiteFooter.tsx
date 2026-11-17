@@ -20,7 +20,7 @@ export const SiteFooter = (props: SiteFooterProps) => {
       title: siteFooter.productGroup,
       links: [
         { label: siteFooter.aboutProduct, href: '/about-product' },
-        { label: siteFooter.product, href: '/products/berberine-patches' },
+        { label: siteFooter.product, href: '/products/berberine-patches?offer=best-value' },
         { label: siteFooter.ingredients, href: '/ingredients' },
         { label: siteFooter.howToUse, href: '/how-to-use-berberine-patches' },
       ],
@@ -43,7 +43,7 @@ export const SiteFooter = (props: SiteFooterProps) => {
         { label: dictionary.returnsPage.cancellation.title, href: '/returns#cancellation-policy' },
         { label: siteFooter.terms, href: '/terms' },
         { label: siteFooter.privacy, href: '/privacy' },
-        { label: siteFooter.shopOnAmazon, href: product.path },
+        { label: siteFooter.shopOnAmazon, href: product.bestValuePath },
       ],
     },
   ];

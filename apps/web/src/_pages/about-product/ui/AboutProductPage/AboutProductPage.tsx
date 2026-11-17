@@ -72,7 +72,7 @@ export const AboutProductPage = (props: AboutProductPageProps) => {
                 <h1><LineBreakText text={home.title}/></h1>
                 <p className={styles.heroDescription}>{home.description}</p>
                 <div className={styles.heroAction}>
-                  <ActionLink href='/products/berberine-patches'>{home.heroButton}</ActionLink>
+                  <ActionLink href={product.bestValuePath}>{home.heroButton}</ActionLink>
                   <p>{home.heroNote}</p>
                 </div>
               </div>
@@ -141,7 +141,7 @@ export const AboutProductPage = (props: AboutProductPageProps) => {
                   <li><span aria-hidden='true'>✓</span>{home.product.pointTwo}</li>
                   <li><span aria-hidden='true'>✓</span>{home.product.pointThree}</li>
                 </ul>
-                <ActionLink href='/products/berberine-patches' variant='text'>{home.product.link}</ActionLink>
+                <ActionLink href='/products/berberine-patches?offer=best-value' variant='text'>{home.product.link}</ActionLink>
               </Reveal>
             </div>
           </div>
@@ -226,12 +226,12 @@ export const AboutProductPage = (props: AboutProductPageProps) => {
               <p>{home.cta.description}</p>
               <div className={styles.ctaActions}>
                 <ActionLink
-                  href={product.path}
+                  href={product.bestValuePath}
                   variant='light'
                 >
                   {home.cta.amazonButton}
                 </ActionLink>
-                <ActionLink href='/products/berberine-patches' variant='outline'>{home.cta.productButton}</ActionLink>
+                <ActionLink href={product.bestValuePath} variant='outline'>{home.cta.productButton}</ActionLink>
               </div>
               <small>{home.cta.note}</small>
             </Reveal>

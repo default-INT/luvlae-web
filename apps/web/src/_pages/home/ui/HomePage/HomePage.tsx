@@ -76,11 +76,7 @@ export const HomePage = (props: HomePageProps) => {
     return selected ? [selected] : [];
   });
 
-  const highlightedOffer = offers.find(value => value.offerId === offer?.storefront?.highlightedOfferId);
-
-  const productHref = highlightedOffer
-    ? `${product.path}?offer=${encodeURIComponent(highlightedOffer.offerId)}`
-    : product.path;
+  const productHref = product.bestValuePath;
 
   const stories = [
     { ...home.stories.one, image: 'luvlae-routine-1.webp', width: 720, height: 960 },
@@ -260,7 +256,7 @@ export const HomePage = (props: HomePageProps) => {
                   >
                     {home.cta.button}
                   </ActionLink>
-                  <Link href='/products/berberine-patches'>{home.cta.details} <span aria-hidden='true'>↗</span></Link>
+                  <Link href={product.bestValuePath}>{home.cta.details} <span aria-hidden='true'>↗</span></Link>
                 </div>
                 <small>{home.cta.note} <Link href='/shipping'>{home.cta.shippingLink}</Link>
                   {' · '}<Link href='/returns'>{home.cta.guaranteeLink}</Link></small>
