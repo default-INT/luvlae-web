@@ -8,9 +8,9 @@ import type { PurchaseProps } from './PurchaseForm';
 
 export const PurchaseFromQuery = (props: PurchaseProps) => {
   const search = useSearchParams();
-  let requested = 'standard';
+  let requested = 'best-value';
 
-  if (search) requested = search.getAll('offer').length > 1 ? '' : search.get('offer') ?? 'standard';
+  if (search) requested = search.getAll('offer').length > 1 ? '' : search.get('offer') ?? 'best-value';
 
   return <PurchaseForm {...props} requested={requested}/>;
 };

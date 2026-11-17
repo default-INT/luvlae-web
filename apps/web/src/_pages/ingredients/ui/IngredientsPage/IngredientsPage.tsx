@@ -86,7 +86,7 @@ export const IngredientsPage = async () => {
             <p className={styles.eyebrow}>{page.relatedEyebrow}</p>
             <h2 id='related-title'>{page.relatedTitle}</h2>
             <div className={styles.relatedGrid}>
-              <Link href='/products/berberine-patches'>{page.productLink}<span aria-hidden='true'>↗</span></Link>
+              <Link href='/products/berberine-patches?offer=best-value'>{page.productLink}<span aria-hidden='true'>↗</span></Link>
               <Link href='/berberine-patch-safety'>{page.safetyLink}<span aria-hidden='true'>↗</span></Link>
               <Link href='/science/berberine-patches'>{page.scienceLink}<span aria-hidden='true'>↗</span></Link>
             </div>

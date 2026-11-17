@@ -51,13 +51,16 @@ export const PurchaseForm = (props: PurchaseProps & { requested: string }) => {
       <p className={styles.price} aria-live='polite'>
         {copy.packTotal}: {selected ? money(selected.price.unitAmount) : copy.priceUnavailable}
       </p>
+      <button
+        className={styles.add}
+        disabled={busy || !!pending || !available}
+        onClick={() => { if (offer && selected) setAddError(!add(toCartOffer(offer, selected), 1)); }}
+      >
+        {copy.addToCart}
+      </button>
       <PurchasePolicyTags copy={copy}/>
-      {!offer && <p role='alert'>{copy.offerError} <a href={product.path}>{copy.retry}</a></p>}
+      {!offer && <p role='alert'>{copy.offerError} <a href={product.bestValuePath}>{copy.retry}</a></p>}
       {selected && <p className={styles.availability}>{available ? copy.inStock : copy.soldOut}</p>}
-      <div className={styles.actions}>
-        <button className={styles.add} disabled={busy || !!pending || !available}
-          onClick={() => { if (offer && selected) setAddError(!add(toCartOffer(offer, selected), 1)); }}>{copy.addToCart}</button>
-      </div>
       {addError && <p role='alert'>{copy.cartLimit}</p>}
     </div>
   );

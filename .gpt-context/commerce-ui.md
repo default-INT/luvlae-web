@@ -53,6 +53,12 @@ Implemented 2026-10-18 following user approval of a temporary paid-order simulat
 
 The PDP pack selector uses the catalog's storefront highlighted offer/badge (Best Value or Recommended) with a compact gold badge positioned on the top border and a warm gold container highlight; selection remains indicated by the blue border and radio. Pack Total has 20px top spacing. Immediately below it, icon tags link to `/shipping` (free shipping within contiguous U.S.) and `/returns` (30-day guarantee for the first order); full existing qualifications remain in link titles and the policy pages. No catalog prices, highlight configuration or policy terms were changed.
 
+Updated 2026-11-17: Add to cart sits immediately below Pack Total, before the policy tags, spans the purchase container width and has a 60px minimum height. The introductory “Bring simplicity…” paragraph was removed from the PDP hero and dictionary.
+
+All “View Product” links now use `product.bestValuePath` (`?offer=best-value`), including every homepage pack card, About Product, information pages, footer and PDP CTA. The existing alias resolves against the current catalog highlight with standard fallback. Homepage card `select_item` analytics still identifies the clicked card; the PDP view event identifies the resolved destination pack.
+
+All other storefront product links also request Best Value, including cart item links. A direct PDP URL without `offer` defaults to the same alias in the cached purchase fallback, hydrated form and view analytics; missing catalog highlights fall back to standard. Explicit pack choices made inside the PDP continue to use their selected offer IDs.
+
 ## Cart pack selector — 2026-11-10 (local)
 
 CartDrawer uses page-local `ui/CartPackSelect` instead of a native select. The list expands in normal flow inside the scrollable Drawer (no clipped overlay on small screens), with 48px trigger/52px options, bounded list scrolling, hover/open transitions and reduced-motion support. It exposes listbox/option semantics, arrow/Home/End navigation, Enter/Space selection, Escape dismissal with focus restoration, and outside/blur dismissal. Existing checkout cancellation before pack replacement remains unchanged; unavailable packs are disabled.

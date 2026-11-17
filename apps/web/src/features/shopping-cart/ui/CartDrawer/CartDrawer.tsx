@@ -51,7 +51,7 @@ export const CartDrawer = (props: Props) => {
       <div className={styles.items}>
         {!items.length && <div className={styles.empty}>
           <span aria-hidden='true'>↗</span><h3>{copy.emptyTitle}</h3><p>{copy.emptyDescription}</p>
-          <Link href={product.path} onClick={() => setOpen(false)}>{copy.exploreProduct}</Link>
+          <Link href={product.bestValuePath} onClick={() => setOpen(false)}>{copy.exploreProduct}</Link>
         </div>}
         {items.map(item => {
           const offer = offers[cartKey(item)];
@@ -66,7 +66,7 @@ export const CartDrawer = (props: Props) => {
             }}>
               <Image src='/images/luvlae-berberine-patches-box-and-patch-sheet.webp' alt='' width={96} height={96}/>
               <div className={styles.itemBody}>
-                <Link href={`${product.path}?offer=${encodeURIComponent(item.offerId ?? 'standard')}`}
+                <Link href={product.bestValuePath}
                   onClick={() => setOpen(false)}>{offer?.name ?? product.name}</Link>
                 <p>{offer ? money(offer.price.unitAmount) : copy.priceUnavailable}</p>
                 <p>{offer?.unitsPerPack ?? 1} {copy.boxes} · {(offer?.unitsPerPack ?? 1) * 60} {copy.patches}</p>

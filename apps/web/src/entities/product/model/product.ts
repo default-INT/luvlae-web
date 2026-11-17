@@ -1,6 +1,7 @@
 export const product = {
   sku: 'LUVLAE-BERBERINE-60',
   path: '/products/berberine-patches',
+  bestValuePath: '/products/berberine-patches?offer=best-value',
   name: 'Luvlae Berberine Patches',
   asin: 'B0H6FQFJL8',
   count: 60,

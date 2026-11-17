@@ -8,6 +8,7 @@ interface Props {
   copy: {
     ratingLabel: string;
     starsLabel: string;
+    reviewCountLabel: string;
     ratingNote: string;
     link: string;
   };
@@ -25,6 +26,7 @@ export const ProductRating = (props: Props) => {
         <span aria-hidden='true'>★★★★★</span>
         <span className={styles.starsFill} aria-hidden='true'>★★★★★</span>
       </span>
+      <p className={styles.reviewCount}>{copy.reviewCountLabel}</p>
       <p className={styles.ratingNote}>{copy.ratingNote}</p>
       <Link className={styles.link} href={href}>
         {copy.link}<span aria-hidden='true'>↗</span>

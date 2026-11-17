@@ -40,7 +40,7 @@ export const ShippingAddressForm = (props: Props) => {
   if (!ready) return <p role='status'>{copy.loadingAddress}</p>;
 
   if (!items.length && !pending) { return <p>
-    {copy.emptyTitle} <Link href='/products/berberine-patches'>{copy.exploreProduct}</Link>
+    {copy.emptyTitle} <Link href='/products/berberine-patches?offer=best-value'>{copy.exploreProduct}</Link>
   </p>; }
 
   return (

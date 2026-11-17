@@ -72,7 +72,7 @@ export const OrderResult = (props: Props) => {
             <span>{copy.total}</span><strong>{money(order.pricing.total ?? order.pricing.subtotal)}</strong>
           </div>
         </div>
-        <Link className={styles.back} href={product.path}>{copy.backToProduct} ↗</Link>
+        <Link className={styles.back} href={product.bestValuePath}>{copy.backToProduct} ↗</Link>
       </section>
     </main>
   );

@@ -75,7 +75,7 @@ export const AboutPage = (props: AboutPageProps) => {
               <p className={styles.eyebrow}>{content.eyebrow}</p>
               <h1>{content.headline}</h1>
               <p className={styles.lead}>{content.lead}</p>
-              <ActionLink href='/products/berberine-patches'>{content.productButton}</ActionLink>
+              <ActionLink href='/products/berberine-patches?offer=best-value'>{content.productButton}</ActionLink>
             </div>
             <div className={styles.heroImage}>
               <Image
@@ -129,7 +129,7 @@ export const AboutPage = (props: AboutPageProps) => {
             <h2 id='about-support'>{content.support.title}</h2>
             {Object.values(content.support.paragraphs).map(paragraph => <p key={paragraph}>{paragraph}</p>)}
             <div className={styles.actions}>
-              <ActionLink href='/products/berberine-patches'>{content.productButton}</ActionLink>
+              <ActionLink href='/products/berberine-patches?offer=best-value'>{content.productButton}</ActionLink>
               <ActionLink href='/contact' variant='outline'>{content.contactButton}</ActionLink>
             </div>
             <Link className={styles.refundLink} href='/returns'>{content.refundLink}</Link>
