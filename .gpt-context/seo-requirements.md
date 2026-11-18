@@ -1,5 +1,9 @@
 # SEO requirements for Luvlae.com
 
+## Video watch page — 2026-11-18 (local, not deployed)
+
+See [video implementation and indexing follow-up](home-video.md#dedicated-watch-page--2026-11-18-local-not-deployed). `/videos/berberine-patches` now owns the product film VideoObject, self-canonical and sitemap entry; Home links to it. Google video eligibility requires a dedicated watch experience, not just schema on a commercial homepage. Deployment, Rich Results Test and Search Console indexing remain pending.
+
 ## How-to public verification — 2026-10-30
 
 Post-rule update: after the user deployed a Cloudflare redirect, all HTTP/HTTPS apex/www variants for home, About, How-to and Product were checked. Alternatives now return one 308 to HTTPS www, retaining path/query, then 200; canonical URLs return 200 directly. Sitemap opens with 14 HTTPS www URLs. This supersedes the pending redirect state in the initial snapshot below. Search Console processing remains unverified.

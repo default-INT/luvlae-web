@@ -1,0 +1,1 @@
+export { ProductFilmPage } from './ProductFilmPage';
