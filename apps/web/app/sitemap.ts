@@ -9,7 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const paths = [
     '/', '/contact', '/shipping', '/returns', '/terms', '/privacy', '/about-product',
-    '/products/berberine-patches', '/ingredients',
+    '/products/berberine-patches', '/ingredients', '/videos/berberine-patches',
     ...indexableInformationPaths,
   ];
 
