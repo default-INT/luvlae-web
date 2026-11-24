@@ -85,12 +85,22 @@ export const HomePage = (props: HomePageProps) => {
           <div className={styles.promoInner}>
             <div className={styles.promoImage}>
               <Image
+                className={styles.promoPhoto}
                 src='/images/luvlae-promo-woman-patches-extended.webp'
                 alt={home.promo.imageAlt}
                 width={1774}
                 height={887}
                 sizes='(max-width: 800px) 1100px, 1400px'
                 priority
+              />
+              <Image
+                className={styles.patchBadge}
+                src='/images/luvlae-happy-wears-badge.webp'
+                alt={home.patchBadge}
+                width={480}
+                height={480}
+                loading='eager'
+                unoptimized
               />
             </div>
             <div className={styles.promoCopy}>
@@ -114,13 +124,21 @@ export const HomePage = (props: HomePageProps) => {
         <section className={styles.hero}>
           <div className={`${styles.container} ${styles.heroGrid}`}>
             <div className={styles.heroVisual}>
-              <div className={styles.offerBadge}>{home.hero.badge}</div>
               <Image
+                className={styles.heroPhoto}
                 src='/images/luvlae-berberine-patches-front-box-and-patch-sheet.webp'
                 alt={home.hero.imageAlt}
                 width={2500}
                 height={2500}
                 sizes='(max-width: 800px) calc(100vw - 40px), (max-width: 1440px) 46vw, 630px'
+              />
+              <Image
+                className={styles.patchBadge}
+                src='/images/luvlae-happy-wears-badge.webp'
+                alt={home.patchBadge}
+                width={480}
+                height={480}
+                unoptimized
               />
             </div>
             <div className={styles.heroCopy}>

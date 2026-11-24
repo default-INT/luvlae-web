@@ -45,16 +45,32 @@
   z-index: 0;
   inset: 0;
   pointer-events: none;
+}
 
-  img {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    display: block;
-    width: auto;
-    max-width: none;
-    height: 92%;
-  }
+.promoPhoto {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: block;
+  width: auto;
+  max-width: none;
+  height: 92%;
+}
+
+.patchBadge {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  width: clamp(6.25rem, 10vw, 9rem);
+  height: auto;
+  filter: drop-shadow(0 5px 9px rgb(8 47 99 / 20%));
+  transform: rotate(8deg);
+  pointer-events: none;
+}
+
+.promoImage .patchBadge {
+  top: clamp(18px, 2.5vw, 36px);
+  left: min(48%, 660px);
 }
 
 .promoCopy {
@@ -169,26 +185,17 @@
   border-radius: 24px;
   background: white;
   box-shadow: var(--shadow-card);
-
-  img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
 }
 
-.offerBadge {
-  position: absolute;
-  z-index: 1;
-  top: 22px;
-  right: 22px;
-  padding: 0.8rem 1.1rem;
-  border: 1px solid #b7d7ef;
-  border-radius: 999px;
-  background: var(--color-blue-soft);
-  color: var(--color-navy-strong);
-  font-size: 0.85rem;
-  font-weight: 800;
+.heroPhoto {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.heroVisual .patchBadge {
+  top: clamp(12px, 1.5vw, 22px);
+  right: clamp(12px, 1.5vw, 22px);
 }
 
 .heroCopy {
@@ -435,7 +442,7 @@
     animation: promoGradientEnter 2200ms ease-out both;
   }
 
-  .promoImage img {
+  .promoPhoto {
     animation: promoImageEnter 1150ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
@@ -482,10 +489,6 @@
     animation: heroVisualEnter 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .offerBadge {
-    animation: heroTextEnter 620ms cubic-bezier(0.22, 1, 0.36, 1) 560ms both;
-  }
-
   .heroCopy > * {
     animation: heroTextEnter 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
@@ -519,13 +522,13 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .heroVisual img,
+    .heroPhoto,
     .story > img,
     .ctaImage img {
       transition: transform 850ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    .heroVisual:hover img,
+    .heroVisual:hover .heroPhoto,
     .story:hover > img,
     .ctaBox:hover .ctaImage img {
       transform: scale(1.025);
@@ -752,9 +755,15 @@
     width: 100%;
   }
 
-  .promoImage img {
+  .promoPhoto {
     left: -8%;
     height: 40%;
+  }
+
+  .promoImage .patchBadge {
+    top: calc(60% + 10px);
+    right: clamp(14px, 4vw, 38px);
+    left: auto;
   }
 
   .promoCopy {
@@ -840,9 +849,14 @@
     }
   }
 
-  .promoImage img {
+  .promoPhoto {
     left: -23%;
     height: 36%;
+  }
+
+  .promoImage .patchBadge {
+    top: calc(64% - 48px);
+    right: 12px;
   }
 
   .promoDescription {
@@ -877,13 +891,6 @@
 
   .features {
     margin: 1.2rem 0 1.5rem;
-  }
-
-  .offerBadge {
-    top: 14px;
-    right: 14px;
-    padding: 0.65rem 0.85rem;
-    font-size: 0.75rem;
   }
 
   .heroActions {

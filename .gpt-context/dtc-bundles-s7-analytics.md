@@ -1,8 +1,8 @@
 # DTC bundles — S7 Home offer-list analytics
 
-Home's general View Product buttons (promo, hero and lower CTA) link to the catalog's highlighted homepage offer through `?offer=<offerId>`, matching the Best Value/Recommended card. If no valid highlighted offer is available, they use the base product path. Offer-card links continue selecting their own offer.
+Home's general View Product buttons (promo, hero and lower CTA) use `?offer=best-value`. Each offer card uses its own `?offer=<offerId>` and labels the action “Select <pack>”.
 
-`PurchaseOffers` keeps server-rendered cards and adds a small client wrapper. IntersectionObserver records only cards at least 50% within the viewport. Each offer is counted once per mounted list; the seen set survives effect recreation. Newly visible cards may produce separate batches, retaining their original Home positions. Only View Product links produce `select_item`; selection does not add to cart.
+`PurchaseOffers` keeps server-rendered cards and adds a small client wrapper. IntersectionObserver records only cards at least 50% within the viewport. Each offer is counted once per mounted list; the seen set survives effect recreation. Newly visible cards may produce separate batches, retaining their original Home positions. Only offer-card links produce `select_item`; selection does not add to cart.
 
 The product mapper uses `home_purchase_offers` as stable list ID, zero-based displayed index, SKU as item_id, stable offerId as item_variant, and USD pack price/quantity=1. The list adapter has a separate contract with no aggregate financial value for alternative offers. The explicit allowlist excludes arbitrary fields and uses existing page URL/referrer sanitization. Existing canonical-origin, production and GA-ID gating is retained. No external GA calls were made in development.
 

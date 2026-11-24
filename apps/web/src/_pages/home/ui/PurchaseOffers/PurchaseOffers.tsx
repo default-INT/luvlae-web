@@ -21,7 +21,7 @@ export interface PurchaseOffersCopy {
   patches: string;
   totalLabel: string;
   supportingLine: string;
-  viewProduct: string;
+  selectPack: string;
   soldOut: string;
   badgeLabels: Record<HighlightBadge, string>;
   shipping: string;
@@ -69,9 +69,12 @@ export const PurchaseOffers = (props: PurchaseOffersProps) => {
                 <p className={styles.price}>{money(offer.price.unitAmount)}</p>
                 <p className={styles.supportingLine}>{copy.supportingLine}</p>
                 {offer.availableQuantity === 0 ? <p className={styles.soldOut}>{copy.soldOut}</p> : null}
-                <Link className={styles.link} href={product.bestValuePath} aria-label={`${copy.viewProduct}: ${label}`}
-                  data-purchase-offer-link={offer.offerId}>
-                  {copy.viewProduct}
+                <Link
+                  className={styles.link}
+                  href={`${product.path}?offer=${encodeURIComponent(offer.offerId)}`}
+                  data-purchase-offer-link={offer.offerId}
+                >
+                  {copy.selectPack} {label}
                 </Link>
               </article>
             );

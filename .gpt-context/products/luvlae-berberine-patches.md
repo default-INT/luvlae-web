@@ -102,3 +102,9 @@ Recheck the live listing before using any price, promotion, availability, sales,
 ## Storefront rating count — 2026-11-17
 
 - At the user's request, shared `ProductRating` displays “500+ reviews” on Home and PDP. This is a user-supplied campaign count; its provenance and calculation remain unverified. It does not update the historical Amazon snapshot or add AggregateRating schema.
+
+## Homepage campaign badge — 2026-11-24
+
+- Home uses one transparent WebP badge in its first two sections. The artwork uses Manrope and the storefront palette. The user requested “500+ happy wears” in place of “60 patches per box”. The campaign count and its calculation are unverified. The surrounding copy still states the package quantity.
+
+- Open payment checkouts show the user-requested wording “500+ happy wearers” above the Stripe embed and one randomly selected homepage review (dictionary entries six, seven, or nine) with its existing illustrative stars. The checkout does not show an author or verified-buyer attribution.

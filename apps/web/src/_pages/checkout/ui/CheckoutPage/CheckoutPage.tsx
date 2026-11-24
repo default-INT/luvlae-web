@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto';
+
 import Link from 'next/link';
 
 import { product } from '@/entities/product';
@@ -23,6 +25,10 @@ export const CheckoutPage = async (props: Props) => {
   const dictionary = await getDictionary(defaultLocale);
   const copy = dictionary.commerce;
   const showForm = checkout?.status === 'open' && !!checkout.clientSecret;
+  const { six, seven, nine } = dictionary.home.reviews.items;
+  const featuredReviews = [six, seven, nine];
+  const review = showForm ? featuredReviews[randomInt(featuredReviews.length)] : null;
+  const rating = review ? Number(review.rating) : 0;
 
   return (
     <>
@@ -35,8 +41,34 @@ export const CheckoutPage = async (props: Props) => {
         </section>
         <section className={styles.payment} aria-label={copy.paymentForm}>
           {!checkout && <p role='alert'>{copy.checkoutUnavailable}</p>}
-          {showForm && <EmbeddedCheckout id={id} publishableKey={checkout.publishableKey}
-            clientSecret={checkout.clientSecret!} expiresAt={checkout.expiresAt} copy={copy}/>}
+          {showForm && review && (
+            <>
+              <div className={styles.brand}>
+                <h2>{copy.checkoutBrand}</h2>
+                <p>{copy.checkoutWearers}</p>
+              </div>
+              <figure className={styles.story}>
+                <figcaption>
+                  <span>{copy.checkoutStories}</span>
+                  <span
+                    className={styles.stars}
+                    role='img'
+                    aria-label={dictionary.home.reviews.ratingLabel.replace('{{rating}}', review.rating)}
+                  >
+                    {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+                  </span>
+                </figcaption>
+                <blockquote>“{review.body}”</blockquote>
+              </figure>
+              <EmbeddedCheckout
+                id={id}
+                publishableKey={checkout.publishableKey}
+                clientSecret={checkout.clientSecret!}
+                expiresAt={checkout.expiresAt}
+                copy={copy}
+              />
+            </>
+          )}
           {checkout && !showForm && <CheckoutStatus checkout={checkout} copy={copy}/>}
         </section>
       </main>
