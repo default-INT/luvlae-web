@@ -51,6 +51,28 @@
   padding: 0 28px;
 }
 
+.highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    min-height: 34px;
+    place-items: center;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: var(--color-gold);
+    color: var(--color-navy);
+    font-size: 0.76rem;
+    font-weight: 750;
+    white-space: nowrap;
+  }
+}
+
 .item {
   display: flex;
   gap: 18px;

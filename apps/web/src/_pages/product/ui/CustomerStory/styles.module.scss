@@ -1,0 +1,93 @@
+.story {
+  min-width: 0;
+  padding: clamp(0.9rem, 1.7vw, 1.45rem);
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: white;
+  box-shadow: var(--shadow-card);
+
+  figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.65rem;
+    color: var(--color-navy);
+    font-size: 0.9rem;
+  }
+
+  blockquote {
+    position: relative;
+    overflow: hidden;
+    max-height: 6lh;
+    margin: 0.6rem 0 0;
+    color: var(--color-text);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+}
+
+.quoteText {
+  display: block;
+}
+
+.compact {
+  padding: 0.75rem 1rem;
+
+  blockquote {
+    max-height: 5lh;
+  }
+}
+
+.quoteMeasure {
+  position: absolute;
+  inset: 0 0 auto;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@mixin fit-neighbor-height {
+  display: flex;
+  flex-direction: column;
+  contain: size;
+
+  figcaption {
+    flex-shrink: 0;
+  }
+
+  blockquote {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+  }
+}
+
+@media (min-width: 621px) {
+  .matchRating {
+    @include fit-neighbor-height;
+  }
+}
+
+@media (min-width: 1150px) {
+  .compact {
+    @include fit-neighbor-height;
+
+    align-self: stretch;
+    margin-bottom: 0.35rem;
+  }
+}
+
+.label {
+  flex-basis: 100%;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.stars {
+  color: var(--color-gold);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}

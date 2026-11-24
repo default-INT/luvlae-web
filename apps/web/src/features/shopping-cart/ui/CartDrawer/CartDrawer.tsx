@@ -38,6 +38,7 @@ export const CartDrawer = (props: Props) => {
   const router = useRouter();
   const knownPrices = items.every(item => offers[cartKey(item)]);
   const totalBoxes = items.reduce((sum, item) => sum + (offers[cartKey(item)]?.unitsPerPack ?? 1) * item.quantity, 0);
+  const totalBoxesLabel = knownPrices && totalBoxes === 1 ? copy.box : copy.boxes;
   const subtotal = items.reduce((sum, item) => sum + (offers[cartKey(item)]?.price.unitAmount ?? 0) * item.quantity, 0);
   const checkoutLabel = pending ? copy.resumeCheckout : copy.checkout;
   const busyLabel = cancelling ? copy.cancellingCheckout : copy.creatingOrder;
@@ -49,12 +50,18 @@ export const CartDrawer = (props: Props) => {
         <button className={styles.close} disabled={merging} onClick={() => setOpen(false)} aria-label={copy.close}>×</button>
       </div>
       <div className={styles.items}>
+        {items.length > 0 && <ul className={styles.highlights}>
+          <li>{copy.greatChoice}</li>
+          <li>{copy.unitsSoldCount} {copy.unitsSoldLabel}</li>
+          <li>{copy.positiveReviews}</li>
+        </ul>}
         {!items.length && <div className={styles.empty}>
           <span aria-hidden='true'>↗</span><h3>{copy.emptyTitle}</h3><p>{copy.emptyDescription}</p>
           <Link href={product.bestValuePath} onClick={() => setOpen(false)}>{copy.exploreProduct}</Link>
         </div>}
         {items.map(item => {
           const offer = offers[cartKey(item)];
+          const boxes = offer?.unitsPerPack ?? 1;
 
           const suggestion = items.find(line => line.sku === item.sku) === item
             ? packSuggestion(items, offers, item.sku) : null;
@@ -69,7 +76,7 @@ export const CartDrawer = (props: Props) => {
                 <Link href={product.bestValuePath}
                   onClick={() => setOpen(false)}>{offer?.name ?? product.name}</Link>
                 <p>{offer ? money(offer.price.unitAmount) : copy.priceUnavailable}</p>
-                <p>{offer?.unitsPerPack ?? 1} {copy.boxes} · {(offer?.unitsPerPack ?? 1) * 60} {copy.patches}</p>
+                <p>{boxes} {boxes === 1 ? copy.box : copy.boxes} · {boxes * product.count} {copy.patches}</p>
                 {offerErrors[cartKey(item)] && <p role='alert'>{offerErrors[cartKey(item)]}</p>}
                 {offer && item.quantity > offer.availableQuantity && <p role='alert'>{copy.stockError}</p>}
                 {!!offer?.purchaseOffers?.length && <CartPackSelect offers={offer.purchaseOffers}
@@ -157,7 +164,7 @@ export const CartDrawer = (props: Props) => {
       </div>
       {!!items.length && <div className={styles.summary}>
         <div className={styles.subtotal}><span>{copy.subtotal}
-          <small>{copy.totalCount}: {knownPrices ? totalBoxes : '—'} {copy.boxes}</small></span>
+          <small>{copy.totalCount}: {knownPrices ? totalBoxes : '—'} {totalBoxesLabel}</small></span>
         <strong>{knownPrices ? money(subtotal) : '—'}</strong></div>
         {savingsNotice && <p role='status'>{savingsNotice}</p>}
         {pending && <p className={styles.pending}>{copy.pendingCheckout}</p>}

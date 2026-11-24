@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { siteUrl } from '@/shared/config/site';
-import { product } from '@/entities/product';
+import { product, ProductRating } from '@/entities/product';
 import { PurchasePolicyTags } from '@/features/shopping-cart';
 import { ActionLink } from '@/shared/ui/ActionLink';
 import { LineBreakText } from '@/shared/ui/LineBreakText';
@@ -93,22 +93,24 @@ export const HomePage = (props: HomePageProps) => {
                 sizes='(max-width: 800px) 1100px, 1400px'
                 priority
               />
-              <Image
-                className={styles.patchBadge}
-                src='/images/luvlae-happy-wears-badge.webp'
-                alt={home.patchBadge}
-                width={480}
-                height={480}
-                loading='eager'
-                unoptimized
-              />
             </div>
             <div className={styles.promoCopy}>
               <p className={styles.promoEyebrow}>{home.promo.eyebrow}</p>
-              <h1 id='promo-heading' aria-label={`${home.promo.titleLineOne} ${home.promo.titleLineTwo}`}>
-                <span className={styles.promoLine}>{home.promo.titleLineOne}</span>
-                <span className={styles.promoLine}>{home.promo.titleLineTwo}</span>
-              </h1>
+              <div className={styles.promoTitle}>
+                <h1 id='promo-heading' aria-label={`${home.promo.titleLineOne} ${home.promo.titleLineTwo}`}>
+                  <span className={styles.promoLine}>{home.promo.titleLineOne}</span>
+                  <span className={styles.promoLine}>{home.promo.titleLineTwo}</span>
+                </h1>
+                <div className={`${styles.patchBadge} ${styles.wearersBadge}`}>
+                  <div className={styles.badgeRing} aria-hidden='true'>
+                    {'★LUVLAE★'.split('').map((letter, index) => (
+                      <span key={index} style={{ rotate: `${(index - 3.5) * 23}deg` }}>{letter}</span>
+                    ))}
+                  </div>
+                  <strong>{home.promo.wearersCount}</strong>
+                  <span>{home.promo.wearersLineOne}<br/>{home.promo.wearersLineTwo}</span>
+                </div>
+              </div>
               <p className={styles.promoDescription}>{home.promo.supportingLine}</p>
               <p className={styles.promoDescription}>{home.promo.description}</p>
               <ActionLink
@@ -119,6 +121,13 @@ export const HomePage = (props: HomePageProps) => {
               </ActionLink>
               <PurchasePolicyTags copy={dictionary.commerce} className={styles.promoPolicies}/>
             </div>
+            <figure className={styles.chemistCard}>
+              <blockquote>“{home.promo.chemistQuote}”</blockquote>
+              <figcaption>
+                <strong>{home.promo.chemistName}</strong>
+                <span>{home.promo.chemistRole}</span>
+              </figcaption>
+            </figure>
           </div>
         </section>
         <section className={styles.hero}>
@@ -132,16 +141,13 @@ export const HomePage = (props: HomePageProps) => {
                 height={2500}
                 sizes='(max-width: 800px) calc(100vw - 40px), (max-width: 1440px) 46vw, 630px'
               />
-              <Image
-                className={styles.patchBadge}
-                src='/images/luvlae-happy-wears-badge.webp'
-                alt={home.patchBadge}
-                width={480}
-                height={480}
-                unoptimized
-              />
+              <div className={`${styles.patchBadge} ${styles.bestsellerBadge}`}>
+                <span aria-hidden='true'>★★★★★</span>
+                <strong>{home.hero.bestseller}</strong>
+              </div>
             </div>
             <div className={styles.heroCopy}>
+              <ProductRating copy={home.feedback} variant='inline'/>
               <p className={styles.eyebrow}>{home.hero.eyebrow}</p>
               <h2><LineBreakText text={home.hero.title}/></h2>
               <p className={styles.description}>{home.hero.description}</p>
@@ -153,7 +159,7 @@ export const HomePage = (props: HomePageProps) => {
               <div className={styles.heroActions}>
                 <ActionLink
                   href={productHref}
-                  className={styles.cartButton}
+                  className={styles.heroButton}
                 >
                   {home.hero.button}
                 </ActionLink>
@@ -237,13 +243,18 @@ export const HomePage = (props: HomePageProps) => {
           <div className={styles.container}>
             <Reveal className={styles.ctaBox}>
               <div className={styles.ctaImage}>
-                <Image
-                  src='/images/luvlae-berberine-patches-front-box-and-patch-sheet.webp'
-                  alt={home.hero.imageAlt}
-                  width={2500}
-                  height={2500}
-                  sizes='(max-width: 640px) 200px, 340px'
-                />
+                <div className={styles.ctaPhotoFrame}>
+                  <Image
+                    src='/images/luvlae-berberine-patches-front-box-and-patch-sheet.webp'
+                    alt={home.hero.imageAlt}
+                    width={2500}
+                    height={2500}
+                    sizes='(max-width: 640px) 200px, 340px'
+                  />
+                </div>
+                <div className={`${styles.patchBadge} ${styles.cravingsBadge}`}>
+                  <strong>{home.cta.cravings}<br/>{home.cta.support}</strong>
+                </div>
               </div>
               <div className={styles.ctaCopy}>
                 <p className={styles.eyebrow}>{home.cta.eyebrow}</p>
@@ -253,7 +264,7 @@ export const HomePage = (props: HomePageProps) => {
                   <ActionLink
                     href={productHref}
                     variant='light'
-                    className={styles.cartButton}
+                    className={styles.ctaButton}
                   >
                     {home.cta.button}
                   </ActionLink>

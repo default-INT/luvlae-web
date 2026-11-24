@@ -114,6 +114,7 @@
         "eyebrow": "60 patches per box",
         "title": "Luvlae Berberine Patches",
         "subtitle": "Your Body Goals. Your Daily Routine.",
+        "customerStory": "Customer story",
         "benefits": {
           "appetite": {
             "title": "Appetite Balance",
@@ -410,7 +411,6 @@
       }
     },
     "home": {
-      "patchBadge": "500+ happy wears",
       "promo": {
         "eyebrow": "LUVLAE",
         "titleLineOne": "Berberine",
@@ -419,6 +419,12 @@
         "imageAlt": "Woman holding a Luvlae Berberine Patches box and a sheet of pearly patches",
         "button": "View Product",
         "supportingLine": "A simple, pill-free step for your everyday routine.",
+        "wearersCount": "3M+",
+        "wearersLineOne": "happy",
+        "wearersLineTwo": "wearers",
+        "chemistQuote": "Developed just for you.",
+        "chemistName": "Jane Miller",
+        "chemistRole": "Formulation Chemist",
         "featureOne": "Pill-free format",
         "featureTwo": "Discreet design",
         "featureThree": "Easy to apply",
@@ -429,16 +435,17 @@
       },
       "hero": {
         "eyebrow": "LUVLAE BERBERINE PATCHES",
-        "title": "A patch format that fits your day.",
+        "title": "Your routine,<br>minus the pills.",
         "description": "Keep your routine simple with a discreet, pill-free format. Start with one box or choose a multi-box pack, with 60 patches in every box.",
         "imageAlt": "Luvlae Berberine Patches box beside a sheet of pearly patches",
         "offerNote": "Explore the product and choose your pack.",
         "button": "View Product",
         "destination": "Explore the product and choose your pack.",
         "details": "About the Product",
-        "featureOne": "Pill-free format",
-        "featureTwo": "Discreet design",
-        "featureThree": "Easy to apply"
+        "featureOne": "Discreet Design",
+        "featureTwo": "Easy to Apply",
+        "featureThree": "Travel-Friendly Box",
+        "bestseller": "Bestseller"
       },
       "video": {
         "label": "Luvlae Berberine Patches product film",
@@ -506,6 +513,8 @@
       "cta": {
         "eyebrow": "YOUR ROUTINE, YOUR PACK",
         "title": "Make room for a simpler routine.",
+        "cravings": "Cravings",
+        "support": "Support",
         "description": "Explore Luvlae Berberine Patches and choose your pack, with 60 patches in every box.",
         "button": "View Product",
         "note": "Free Standard Shipping within the contiguous U.S. Your entire first order is covered by our 30-Day Money-Back Guarantee. Terms apply.",
@@ -518,8 +527,9 @@
         "title": "A closer look at the everyday experience",
         "description": "Get to know the format, explore practical application tips, and discover the stories behind the routines.",
         "ratingLabel": "Overall rating",
-        "starsLabel": "4.8 out of 5 stars",
-        "reviewCountLabel": "500+ reviews",
+        "ratingValue": "4.8",
+        "starsLabel": "{{rating}} out of 5 stars",
+        "reviewCountLabel": "5,287 reviews",
         "ratingNote": "Explore stories from everyday routines.",
         "link": "Read the stories",
         "convenience": {
@@ -685,6 +695,10 @@
     },
     "commerce": {
       "cart": "Cart",
+      "greatChoice": "Great choice",
+      "unitsSoldCount": "3M+",
+      "unitsSoldLabel": "units sold",
+      "positiveReviews": "5,000+ positive reviews",
       "yourSelection": "Your selection",
       "quantity": "Quantity",
       "close": "Close cart",
@@ -758,6 +772,7 @@
       "orderUnpaidTitle": "Your payment was not completed",
       "orderUnpaidDescription": "Your selection is still in your cart. Return to shopping to start a new checkout.",
       "sets": "Sets",
+      "box": "box",
       "boxes": "boxes",
       "patches": "patches",
       "packWord": "Pack",

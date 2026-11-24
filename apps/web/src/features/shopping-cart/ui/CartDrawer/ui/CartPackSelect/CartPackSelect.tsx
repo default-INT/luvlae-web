@@ -24,6 +24,7 @@ export const CartPackSelect = (props: Props) => {
   const id = useId();
   const open = expanded && !disabled;
   const selected = offers.find(offer => offer.offerId === value);
+  const selectedBoxLabel = selected?.unitsPerPack === 1 ? copy.box : copy.boxes;
 
   useEffect(() => {
     if (!open) return;
@@ -62,7 +63,9 @@ export const CartPackSelect = (props: Props) => {
             setExpanded(true);
           }
         }}>
-        <span id={`${id}-value`}>{selected ? `${selected.unitsPerPack} ${copy.boxes}` : copy.invalidPack}</span>
+        <span id={`${id}-value`}>
+          {selected ? `${selected.unitsPerPack} ${selectedBoxLabel}` : copy.invalidPack}
+        </span>
         {selected && <strong>{money(selected.price.unitAmount)}</strong>}
         <svg className={open ? styles.rotated : ''} width='16' height='16' viewBox='0 0 16 16'
           fill='none' stroke='currentColor' strokeWidth='1.6' aria-hidden='true'><path d='m4 6 4 4 4-4'/></svg>
@@ -104,7 +107,7 @@ export const CartPackSelect = (props: Props) => {
                   } finally { choosing.current = false; setSelecting(false); }
                 }}>
                 <span className={styles.check} aria-hidden='true'>{offer.offerId === value ? '✓' : ''}</span>
-                <span>{offer.unitsPerPack} {copy.boxes}
+                <span>{offer.unitsPerPack} {offer.unitsPerPack === 1 ? copy.box : copy.boxes}
                   <small>{offer.availableQuantity < 1 ? copy.soldOut : `${offer.patchesPerPack} ${copy.patches}`}</small></span>
                 <strong>{money(offer.price.unitAmount)}</strong>
               </button>

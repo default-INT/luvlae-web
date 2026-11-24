@@ -108,3 +108,9 @@ Recheck the live listing before using any price, promotion, availability, sales,
 - Home uses one transparent WebP badge in its first two sections. The artwork uses Manrope and the storefront palette. The user requested “500+ happy wears” in place of “60 patches per box”. The campaign count and its calculation are unverified. The surrounding copy still states the package quantity.
 
 - Open payment checkouts show the user-requested wording “500+ happy wearers” above the Stripe embed and one randomly selected homepage review (dictionary entries six, seven, or nine) with its existing illustrative stars. The checkout does not show an author or verified-buyer attribution.
+
+## Final storefront design
+
+- The final design brief replaces the homepage badges with “3M+ happy wearers”, “Bestseller”, and “Cravings Support”. It adds the Jane Miller attribution on Home, the Jess P. and Morgan L. story cards and “3M+ units sold” on the product page, and three badges in the filled cart. At the user’s direction, implementation assumes the brief’s publication evidence is available. The evidence itself was not supplied or independently inspected. Wearers, units sold, total reviews, and positive reviews describe distinct metrics.
+- Home and the product page share the rating value and review-count label in the English dictionary. The visible rating is 4.8 out of 5 from 5,287 reviews. No review or AggregateRating structured data is defined by this design brief.
+- The product page now draws both featured stories from the homepage review list. It selects two distinct entries in the browser after hydration, preserving storefront caching and each entry’s text, attribution, and rating.

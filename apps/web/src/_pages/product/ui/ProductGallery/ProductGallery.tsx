@@ -11,10 +11,12 @@ import type { Dictionary } from '@/shared/config/i18n';
 
 interface Props {
   dictionary: Dictionary['productPage']['hero'];
+  unitsSoldCount: string;
+  unitsSoldLabel: string;
 }
 
 export const ProductGallery = (props: Props) => {
-  const { dictionary } = props;
+  const { dictionary, unitsSoldCount, unitsSoldLabel } = props;
   const [activeIndex, setActiveIndex] = useState(0);
 
   const images = Object.values(dictionary.galleryImages).map((alt, index) => ({
@@ -54,6 +56,10 @@ export const ProductGallery = (props: Props) => {
               key={item.id}
             />
           ))}
+          {activeIndex === 0 && <div className={styles.badge}>
+            <strong>{unitsSoldCount}</strong>
+            <span>{unitsSoldLabel}</span>
+          </div>}
           <button
             className={`${styles.galleryArrow} ${styles.previous}`}
             type='button'

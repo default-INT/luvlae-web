@@ -1,4 +1,7 @@
 .rating {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   padding: clamp(1.5rem, 3vw, 2rem);
   border-radius: 24px;
   background: var(--color-surface-muted);
@@ -35,22 +38,30 @@
 }
 
 .stars {
-  position: relative;
-  display: inline-block;
-  width: fit-content;
-  color: var(--color-border);
+  color: var(--color-blue);
   font-size: 1.5rem;
   letter-spacing: 0.08em;
   line-height: 1;
   white-space: nowrap;
 }
 
-.starsFill {
-  position: absolute;
-  inset: 0;
-  width: 96%;
-  overflow: hidden;
-  color: var(--color-blue);
+.gold .stars,
+.inline .stars {
+  color: var(--color-gold);
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.65rem;
+  margin: 0 0 0.9rem;
+  color: var(--color-navy);
+  font-size: 0.9rem;
+
+  .stars {
+    font-size: 1.15rem;
+  }
 }
 
 .reviewCount {
@@ -73,16 +84,18 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 44px;
+  align-self: stretch;
+  min-height: 55px;
+  margin-top: auto;
   padding: 0.75rem 1rem;
   border-radius: 999px;
-  background: var(--color-border);
-  color: var(--color-navy);
-  font-size: 0.8rem;
+  background: var(--color-indigo);
+  color: white;
+  font-size: 0.95rem;
   font-weight: 700;
   text-decoration: none;
 
   &:hover {
-    background: var(--color-blue-soft);
+    background: var(--color-navy-strong);
   }
 }

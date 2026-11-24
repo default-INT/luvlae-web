@@ -22,7 +22,9 @@ export const PackSelector = (props: Props) => {
           key={offer.offerId}>
           <input type='radio' name='purchase-offer' value={offer.offerId} checked={selected === offer.offerId}
             disabled={offer.availableQuantity < 1} onChange={() => onChange(offer.offerId)}/>
-          <span>{offer.unitsPerPack}-{copy.packWord} · {offer.unitsPerPack} {copy.boxes} · {offer.patchesPerPack} {copy.patches}
+          <span>
+            {offer.unitsPerPack}-{copy.packWord} · {offer.unitsPerPack} {offer.unitsPerPack === 1 ? copy.box : copy.boxes}
+            {' · '}{offer.patchesPerPack} {copy.patches}
             {offer.offerId === storefront?.highlightedOfferId && <span className={styles.badge}>
               {storefront.highlightBadge === 'bestValue' ? copy.bestValue : copy.recommended}</span>}
             {offer.availableQuantity < 1 && <small>{copy.soldOut}</small>}</span>
