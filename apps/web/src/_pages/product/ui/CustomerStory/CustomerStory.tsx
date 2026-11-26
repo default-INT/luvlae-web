@@ -1,29 +1,29 @@
 'use client';
 
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import { interpolate } from '@/shared/lib/i18n';
-
-import { CustomerStoriesContext } from '../CustomerStories';
 
 import styles from './styles.module.scss';
 
 interface Props {
-  index: 0 | 1;
+  review: { displayName: string; body: string; rating: string };
   starsLabel: string;
   label?: string;
   matchRatingHeight?: boolean;
 }
 
 export const CustomerStory = (props: Props) => {
-  const { index, starsLabel, label, matchRatingHeight = false } = props;
-  const review = useContext(CustomerStoriesContext)?.[index];
-  const quote = review ? `"${review.body}"` : '';
+  const { review, starsLabel, label, matchRatingHeight = false } = props;
+  const quote = `"${review.body}"`;
   const quoteRef = useRef<HTMLQuoteElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const [excerpt, setExcerpt] = useState({ quote: '', text: '' });
+  const excerptReady = excerpt.quote === quote;
+  const layoutClass = matchRatingHeight ? styles.matchRating : styles.compact;
+  const pendingClass = !matchRatingHeight && !excerptReady ? styles.pending : '';
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const block = quoteRef.current;
     const measure = measureRef.current;
 
@@ -55,18 +55,18 @@ export const CustomerStory = (props: Props) => {
       setExcerpt({ quote, text: `${start}..."` });
     };
 
+    fitQuote();
+
     const observer = new ResizeObserver(fitQuote);
     observer.observe(block);
 
     return () => observer.disconnect();
   }, [quote]);
 
-  if (!review) return null;
-
   const rating = Number(review.rating);
 
   return (
-    <figure className={`${styles.story} ${matchRatingHeight ? styles.matchRating : styles.compact}`}>
+    <figure className={`${styles.story} ${layoutClass} ${pendingClass}`}>
       <figcaption>
         {label && <span className={styles.label}>{label}</span>}
         <strong>{review.displayName}</strong>
@@ -75,7 +75,7 @@ export const CustomerStory = (props: Props) => {
         </span>
       </figcaption>
       <blockquote ref={quoteRef}>
-        <span className={styles.quoteText}>{excerpt.quote === quote ? excerpt.text : quote}</span>
+        <span className={styles.quoteText}>{excerptReady ? excerpt.text : quote}</span>
         <span className={styles.quoteMeasure} ref={measureRef} aria-hidden='true'/>
       </blockquote>
     </figure>

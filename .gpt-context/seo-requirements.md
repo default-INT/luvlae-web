@@ -1,5 +1,9 @@
 # SEO requirements for Luvlae.com
 
+## Product purchase metadata — 2026-11-26
+
+The canonical product page targets U.S. purchase searches. Its title highlights the 60-count pack and free shipping, and its meta description specifies the contiguous U.S. and no minimum order, consistent with [the shipping policy copy](../apps/web/src/shared/config/i18n/messages/en.yaml). The product sitemap `lastmod` records the metadata update.
+
 ## Video watch page — 2026-11-18 (local, not deployed)
 
 See [video implementation and indexing follow-up](home-video.md#dedicated-watch-page--2026-11-18-local-not-deployed). `/videos/berberine-patches` now owns the product film VideoObject, self-canonical and sitemap entry; Home links to it. Google video eligibility requires a dedicated watch experience, not just schema on a commercial homepage. Deployment, Rich Results Test and Search Console indexing remain pending.

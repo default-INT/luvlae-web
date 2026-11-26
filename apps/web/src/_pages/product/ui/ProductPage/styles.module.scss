@@ -47,7 +47,8 @@
   min-width: 0;
 }
 
-.hero > * {
+.heroMedia > :first-child,
+.heroCopy {
   animation: hero-enter 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -485,7 +486,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero > * {
+  .heroMedia > :first-child,
+  .heroCopy {
     animation: none;
   }
 

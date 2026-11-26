@@ -6,7 +6,7 @@
 export const pageLastModified: Record<string, string> = {
   '/': '2026-11-18',
   '/videos/berberine-patches': '2026-11-18',
-  '/products/berberine-patches': '2026-11-12',
+  '/products/berberine-patches': '2026-11-26',
   '/about-product': '2026-10-18',
   '/about': '2026-11-10',
   '/ingredients': '2026-11-12',

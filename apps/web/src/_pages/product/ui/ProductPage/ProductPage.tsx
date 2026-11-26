@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -13,7 +15,6 @@ import { Reveal } from '@/shared/ui/Reveal';
 import { SiteFooter } from '@/widgets/SiteFooter';
 import { SiteHeader } from '@/widgets/SiteHeader';
 
-import { CustomerStories } from '../CustomerStories';
 import { CustomerStory } from '../CustomerStory';
 import { ProductFaq } from '../ProductFaq';
 import { ProductGallery } from '../ProductGallery';
@@ -28,7 +29,10 @@ export const ProductPage = async () => {
 
   const { productPage: page, commerce } = dictionary;
   const { feedback, reviews } = dictionary.home;
-  const { one, two, ...otherReviews } = reviews.items;
+  const customerReviews = Object.values(reviews.items);
+  const titleReviewIndex = randomInt(customerReviews.length);
+  const otherReviewIndex = randomInt(customerReviews.length - 1);
+  const galleryReviewIndex = otherReviewIndex < titleReviewIndex ? otherReviewIndex : otherReviewIndex + 1;
 
   const facts = [
     { title: page.verification.countTitle, body: page.verification.countBody, mark: String(product.count) },
@@ -104,53 +108,51 @@ export const ProductPage = async () => {
             <span aria-hidden='true'>/</span>
             <span aria-current='page'>{page.breadcrumbCurrent}</span>
           </nav>
-          <CustomerStories reviews={[one, two, ...Object.values(otherReviews)]}>
-            <section id='purchase' className={styles.hero} aria-labelledby='product-title'>
-              <div className={styles.heroMedia}>
-                <ProductGallery
-                  dictionary={page.hero}
-                  unitsSoldCount={commerce.unitsSoldCount}
-                  unitsSoldLabel={commerce.unitsSoldLabel}
+          <section id='purchase' className={styles.hero} aria-labelledby='product-title'>
+            <div className={styles.heroMedia}>
+              <ProductGallery
+                dictionary={page.hero}
+                unitsSoldCount={commerce.unitsSoldCount}
+                unitsSoldLabel={commerce.unitsSoldLabel}
+              />
+              <div className={styles.galleryFeedback}>
+                <ProductRating copy={feedback} href='/#reviews-heading' variant='product'/>
+                <CustomerStory
+                  label={page.hero.customerStory}
+                  review={customerReviews[galleryReviewIndex]}
+                  starsLabel={feedback.starsLabel}
+                  matchRatingHeight
                 />
-                <div className={styles.galleryFeedback}>
-                  <ProductRating copy={feedback} href='/#reviews-heading' variant='product'/>
-                  <CustomerStory
-                    label={page.hero.customerStory}
-                    index={1}
-                    starsLabel={feedback.starsLabel}
-                    matchRatingHeight
-                  />
-                </div>
               </div>
-              <div className={styles.heroCopy}>
-                <div className={styles.titleRow}>
-                  <div>
-                    <p className={styles.eyebrow}>{page.hero.eyebrow}</p>
-                    <h1 id='product-title'>{page.hero.title}</h1>
-                  </div>
-                  <CustomerStory index={0} starsLabel={feedback.starsLabel}/>
+            </div>
+            <div className={styles.heroCopy}>
+              <div className={styles.titleRow}>
+                <div>
+                  <p className={styles.eyebrow}>{page.hero.eyebrow}</p>
+                  <h1 id='product-title'>{page.hero.title}</h1>
                 </div>
-                <p className={styles.subtitle}>{page.hero.subtitle}</p>
-                <ProductPurchase offer={offer} copy={commerce}/>
-                <p className={styles.purchaseNote}>{page.hero.purchaseNote}</p>
-                <Link className={styles.inlineLink} href='#product-details'>{page.hero.secondaryAction} ↗</Link>
-                <ul className={styles.benefits}>
-                  {Object.values(page.hero.benefits).map(benefit => (
-                    <li key={benefit.title}>
-                      <span aria-hidden='true'>✓</span>
-                      <p><strong>{benefit.title}</strong> — {benefit.description}</p>
-                    </li>
-                  ))}
-                </ul>
-                <dl className={styles.details}>
-                  <div><dt>{page.hero.detailOneLabel}</dt><dd>{page.hero.detailOneValue}</dd></div>
-                  <div><dt>{page.hero.detailTwoLabel}</dt><dd>{page.hero.detailTwoValue}</dd></div>
-                  <div><dt>{page.hero.detailThreeLabel}</dt><dd>{page.hero.detailThreeValue}</dd></div>
-                  <div><dt>{page.hero.detailFourLabel}</dt><dd>{page.hero.detailFourValue}</dd></div>
-                </dl>
+                <CustomerStory review={customerReviews[titleReviewIndex]} starsLabel={feedback.starsLabel}/>
               </div>
-            </section>
-          </CustomerStories>
+              <p className={styles.subtitle}>{page.hero.subtitle}</p>
+              <ProductPurchase offer={offer} copy={commerce}/>
+              <p className={styles.purchaseNote}>{page.hero.purchaseNote}</p>
+              <Link className={styles.inlineLink} href='#product-details'>{page.hero.secondaryAction} ↗</Link>
+              <ul className={styles.benefits}>
+                {Object.values(page.hero.benefits).map(benefit => (
+                  <li key={benefit.title}>
+                    <span aria-hidden='true'>✓</span>
+                    <p><strong>{benefit.title}</strong> — {benefit.description}</p>
+                  </li>
+                ))}
+              </ul>
+              <dl className={styles.details}>
+                <div><dt>{page.hero.detailOneLabel}</dt><dd>{page.hero.detailOneValue}</dd></div>
+                <div><dt>{page.hero.detailTwoLabel}</dt><dd>{page.hero.detailTwoValue}</dd></div>
+                <div><dt>{page.hero.detailThreeLabel}</dt><dd>{page.hero.detailThreeValue}</dd></div>
+                <div><dt>{page.hero.detailFourLabel}</dt><dd>{page.hero.detailFourValue}</dd></div>
+              </dl>
+            </div>
+          </section>
         </div>
 
         <section className={styles.verification} id='product-details' aria-labelledby='verification-title'>
